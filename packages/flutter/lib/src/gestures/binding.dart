@@ -340,7 +340,7 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
 
   void _handlePointerEventImmediately(PointerEvent event) {
     HitTestResult? hitTestResult;
-    if (event is PointerDownEvent || event is PointerSignalEvent || event is PointerHoverEvent) {
+    if (event is PointerDownEvent || event is PointerSignalEvent || event is PointerHoverEvent || event is PointerPlatformGestureStartEvent) {
       assert(!_hitTests.containsKey(event.pointer));
       hitTestResult = HitTestResult();
       hitTest(hitTestResult, event.position);
@@ -352,9 +352,9 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
           debugPrint('$event: $hitTestResult');
         return true;
       }());
-    } else if (event is PointerUpEvent || event is PointerCancelEvent) {
+    } else if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent) {
       hitTestResult = _hitTests.remove(event.pointer);
-    } else if (event.down) {
+    } else if (event.down || event is PointerPlatformGestureUpdateEvent) {
       // Because events that occur with the pointer down (like
       // [PointerMoveEvent]s) should be dispatched to the same place that their
       // initial PointerDownEvent was, we want to re-use the path we found when
@@ -443,7 +443,15 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
     } else if (event is PointerUpEvent) {
       gestureArena.sweep(event.pointer);
     } else if (event is PointerSignalEvent) {
-      pointerSignalResolver.resolve(event);
+      if (event is PointerPlatformGestureStartEvent) {
+        gestureArena.close(event.pointer);
+      }
+      else if (event is PointerPlatformGestureEndEvent) {
+        gestureArena.sweep(event.pointer);
+      }
+      else if (event is! PointerPlatformGestureUpdateEvent) {
+        pointerSignalResolver.resolve(event);
+      }
     }
   }
 

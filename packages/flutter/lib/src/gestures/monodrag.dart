@@ -280,13 +280,39 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
+  bool isPlatformGestureAllowed(PointerPlatformGestureStartEvent event) => true;
+
+  @override
+  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) {
+    super.addAllowedPlatformGesture(event);
+    _velocityTrackers[event.pointer] = velocityTrackerBuilder(event);
+    if (_state == _DragState.ready) {
+      _state = _DragState.possible;
+      _initialPosition = OffsetPair(global: event.position, local: event.localPosition);
+      _initialButtons = kPrimaryButton;
+      _pendingDragOffset = OffsetPair.zero;
+      _globalDistanceMoved = 0.0;
+      _lastPendingEventTimestamp = event.timeStamp;
+      _lastTransform = event.transform;
+      _checkDown();
+    } else if (_state == _DragState.accepted) {
+      resolve(GestureDisposition.accepted);
+    }
+  }
+
+  @override
   void handleEvent(PointerEvent event) {
     assert(_state != _DragState.ready);
     if (!event.synthesized
-        && (event is PointerDownEvent || event is PointerMoveEvent)) {
+        && (event is PointerDownEvent || event is PointerMoveEvent || event is PointerPlatformGestureUpdateEvent)) {
       final VelocityTracker tracker = _velocityTrackers[event.pointer]!;
       assert(tracker != null);
-      tracker.addPosition(event.timeStamp, event.localPosition);
+      if (event is PointerPlatformGestureUpdateEvent) {
+        tracker.addPosition(event.timeStamp, event.pan);
+      }
+      else {
+        tracker.addPosition(event.timeStamp, event.localPosition);
+      }
     }
 
     if (event is PointerMoveEvent) {
@@ -317,7 +343,32 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerUpEvent || event is PointerCancelEvent) {
+    if (event is PointerPlatformGestureUpdateEvent) {
+      if (_state == _DragState.accepted) {
+        _checkUpdate(
+          sourceTimeStamp: event.timeStamp,
+          delta: _getDeltaForDetails(event.panDelta),
+          primaryDelta: _getPrimaryValueFromOffset(event.panDelta),
+          globalPosition: event.position + event.pan,
+          localPosition: event.localPosition + event.pan
+        );
+      }
+      else {
+        _pendingDragOffset += OffsetPair(local: event.panDelta, global: event.panDelta);
+        _lastPendingEventTimestamp = event.timeStamp;
+        _lastTransform = event.transform;
+        final Offset movedLocally = _getDeltaForDetails(event.panDelta);
+        final Matrix4? localToGlobalTransform = event.transform == null ? null : Matrix4.tryInvert(event.transform!);
+        _globalDistanceMoved += PointerEvent.transformDeltaViaPositions(
+          untransformedEndPosition: event.localPosition + event.pan,
+          untransformedDelta: movedLocally,
+          transform: localToGlobalTransform
+        ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1);
+        if (_hasSufficientGlobalDistanceToAccept(event.kind))
+          resolve(GestureDisposition.accepted);
+      }
+    }
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent) {
       _giveUpPointer(event.pointer);
     }
   }
@@ -326,6 +377,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
+    print('$this won $pointer');
     assert(!_acceptedActivePointers.contains(pointer));
     _acceptedActivePointers.add(pointer);
     if (_state != _DragState.accepted) {
@@ -374,6 +426,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
+    print('$this lost $pointer');
     _giveUpPointer(pointer);
   }
 
@@ -462,6 +515,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
     final String Function() debugReport;
 
     final VelocityEstimate? estimate = tracker.getVelocityEstimate();
+    print('Estimate for $pointer is $estimate');
     if (estimate != null && isFlingGesture(estimate, tracker.kind)) {
       final Velocity velocity = Velocity(pixelsPerSecond: estimate.pixelsPerSecond)
         .clampMagnitude(minFlingVelocity ?? kMinFlingVelocity, maxFlingVelocity ?? kMaxFlingVelocity);

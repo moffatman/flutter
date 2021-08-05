@@ -96,6 +96,19 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// coming from.
   final Map<int, PointerDeviceKind> _pointerToKind = <int, PointerDeviceKind>{};
 
+
+  void addPlatformGesture(PointerPlatformGestureStartEvent event) {
+    _pointerToKind[event.pointer] = event.kind;
+    if (isPlatformGestureAllowed(event)) {
+      addAllowedPlatformGesture(event);
+    } else {
+      handleNonAllowedPlatformGesture(event);
+    }
+  }
+
+  @protected
+  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) { }
+
   /// Registers a new pointer that might be relevant to this gesture
   /// detector.
   ///
@@ -145,6 +158,15 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
     // Currently, it only checks for device kind. But in the future we could check
     // for other things e.g. mouse button.
     return _supportedDevices == null || _supportedDevices!.contains(event.kind);
+  }
+
+  @protected
+  void handleNonAllowedPlatformGesture(PointerPlatformGestureStartEvent event) { }
+
+  // Checks whether or not a platform gesture is allowed to be tracked by this recognizer.
+  @protected
+  bool isPlatformGestureAllowed(PointerPlatformGestureStartEvent event) {
+    return false;
   }
 
   /// For a given pointer ID, returns the device kind associated with it.
@@ -255,7 +277,17 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   @override
   @protected
   void addAllowedPointer(PointerDownEvent event) {
-    startTrackingPointer(event.pointer, event.transform);
+    if (!_trackedPointers.contains(event.pointer)) {
+      startTrackingPointer(event.pointer, event.transform);
+    }
+  }
+
+  @override
+  @protected
+  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) {
+    if (!_trackedPointers.contains(event.pointer)) {
+      startTrackingPointer(event.pointer, event.transform);
+    }
   }
 
   @override
@@ -397,7 +429,7 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// a [PointerUpEvent] or a [PointerCancelEvent] event.
   @protected
   void stopTrackingIfPointerNoLongerDown(PointerEvent event) {
-    if (event is PointerUpEvent || event is PointerCancelEvent)
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent)
       stopTrackingPointer(event.pointer);
   }
 }
