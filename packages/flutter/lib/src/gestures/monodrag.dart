@@ -363,7 +363,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           untransformedEndPosition: event.localPosition + event.pan,
           untransformedDelta: movedLocally,
           transform: localToGlobalTransform
-        ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1);
+        ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
         if (_hasSufficientGlobalDistanceToAccept(event.kind))
           resolve(GestureDisposition.accepted);
       }
