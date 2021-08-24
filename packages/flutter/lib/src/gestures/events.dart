@@ -1990,9 +1990,9 @@ class _TransformedPointerScrollEvent extends _TransformedPointerEvent with _Copy
   }
 }
 
-mixin _CopyPointerPlatformGestureStartEvent on PointerEvent {
+mixin _CopyPointerGestureDownEvent on PointerEvent {
   @override
-  PointerPlatformGestureStartEvent copyWith({
+  PointerGestureDownEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2016,7 +2016,7 @@ mixin _CopyPointerPlatformGestureStartEvent on PointerEvent {
     bool? synthesized,
     int? embedderId,
   }) {
-    return PointerPlatformGestureStartEvent(
+    return PointerGestureDownEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2026,11 +2026,12 @@ mixin _CopyPointerPlatformGestureStartEvent on PointerEvent {
   }
 }
 
-class PointerPlatformGestureStartEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerPlatformGestureStartEvent {
-  const PointerPlatformGestureStartEvent({
+class PointerGestureDownEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureDownEvent {
+  const PointerGestureDownEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
+    int pointer = 0,
     Offset position = Offset.zero,
     int embedderId = 0,
     bool synthesized = false,
@@ -2042,40 +2043,41 @@ class PointerPlatformGestureStartEvent extends PointerSignalEvent with _PointerE
          timeStamp: timeStamp,
          kind: kind,
          device: device,
+         pointer: pointer,
          position: position,
          embedderId: embedderId,
          synthesized: synthesized,
        );
 
   @override
-  PointerPlatformGestureStartEvent transformed(Matrix4? transform) {
+  PointerGestureDownEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerPlatformGestureStartEvent(original as PointerPlatformGestureStartEvent? ?? this, transform);
+    return _TransformedPointerGestureDownEvent(original as PointerGestureDownEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerPlatformGestureStartEvent extends _TransformedPointerEvent with _CopyPointerPlatformGestureStartEvent implements PointerPlatformGestureStartEvent {
-  _TransformedPointerPlatformGestureStartEvent(this.original, this.transform)
+class _TransformedPointerGestureDownEvent extends _TransformedPointerEvent with _CopyPointerGestureDownEvent implements PointerGestureDownEvent {
+  _TransformedPointerGestureDownEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
-  final PointerPlatformGestureStartEvent original;
+  final PointerGestureDownEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerPlatformGestureStartEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerGestureDownEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
-mixin _CopyPointerPlatformGestureUpdateEvent on PointerEvent {
+mixin _CopyPointerGestureMoveEvent on PointerEvent {
   Offset get pan;
   Offset get panDelta;
 
   @override
-  PointerPlatformGestureUpdateEvent copyWith({
+  PointerGestureMoveEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2101,7 +2103,7 @@ mixin _CopyPointerPlatformGestureUpdateEvent on PointerEvent {
     Offset? pan,
     Offset? panDelta,
   }) {
-    return PointerPlatformGestureUpdateEvent(
+    return PointerGestureMoveEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2113,7 +2115,7 @@ mixin _CopyPointerPlatformGestureUpdateEvent on PointerEvent {
   }
 }
 
-class PointerPlatformGestureUpdateEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerPlatformGestureUpdateEvent {
+class PointerGestureMoveEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureMoveEvent {
   @override
   final Offset pan;
   @override
@@ -2123,10 +2125,11 @@ class PointerPlatformGestureUpdateEvent extends PointerSignalEvent with _Pointer
   @override
   final double angle;
 
-  const PointerPlatformGestureUpdateEvent({
+  const PointerGestureMoveEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
+    int pointer = 0,
     Offset position = Offset.zero,
     int embedderId = 0,
     this.pan = Offset.zero,
@@ -2142,22 +2145,23 @@ class PointerPlatformGestureUpdateEvent extends PointerSignalEvent with _Pointer
          timeStamp: timeStamp,
          kind: kind,
          device: device,
+         pointer: pointer,
          position: position,
          embedderId: embedderId,
          synthesized: synthesized,
        );
 
   @override
-  PointerPlatformGestureUpdateEvent transformed(Matrix4? transform) {
+  PointerGestureMoveEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerPlatformGestureUpdateEvent(original as PointerPlatformGestureUpdateEvent? ?? this, transform);
+    return _TransformedPointerGestureMoveEvent(original as PointerGestureMoveEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerPlatformGestureUpdateEvent extends _TransformedPointerEvent with _CopyPointerPlatformGestureUpdateEvent implements PointerPlatformGestureUpdateEvent {
-  _TransformedPointerPlatformGestureUpdateEvent(this.original, this.transform)
+class _TransformedPointerGestureMoveEvent extends _TransformedPointerEvent with _CopyPointerGestureMoveEvent implements PointerGestureMoveEvent {
+  _TransformedPointerGestureMoveEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
@@ -2173,18 +2177,18 @@ class _TransformedPointerPlatformGestureUpdateEvent extends _TransformedPointerE
   double get angle => original.angle;
 
   @override
-  final PointerPlatformGestureUpdateEvent original;
+  final PointerGestureMoveEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerPlatformGestureUpdateEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerGestureMoveEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
-mixin _CopyPointerPlatformGestureEndEvent on PointerEvent {
+mixin _CopyPointerGestureUpEvent on PointerEvent {
   @override
-  PointerPlatformGestureEndEvent copyWith({
+  PointerGestureUpEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2208,7 +2212,7 @@ mixin _CopyPointerPlatformGestureEndEvent on PointerEvent {
     bool? synthesized,
     int? embedderId,
   }) {
-    return PointerPlatformGestureEndEvent(
+    return PointerGestureUpEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2218,11 +2222,12 @@ mixin _CopyPointerPlatformGestureEndEvent on PointerEvent {
   }
 }
 
-class PointerPlatformGestureEndEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerPlatformGestureEndEvent {
-  const PointerPlatformGestureEndEvent({
+class PointerGestureUpEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureUpEvent {
+  const PointerGestureUpEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
+    int pointer = 0,
     Offset position = Offset.zero,
     int embedderId = 0,
     bool synthesized = false,
@@ -2234,32 +2239,33 @@ class PointerPlatformGestureEndEvent extends PointerSignalEvent with _PointerEve
          timeStamp: timeStamp,
          kind: kind,
          device: device,
+         pointer: pointer,
          position: position,
          embedderId: embedderId,
          synthesized: synthesized,
        );
 
   @override
-  PointerPlatformGestureEndEvent transformed(Matrix4? transform) {
+  PointerGestureUpEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerPlatformGestureEndEvent(original as PointerPlatformGestureEndEvent? ?? this, transform);
+    return _TransformedPointerGestureUpEvent(original as PointerGestureUpEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerPlatformGestureEndEvent extends _TransformedPointerEvent with _CopyPointerPlatformGestureEndEvent implements PointerPlatformGestureEndEvent {
-  _TransformedPointerPlatformGestureEndEvent(this.original, this.transform)
+class _TransformedPointerGestureUpEvent extends _TransformedPointerEvent with _CopyPointerGestureUpEvent implements PointerGestureUpEvent {
+  _TransformedPointerGestureUpEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
-  final PointerPlatformGestureEndEvent original;
+  final PointerGestureUpEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerPlatformGestureEndEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerGestureUpEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
 mixin _CopyPointerCancelEvent on PointerEvent {

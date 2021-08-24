@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 
-import 'dart:ui' as ui show PointerData, PointerChange, PointerSignalKind, PointerPlatformGesturePhase;
+import 'dart:ui' as ui show PointerData, PointerChange, PointerSignalKind;
 
 import 'events.dart';
 
@@ -211,6 +211,44 @@ class PointerEventConverter {
               embedderId: datum.embedderId,
             );
             break;
+          case ui.PointerChange.gestureDown:
+            yield PointerGestureDownEvent(
+              timeStamp: timeStamp,
+              kind: kind,
+              device: datum.device,
+              position: position,
+              embedderId: datum.embedderId,
+              synthesized: datum.synthesized,
+            );
+            break;
+          case ui.PointerChange.gestureMove:
+            final Offset pan =
+                Offset(datum.panX, datum.panY) / devicePixelRatio;
+            final Offset panDelta =
+                Offset(datum.panDeltaX, datum.panDeltaY) / devicePixelRatio;
+            yield PointerGestureMoveEvent(
+              timeStamp: timeStamp,
+              kind: kind,
+              device: datum.device,
+              position: position,
+              pan: pan,
+              panDelta: panDelta,
+              scale: datum.scale,
+              angle: datum.angle,
+              embedderId: datum.embedderId,
+              synthesized: datum.synthesized,
+            );
+            break;
+          case ui.PointerChange.gestureUp:
+            yield PointerGestureUpEvent(
+              timeStamp: timeStamp,
+              kind: kind,
+              device: datum.device,
+              position: position,
+              embedderId: datum.embedderId,
+              synthesized: datum.synthesized,
+            );
+            break;
         }
       } else {
         switch (datum.signalKind!) {
@@ -225,51 +263,6 @@ class PointerEventConverter {
               scrollDelta: scrollDelta,
               embedderId: datum.embedderId,
             );
-            break;
-          case ui.PointerSignalKind.platformGesture:
-            switch (datum.gesturePhase) {
-              case ui.PointerPlatformGesturePhase.none:
-                assert(false);
-                break;
-              case ui.PointerPlatformGesturePhase.begin:
-                yield PointerPlatformGestureStartEvent(
-                  timeStamp: timeStamp,
-                  kind: kind,
-                  device: datum.device,
-                  position: position,
-                  embedderId: datum.embedderId,
-                  synthesized: datum.synthesized,
-                );
-                break;
-              case ui.PointerPlatformGesturePhase.update:
-                final Offset pan =
-                    Offset(datum.panX, datum.panY) / devicePixelRatio;
-                final Offset panDelta =
-                    Offset(datum.panDeltaX, datum.panDeltaY) / devicePixelRatio;
-                yield PointerPlatformGestureUpdateEvent(
-                  timeStamp: timeStamp,
-                  kind: kind,
-                  device: datum.device,
-                  position: position,
-                  pan: pan,
-                  panDelta: panDelta,
-                  angle: datum.rotateRadians,
-                  scale: datum.zoomScale,
-                  embedderId: datum.embedderId,
-                  synthesized: datum.synthesized,
-                );
-                break;
-              case ui.PointerPlatformGesturePhase.end:
-                yield PointerPlatformGestureEndEvent(
-                  timeStamp: timeStamp,
-                  kind: kind,
-                  device: datum.device,
-                  position: position,
-                  embedderId: datum.embedderId,
-                  synthesized: datum.synthesized,
-                );
-                break;
-            }
             break;
           case ui.PointerSignalKind.none:
             assert(false); // This branch should already have 'none' filtered out.

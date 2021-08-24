@@ -1423,9 +1423,9 @@ class RawGestureDetectorState extends State<RawGestureDetector> {
 
   void _handlePointerSignal(PointerSignalEvent event) {
     assert(_recognizers != null);
-    if (event is PointerPlatformGestureStartEvent) {
+    if (event is PointerGestureDownEvent) {
       for (final GestureRecognizer recognizer in _recognizers!.values) {
-  	  	recognizer.addPlatformGesture(event);
+  	  	recognizer.addPointerGesture(event);
       }
     }
   }

@@ -704,6 +704,108 @@ void main() {
     scale.dispose();
   });
 
+  testGesture('Should recognize scale gestures from platform', (GestureTester tester) {
+    final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
+
+    bool didStartScale = false;
+    Offset? updatedFocalPoint;
+    scale.onStart = (ScaleStartDetails details) {
+      didStartScale = true;
+      updatedFocalPoint = details.focalPoint;
+    };
+
+    double? updatedScale;
+    double? updatedHorizontalScale;
+    double? updatedVerticalScale;
+    Offset? updatedDelta;
+    scale.onUpdate = (ScaleUpdateDetails details) {
+      updatedScale = details.scale;
+      updatedHorizontalScale = details.horizontalScale;
+      updatedVerticalScale = details.verticalScale;
+      updatedFocalPoint = details.focalPoint;
+      updatedDelta = details.focalPointDelta;
+    };
+
+    bool didEndScale = false;
+    scale.onEnd = (ScaleEndDetails details) {
+      didEndScale = true;
+    };
+
+    final TestPointer pointer1 = TestPointer(1);
+
+    final PointerGestureDownEvent start = pointer1.pointerGestureStart(Offset.zero);
+    scale.addPointerGesture(start);
+
+    tester.closeArena(1);
+    expect(didStartScale, isFalse);
+    expect(updatedScale, isNull);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isFalse);
+
+    // One-finger panning
+    tester.route(start);
+    expect(didStartScale, isFalse);
+    expect(updatedScale, isNull);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isFalse);
+
+    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0)));
+    expect(didStartScale, isTrue);
+    didStartScale = false;
+    expect(updatedFocalPoint, const Offset(20.0, 30.0));
+    updatedFocalPoint = null;
+    expect(updatedScale, 1.0);
+    updatedScale = null;
+    expect(updatedDelta, const Offset(20.0, 30.0));
+    updatedDelta = null;
+    expect(didEndScale, isFalse);
+
+    // Zoom in
+    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 2.0));
+    expect(updatedFocalPoint, const Offset(20.0, 30.0));
+    updatedFocalPoint = null;
+    expect(updatedScale, 2.0);
+    expect(updatedHorizontalScale, 2.0);
+    expect(updatedVerticalScale, 2.0);
+    expect(updatedDelta, Offset.zero);
+    updatedScale = null;
+    updatedHorizontalScale = null;
+    updatedVerticalScale = null;
+    updatedDelta = null;
+    expect(didEndScale, isFalse);
+
+    // Zoom out
+    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 1.0));
+    expect(updatedFocalPoint, const Offset(20.0, 30.0));
+    updatedFocalPoint = null;
+    expect(updatedScale, 1.0);
+    expect(updatedHorizontalScale, 1.0);
+    expect(updatedVerticalScale, 1.0);
+    expect(updatedDelta, Offset.zero);
+    updatedScale = null;
+    updatedHorizontalScale = null;
+    updatedVerticalScale = null;
+    updatedDelta = null;
+    expect(didEndScale, isFalse);
+
+    // We are done
+    tester.route(pointer1.pointerGestureEnd(Offset.zero));
+    expect(didStartScale, isFalse);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedScale, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isTrue);
+    didEndScale = false;
+
+    scale.dispose();
+  });
+
+  testGesture('Platform gestures should work alongside touch gestures', (GestureTester tester) {
+
+  });
+
   testWidgets('ScaleGestureRecognizer asserts when kind and supportedDevices are both set', (WidgetTester tester) async {
     expect(
       () {

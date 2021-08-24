@@ -340,7 +340,7 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
 
   void _handlePointerEventImmediately(PointerEvent event) {
     HitTestResult? hitTestResult;
-    if (event is PointerDownEvent || event is PointerSignalEvent || event is PointerHoverEvent || event is PointerPlatformGestureStartEvent) {
+    if (event is PointerDownEvent || event is PointerSignalEvent || event is PointerHoverEvent || event is PointerGestureDownEvent) {
       assert(!_hitTests.containsKey(event.pointer));
       hitTestResult = HitTestResult();
       hitTest(hitTestResult, event.position);
@@ -352,9 +352,9 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
           debugPrint('$event: $hitTestResult');
         return true;
       }());
-    } else if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent) {
+    } else if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerGestureUpEvent) {
       hitTestResult = _hitTests.remove(event.pointer);
-    } else if (event.down || event is PointerPlatformGestureUpdateEvent) {
+    } else if (event.down || event is PointerGestureMoveEvent) {
       // Because events that occur with the pointer down (like
       // [PointerMoveEvent]s) should be dispatched to the same place that their
       // initial PointerDownEvent was, we want to re-use the path we found when
@@ -443,13 +443,13 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
     } else if (event is PointerUpEvent) {
       gestureArena.sweep(event.pointer);
     } else if (event is PointerSignalEvent) {
-      if (event is PointerPlatformGestureStartEvent) {
+      if (event is PointerGestureDownEvent) {
         gestureArena.close(event.pointer);
       }
-      else if (event is PointerPlatformGestureEndEvent) {
+      else if (event is PointerGestureUpEvent) {
         gestureArena.sweep(event.pointer);
       }
-      else if (event is! PointerPlatformGestureUpdateEvent) {
+      else if (event is! PointerGestureMoveEvent) {
         pointerSignalResolver.resolve(event);
       }
     }

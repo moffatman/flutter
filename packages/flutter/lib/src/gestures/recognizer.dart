@@ -97,17 +97,17 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   final Map<int, PointerDeviceKind> _pointerToKind = <int, PointerDeviceKind>{};
 
 
-  void addPlatformGesture(PointerPlatformGestureStartEvent event) {
+  void addPointerGesture(PointerGestureDownEvent event) {
     _pointerToKind[event.pointer] = event.kind;
-    if (isPlatformGestureAllowed(event)) {
-      addAllowedPlatformGesture(event);
+    if (isPointerGestureAllowed(event)) {
+      addAllowedPointerGesture(event);
     } else {
-      handleNonAllowedPlatformGesture(event);
+      handleNonAllowedPointerGesture(event);
     }
   }
 
   @protected
-  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) { }
+  void addAllowedPointerGesture(PointerGestureDownEvent event) { }
 
   /// Registers a new pointer that might be relevant to this gesture
   /// detector.
@@ -161,11 +161,11 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   }
 
   @protected
-  void handleNonAllowedPlatformGesture(PointerPlatformGestureStartEvent event) { }
+  void handleNonAllowedPointerGesture(PointerGestureDownEvent event) { }
 
   // Checks whether or not a platform gesture is allowed to be tracked by this recognizer.
   @protected
-  bool isPlatformGestureAllowed(PointerPlatformGestureStartEvent event) {
+  bool isPointerGestureAllowed(PointerGestureDownEvent event) {
     return false;
   }
 
@@ -284,7 +284,7 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
 
   @override
   @protected
-  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) {
+  void addAllowedPointerGesture(PointerGestureDownEvent event) {
     if (!_trackedPointers.contains(event.pointer)) {
       startTrackingPointer(event.pointer, event.transform);
     }
@@ -429,7 +429,7 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// a [PointerUpEvent] or a [PointerCancelEvent] event.
   @protected
   void stopTrackingIfPointerNoLongerDown(PointerEvent event) {
-    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent)
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerGestureUpEvent)
       stopTrackingPointer(event.pointer);
   }
 }

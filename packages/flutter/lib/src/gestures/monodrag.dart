@@ -280,11 +280,11 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
-  bool isPlatformGestureAllowed(PointerPlatformGestureStartEvent event) => true;
+  bool isPointerGestureAllowed(PointerGestureDownEvent event) => true;
 
   @override
-  void addAllowedPlatformGesture(PointerPlatformGestureStartEvent event) {
-    super.addAllowedPlatformGesture(event);
+  void addAllowedPointerGesture(PointerGestureDownEvent event) {
+    super.addAllowedPointerGesture(event);
     _velocityTrackers[event.pointer] = velocityTrackerBuilder(event);
     if (_state == _DragState.ready) {
       _state = _DragState.possible;
@@ -304,10 +304,10 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   void handleEvent(PointerEvent event) {
     assert(_state != _DragState.ready);
     if (!event.synthesized
-        && (event is PointerDownEvent || event is PointerMoveEvent || event is PointerPlatformGestureUpdateEvent)) {
+        && (event is PointerDownEvent || event is PointerMoveEvent || event is PointerGestureMoveEvent)) {
       final VelocityTracker tracker = _velocityTrackers[event.pointer]!;
       assert(tracker != null);
-      if (event is PointerPlatformGestureUpdateEvent) {
+      if (event is PointerGestureMoveEvent) {
         tracker.addPosition(event.timeStamp, event.pan);
       }
       else {
@@ -343,7 +343,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerPlatformGestureUpdateEvent) {
+    if (event is PointerGestureMoveEvent) {
       if (_state == _DragState.accepted) {
         _checkUpdate(
           sourceTimeStamp: event.timeStamp,
@@ -360,15 +360,15 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
         final Offset movedLocally = _getDeltaForDetails(event.panDelta);
         final Matrix4? localToGlobalTransform = event.transform == null ? null : Matrix4.tryInvert(event.transform!);
         _globalDistanceMoved += PointerEvent.transformDeltaViaPositions(
-          untransformedEndPosition: event.localPosition + event.pan,
+          transform: localToGlobalTransform,
           untransformedDelta: movedLocally,
-          transform: localToGlobalTransform
+          untransformedEndPosition: event.localPosition + event.pan
         ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-        if (_hasSufficientGlobalDistanceToAccept(event.kind))
+        if (_hasSufficientGlobalDistanceToAccept(event.kind, gestureSettings?.touchSlop))
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPlatformGestureEndEvent) {
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerGestureUpEvent) {
       _giveUpPointer(event.pointer);
     }
   }
@@ -595,6 +595,7 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+	  print('VerticalDragRecognizer checking ${_globalDistanceMoved.abs()} > ${computeHitSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
@@ -645,6 +646,7 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+	print('HorizontalDragRecognizer checking ${_globalDistanceMoved.abs()} > ${computeHitSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
@@ -681,6 +683,7 @@ class PanGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+	  print('PanGestureRecognizer checking ${_globalDistanceMoved.abs()} > ${computePanSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computePanSlop(pointerDeviceKind, gestureSettings);
   }
 

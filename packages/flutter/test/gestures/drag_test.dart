@@ -1484,4 +1484,60 @@ void main() {
 
     tap2.dispose();
   });
+
+  testGesture('Should recognize pan gestures from platform', (GestureTester tester) {
+    final PanGestureRecognizer pan = PanGestureRecognizer();
+    final PanGestureRecognizer competingPan = PanGestureRecognizer(); // No reason
+    addTearDown(pan.dispose);
+    addTearDown(competingPan.dispose);
+
+    bool didStartPan = false;
+    pan.onStart = (_) {
+      didStartPan = true;
+    };
+
+    Offset? updatedScrollDelta;
+    pan.onUpdate = (DragUpdateDetails details) {
+      updatedScrollDelta = details.delta;
+    };
+
+    bool didEndPan = false;
+    pan.onEnd = (DragEndDetails details) {
+      didEndPan = true;
+    };
+
+    final TestPointer pointer = TestPointer(1);
+    final PointerGestureDownEvent start = pointer.pointerGestureStart(const Offset(10.0, 10.0));
+    pan.addPointerGesture(start);
+    competingPan.addPointerGesture(start);
+    tester.closeArena(1);
+    expect(didStartPan, isFalse);
+    expect(updatedScrollDelta, isNull);
+    expect(didEndPan, isFalse);
+
+    tester.route(start);
+    expect(didStartPan, isFalse);
+    expect(updatedScrollDelta, isNull);
+    expect(didEndPan, isFalse);
+
+    // Gesture will be claimed when distance reaches kPanSlop, which was 36.0 when this test was last updated.
+    tester.route(pointer.pointerGestureUpdate(const Offset(10.0, 10.0), pan: const Offset(20.0, 20.0))); // moved 20 horizontally and 20 vertically which is 28 total
+    expect(didStartPan, isFalse); // 28 < 36
+    tester.route(pointer.pointerGestureUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 30.0))); // moved 30 horizontally and 30 vertically which is 42 total
+    expect(didStartPan, isTrue); // 42 > 36
+    didStartPan = false;
+    expect(didEndPan, isFalse);
+
+    tester.route(pointer.pointerGestureUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 25.0)));
+    expect(didStartPan, isFalse);
+    expect(updatedScrollDelta, const Offset(0.0, -5.0));
+    updatedScrollDelta = null;
+    expect(didEndPan, isFalse);
+
+    tester.route(pointer.pointerGestureEnd(const Offset(10.0, 10.0)));
+    expect(didStartPan, isFalse);
+    expect(updatedScrollDelta, isNull);
+    expect(didEndPan, isTrue);
+    didEndPan = false;
+  });
 }

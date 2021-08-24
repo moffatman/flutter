@@ -74,6 +74,13 @@ class TestPointer {
   Offset? get location => _location;
   Offset? _location;
 
+
+  /// The pan offset of the last platform gesture event sent by this object.
+  ///
+  /// If no platform gesture has ever been sent by this object, returns null.
+  Offset? get pan => _pan;
+  Offset? _pan;
+
   /// If a custom event is created outside of this class, this function is used
   /// to set the [isDown].
   bool setDownInfo(
@@ -279,6 +286,59 @@ class TestPointer {
       device: _device,
       position: location!,
       scrollDelta: scrollDelta,
+    );
+  }
+
+  PointerGestureDownEvent pointerGestureStart(
+    Offset location, {
+    Duration timeStamp = Duration.zero
+  }) {
+    _location = location;
+    _pan = Offset.zero;
+    return PointerGestureDownEvent(
+      timeStamp: timeStamp,
+      kind: kind,
+      device: _device,
+      pointer: pointer,
+      position: location,
+    );
+  }
+
+  PointerGestureMoveEvent pointerGestureUpdate(
+    Offset location, {
+    Offset pan = Offset.zero,
+    double scale = 1,
+    double angle = 0,
+    Duration timeStamp = Duration.zero,
+  }) {
+    _location = location;
+    Offset panDelta = pan - _pan!;
+    _pan = pan;
+    return PointerGestureMoveEvent(
+      timeStamp: timeStamp,
+      kind: kind,
+      device: _device,
+      pointer: pointer,
+      position: location,
+      pan: pan,
+      panDelta: panDelta,
+      scale: scale,
+      angle: angle,
+    );
+  }
+
+  PointerGestureUpEvent pointerGestureEnd(
+    Offset location, {
+    Duration timeStamp = Duration.zero
+  }) {
+    _location = location;
+    _pan = null;
+    return PointerGestureUpEvent(
+      timeStamp: timeStamp,
+      kind: kind,
+      device: _device,
+      pointer: pointer,
+      position: location,
     );
   }
 }
