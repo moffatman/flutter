@@ -2816,6 +2816,21 @@ typedef PointerUpEventListener = void Function(PointerUpEvent event);
 /// Used by [Listener] and [RenderPointerListener].
 typedef PointerCancelEventListener = void Function(PointerCancelEvent event);
 
+/// Signature for listening to [PointerGestureDown] events.
+///
+/// Used by [Listener] and [RenderPointerListener].
+typedef PointerGestureDownEventListener = void Function(PointerGestureDownEvent event);
+
+/// Signature for listening to [PointerGestureMove] events.
+///
+/// Used by [Listener] and [RenderPointerListener].
+typedef PointerGestureMoveEventListener = void Function(PointerGestureMoveEvent event);
+
+/// Signature for listening to [PointerGestureUp] events.
+///
+/// Used by [Listener] and [RenderPointerListener].
+typedef PointerGestureUpEventListener = void Function(PointerGestureUpEvent event);
+
 /// Signature for listening to [PointerSignalEvent] events.
 ///
 /// Used by [Listener] and [RenderPointerListener].
@@ -2843,6 +2858,9 @@ class RenderPointerListener extends RenderProxyBoxWithHitTestBehavior {
     this.onPointerUp,
     this.onPointerHover,
     this.onPointerCancel,
+    this.onPointerGestureDown,
+    this.onPointerGestureMove,
+    this.onPointerGestureUp,
     this.onPointerSignal,
     HitTestBehavior behavior = HitTestBehavior.deferToChild,
     RenderBox? child,
@@ -2867,6 +2885,15 @@ class RenderPointerListener extends RenderProxyBoxWithHitTestBehavior {
   /// no longer directed towards this receiver.
   PointerCancelEventListener? onPointerCancel;
 
+  /// Called when a gesture begins such as a trackpad gesture
+  PointerGestureDownEventListener? onPointerGestureDown;
+
+  /// Called when a gesture is updated
+  PointerGestureMoveEventListener? onPointerGestureMove;
+
+  /// Called when a gesture finishes
+  PointerGestureUpEventListener? onPointerGestureUp;
+
   /// Called when a pointer signal occurs over this object.
   PointerSignalEventListener? onPointerSignal;
 
@@ -2888,6 +2915,12 @@ class RenderPointerListener extends RenderProxyBoxWithHitTestBehavior {
       return onPointerHover?.call(event);
     if (event is PointerCancelEvent)
       return onPointerCancel?.call(event);
+    if (event is PointerGestureDownEvent)
+      return onPointerGestureDown?.call(event);
+    if (event is PointerGestureMoveEvent)
+      return onPointerGestureMove?.call(event);
+    if (event is PointerGestureUpEvent)
+      return onPointerGestureUp?.call(event);
     if (event is PointerSignalEvent)
       return onPointerSignal?.call(event);
   }
@@ -2903,6 +2936,9 @@ class RenderPointerListener extends RenderProxyBoxWithHitTestBehavior {
         'up': onPointerUp,
         'hover': onPointerHover,
         'cancel': onPointerCancel,
+        'gestureDown': onPointerGestureDown,
+        'gestureMove': onPointerGestureMove,
+        'gestureUp': onPointerGestureUp,
         'signal': onPointerSignal,
       },
       ifEmpty: '<none>',

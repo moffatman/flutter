@@ -6056,6 +6056,9 @@ class Listener extends SingleChildRenderObjectWidget {
     this.onPointerUp,
     this.onPointerHover,
     this.onPointerCancel,
+    this.onPointerGestureDown,
+    this.onPointerGestureMove,
+    this.onPointerGestureUp,
     this.onPointerSignal,
     this.behavior = HitTestBehavior.deferToChild,
     Widget? child,
@@ -6085,6 +6088,15 @@ class Listener extends SingleChildRenderObjectWidget {
   /// no longer directed towards this receiver.
   final PointerCancelEventListener? onPointerCancel;
 
+  /// Called when a gesture begins such as a trackpad gesture
+  final PointerGestureDownEventListener? onPointerGestureDown;
+
+  /// Called when a gesture is updated
+  final PointerGestureMoveEventListener? onPointerGestureMove;
+
+  /// Called when a gesture finishes
+  final PointerGestureUpEventListener? onPointerGestureUp;
+
   /// Called when a pointer signal occurs over this object.
   ///
   /// See also:
@@ -6104,6 +6116,9 @@ class Listener extends SingleChildRenderObjectWidget {
       onPointerUp: onPointerUp,
       onPointerHover: onPointerHover,
       onPointerCancel: onPointerCancel,
+      onPointerGestureDown: onPointerGestureDown,
+      onPointerGestureMove: onPointerGestureMove,
+      onPointerGestureUp: onPointerGestureUp,
       onPointerSignal: onPointerSignal,
       behavior: behavior,
     );
@@ -6117,6 +6132,9 @@ class Listener extends SingleChildRenderObjectWidget {
       ..onPointerUp = onPointerUp
       ..onPointerHover = onPointerHover
       ..onPointerCancel = onPointerCancel
+      ..onPointerGestureDown = onPointerGestureDown
+      ..onPointerGestureMove = onPointerGestureMove
+      ..onPointerGestureUp = onPointerGestureUp
       ..onPointerSignal = onPointerSignal
       ..behavior = behavior;
   }
@@ -6129,6 +6147,9 @@ class Listener extends SingleChildRenderObjectWidget {
       if (onPointerMove != null) 'move',
       if (onPointerUp != null) 'up',
       if (onPointerCancel != null) 'cancel',
+      if (onPointerGestureDown != null) 'gestureDown',
+      if (onPointerGestureMove != null) 'gestureMove',
+      if (onPointerGestureUp != null) 'gestureUp',
       if (onPointerSignal != null) 'signal',
     ];
     properties.add(IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));
