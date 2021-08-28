@@ -704,7 +704,7 @@ void main() {
     scale.dispose();
   });
 
-  testGesture('Should recognize scale gestures from platform', (GestureTester tester) {
+  testGesture('Should recognize scale gestures from pointer gestures', (GestureTester tester) {
     final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
 
     bool didStartScale = false;
@@ -802,7 +802,7 @@ void main() {
     scale.dispose();
   });
 
-  testGesture('Platform gestures should work alongside touch gestures', (GestureTester tester) {
+  testGesture('Pointer gestures should work alongside touch gestures', (GestureTester tester) {
 
   });
 

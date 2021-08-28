@@ -10,8 +10,6 @@ import 'package:vector_math/vector_math_64.dart';
 
 import 'constants.dart';
 import 'gesture_settings.dart';
-import 'drag_details.dart';
-import 'scale.dart';
 
 export 'dart:ui' show Offset, PointerDeviceKind;
 
@@ -1862,7 +1860,6 @@ abstract class PointerSignalEvent extends PointerEvent {
     int device = 0,
     Offset position = Offset.zero,
     int embedderId = 0,
-    bool synthesized = false,
   }) : super(
          timeStamp: timeStamp,
          pointer: pointer,
@@ -1870,7 +1867,6 @@ abstract class PointerSignalEvent extends PointerEvent {
          device: device,
          position: position,
          embedderId: embedderId,
-         synthesized: synthesized,
        );
 }
 
@@ -2026,7 +2022,16 @@ mixin _CopyPointerGestureDownEvent on PointerEvent {
   }
 }
 
-class PointerGestureDownEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureDownEvent {
+/// A gesture has begun on this pointer
+///
+/// See also:
+///
+///  * [Listener.onPointerGestureDown], which allows callers to be notified of these
+///    events in a widget tree.
+class PointerGestureDownEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureDownEvent {
+  /// Creates a pointer gesture down event.
+  ///
+  /// All of the arguments must be non-null.
   const PointerGestureDownEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
@@ -2073,8 +2078,14 @@ class _TransformedPointerGestureDownEvent extends _TransformedPointerEvent with 
 }
 
 mixin _CopyPointerGestureMoveEvent on PointerEvent {
+  /// The total pan offset of the gesture
   Offset get pan;
+  /// The amount the pan offset changed since the last event
   Offset get panDelta;
+  /// The scale (zoom factor) of the gesture
+  double get scale;
+  /// The amount the gesture has rotated in radians so far
+  double get angle;
 
   @override
   PointerGestureMoveEvent copyWith({
@@ -2102,6 +2113,8 @@ mixin _CopyPointerGestureMoveEvent on PointerEvent {
     int? embedderId,
     Offset? pan,
     Offset? panDelta,
+    double? scale,
+    double? angle,
   }) {
     return PointerGestureMoveEvent(
       timeStamp: timeStamp ?? this.timeStamp,
@@ -2111,20 +2124,22 @@ mixin _CopyPointerGestureMoveEvent on PointerEvent {
       embedderId: embedderId ?? this.embedderId,
       pan: pan ?? this.pan,
       panDelta: panDelta ?? this.panDelta,
+      scale: scale ?? this.scale,
+      angle: angle ?? this.angle,
     ).transformed(transform);
   }
 }
 
-class PointerGestureMoveEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureMoveEvent {
-  @override
-  final Offset pan;
-  @override
-  final Offset panDelta;
-  @override
-  final double scale;
-  @override
-  final double angle;
-
+/// The active gesture on this pointer has updated.
+///
+/// See also:
+///
+///  * [Listener.onPointerGestureMove], which allows callers to be notified of these
+///    events in a widget tree.
+class PointerGestureMoveEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureMoveEvent {
+  /// Creates a pointer gesture move event.
+  ///
+  /// All of the arguments must be non-null.
   const PointerGestureMoveEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
@@ -2150,6 +2165,14 @@ class PointerGestureMoveEvent extends PointerSignalEvent with _PointerEventDescr
          embedderId: embedderId,
          synthesized: synthesized,
        );
+  @override
+  final Offset pan;
+  @override
+  final Offset panDelta;
+  @override
+  final double scale;
+  @override
+  final double angle;
 
   @override
   PointerGestureMoveEvent transformed(Matrix4? transform) {
@@ -2222,7 +2245,16 @@ mixin _CopyPointerGestureUpEvent on PointerEvent {
   }
 }
 
-class PointerGestureUpEvent extends PointerSignalEvent with _PointerEventDescription, _CopyPointerGestureUpEvent {
+/// The gesture on this pointer has ended.
+///
+/// See also:
+///
+///  * [Listener.onPointerGestureUp], which allows callers to be notified of these
+///    events in a widget tree.
+class PointerGestureUpEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureUpEvent {
+  /// Creates a pointer gesture up event.
+  ///
+  /// All of the arguments must be non-null.
   const PointerGestureUpEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,

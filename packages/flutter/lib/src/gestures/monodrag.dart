@@ -377,7 +377,6 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
-    print('$this won $pointer');
     assert(!_acceptedActivePointers.contains(pointer));
     _acceptedActivePointers.add(pointer);
     if (_state != _DragState.accepted) {
@@ -426,7 +425,6 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
-    print('$this lost $pointer');
     _giveUpPointer(pointer);
   }
 
@@ -515,7 +513,6 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
     final String Function() debugReport;
 
     final VelocityEstimate? estimate = tracker.getVelocityEstimate();
-    print('Estimate for $pointer is $estimate');
     if (estimate != null && isFlingGesture(estimate, tracker.kind)) {
       final Velocity velocity = Velocity(pixelsPerSecond: estimate.pixelsPerSecond)
         .clampMagnitude(minFlingVelocity ?? kMinFlingVelocity, maxFlingVelocity ?? kMaxFlingVelocity);
@@ -595,7 +592,6 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-	  print('VerticalDragRecognizer checking ${_globalDistanceMoved.abs()} > ${computeHitSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
@@ -646,7 +642,6 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-	print('HorizontalDragRecognizer checking ${_globalDistanceMoved.abs()} > ${computeHitSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
@@ -683,7 +678,6 @@ class PanGestureRecognizer extends DragGestureRecognizer {
 
   @override
   bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-	  print('PanGestureRecognizer checking ${_globalDistanceMoved.abs()} > ${computePanSlop(pointerDeviceKind, gestureSettings)}');
     return _globalDistanceMoved.abs() > computePanSlop(pointerDeviceKind, gestureSettings);
   }
 

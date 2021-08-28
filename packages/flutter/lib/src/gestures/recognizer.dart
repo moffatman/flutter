@@ -96,7 +96,21 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// coming from.
   final Map<int, PointerDeviceKind> _pointerToKind = <int, PointerDeviceKind>{};
 
-
+  /// Registers a new pointer gesture that might be relevant to this gesture
+  /// detector.
+  ///
+  /// The owner of this gesture recognizer calls addPointerGesture() with the
+  /// PointerDownEvent of each pointer that should be considered for
+  /// this gesture.
+  ///
+  /// It's the GestureRecognizer's responsibility to then add itself
+  /// to the global pointer router (see [PointerRouter]) to receive
+  /// subsequent events for this pointer, and to add the pointer to
+  /// the global gesture arena manager (see [GestureArenaManager]) to track
+  /// that pointer.
+  ///
+  /// This method is called for each and all pointers being added. In
+  /// most cases, you want to override [addAllowedPointerGesture] instead.
   void addPointerGesture(PointerGestureDownEvent event) {
     _pointerToKind[event.pointer] = event.kind;
     if (isPointerGestureAllowed(event)) {
@@ -106,6 +120,13 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
     }
   }
 
+  /// Registers a new pointer gesture that's been checked to be allowed by this
+  /// gesture recognizer.
+  ///
+  /// Subclasses of [GestureRecognizer] are supposed to override this method
+  /// instead of [addPointerGesture] because [addPointerGesture] will be called for each
+  /// pointer being added while [addAllowedPointerGesture] is only called for pointers
+  /// that are allowed by this recognizer.
   @protected
   void addAllowedPointerGesture(PointerGestureDownEvent event) { }
 
@@ -160,10 +181,13 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
     return _supportedDevices == null || _supportedDevices!.contains(event.kind);
   }
 
+  /// Handles a pointer gesture being added that's not allowed by this recognizer.
+  /// 
+  /// Subclasses can override this method and reject the gesture.
   @protected
   void handleNonAllowedPointerGesture(PointerGestureDownEvent event) { }
 
-  // Checks whether or not a platform gesture is allowed to be tracked by this recognizer.
+  /// Checks whether or not a pointer gesture is allowed to be tracked by this recognizer.
   @protected
   bool isPointerGestureAllowed(PointerGestureDownEvent event) {
     return false;

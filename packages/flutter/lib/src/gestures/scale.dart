@@ -385,19 +385,6 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     return scale;
   }
 
-  double get _rotationFactor {
-    double factor = 0;
-    if (_pointersState == _PointersScaleState.started) {
-      factor += _computeRotationFactor();
-    }
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
-        factor += _lastPointerGestures[p]!.angle;
-      }
-    }
-    return factor;
-  }
-
   int get _allPointerCount {
     return _pointerGestureStates.length + _pointerQueue.length;
   }
@@ -423,7 +410,14 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     final double angle1 = math.atan2(fy - sy, fx - sx);
     final double angle2 = math.atan2(nfy - nsy, nfx - nsx);
 
-    return angle2 - angle1;
+    double factor = angle2 - angle1;
+
+    for (final int p in _pointerGestureStates.keys) {
+      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
+        factor += _lastPointerGestures[p]!.angle;
+      }
+    }
+    return factor;
   }
 
   @override
@@ -505,11 +499,9 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     Offset focalPoint = Offset.zero;
     for (final int pointer in _pointerLocations.keys)
       focalPoint += _pointerLocations[pointer]!;
-    int gestureCount = 0;
     for (final int p in _pointerGestureStates.keys) {
       if (_lastPointerGestures[p] != null) {
         focalPoint += _lastPointerGestures[p]!.position + _lastPointerGestures[p]!.pan;
-        gestureCount++;
       }
     }
     _currentFocalPoint = _allPointerCount > 0 ? focalPoint / _allPointerCount.toDouble() : Offset.zero;
@@ -647,8 +639,6 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     if (_pointersState == _PointersScaleState.possible && _pointerQueue.contains(event.pointer)) {
       final double spanDelta = (_currentSpan - _initialSpan).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint).distance;
-        print('Pointer ${event.pointer} could be claimed by $this');
-        print('$spanDelta >? ${computeScaleSlop(event.kind)} ||? $focalPointDelta >? ${computePanSlop(event.kind, gestureSettings)}');
       if (spanDelta > computeScaleSlop(event.kind) || focalPointDelta > computePanSlop(event.kind, gestureSettings))
         for (final int p in _pointerQueue)
           resolvePointer(p, GestureDisposition.accepted);
@@ -659,8 +649,6 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
     for (final int p in _pointerGestureStates.keys) {
       if (_pointerGestureStates[p] == _PointerGestureScaleState.possible && p == event.pointer && (_lastPointerGestures[p] != null)) {
-        print('Pointer $p could be claimed by $this');
-        print('${max(_lastPointerGestures[p]!.scale, 1 / _lastPointerGestures[p]!.scale)} >? 1.05 ||? ${_lastPointerGestures[p]!.pan.distance} >? ${computePanSlop(event.kind, gestureSettings)}');
         if (max(_lastPointerGestures[p]!.scale, 1 / _lastPointerGestures[p]!.scale) > 1.05 || _lastPointerGestures[p]!.pan.distance > computePanSlop(event.kind, gestureSettings))
           resolvePointer(p, GestureDisposition.accepted);
       }
@@ -699,7 +687,6 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
-    print('$this won $pointer');
     if (_pointerQueue.contains(pointer)) {
       if (_pointersState == _PointersScaleState.possible) {
         _pointersState = _PointersScaleState.started;
@@ -733,7 +720,6 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
-    print('$this lost $pointer');
     if (_pointerQueue.contains(pointer)) {
       _pointerLocations.remove(pointer);
       _pointerQueue.remove(pointer);
