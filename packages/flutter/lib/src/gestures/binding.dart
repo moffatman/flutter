@@ -344,7 +344,7 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
       assert(!_hitTests.containsKey(event.pointer));
       hitTestResult = HitTestResult();
       hitTest(hitTestResult, event.position);
-      if (event is PointerDownEvent) {
+      if (event is PointerDownEvent || event is PointerGestureDownEvent) {
         _hitTests[event.pointer] = hitTestResult;
       }
       assert(() {
@@ -438,20 +438,12 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
   @override // from HitTestTarget
   void handleEvent(PointerEvent event, HitTestEntry entry) {
     pointerRouter.route(event);
-    if (event is PointerDownEvent) {
+    if (event is PointerDownEvent || event is PointerGestureDownEvent) {
       gestureArena.close(event.pointer);
-    } else if (event is PointerUpEvent) {
+    } else if (event is PointerUpEvent || event is PointerGestureUpEvent) {
       gestureArena.sweep(event.pointer);
     } else if (event is PointerSignalEvent) {
-      if (event is PointerGestureDownEvent) {
-        gestureArena.close(event.pointer);
-      }
-      else if (event is PointerGestureUpEvent) {
-        gestureArena.sweep(event.pointer);
-      }
-      else if (event is! PointerGestureMoveEvent) {
-        pointerSignalResolver.resolve(event);
-      }
+      pointerSignalResolver.resolve(event);
     }
   }
 
