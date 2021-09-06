@@ -289,7 +289,7 @@ class TestPointer {
     );
   }
 
-  PointerGestureDownEvent pointerGestureStart(
+  PointerGestureDownEvent gestureDown(
     Offset location, {
     Duration timeStamp = Duration.zero
   }) {
@@ -304,7 +304,7 @@ class TestPointer {
     );
   }
 
-  PointerGestureMoveEvent pointerGestureUpdate(
+  PointerGestureMoveEvent gestureMove(
     Offset location, {
     Offset pan = Offset.zero,
     double scale = 1,
@@ -327,18 +327,16 @@ class TestPointer {
     );
   }
 
-  PointerGestureUpEvent pointerGestureEnd(
-    Offset location, {
+  PointerGestureUpEvent gestureUp({
     Duration timeStamp = Duration.zero
   }) {
-    _location = location;
     _pan = null;
     return PointerGestureUpEvent(
       timeStamp: timeStamp,
       kind: kind,
       device: _device,
       pointer: pointer,
-      position: location,
+      position: location!,
     );
   }
 }

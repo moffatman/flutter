@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:math' as math;
-import 'dart:math';
 
 import 'package:vector_math/vector_math_64.dart';
 
@@ -13,8 +12,8 @@ import 'events.dart';
 import 'recognizer.dart';
 import 'velocity_tracker.dart';
 
-
-enum _PointersScaleState {
+/// The possible states of a [ScaleGestureRecognizer].
+enum _ScaleState {
   /// The recognizer is ready to start recognizing a gesture.
   ready,
 
@@ -23,14 +22,24 @@ enum _PointersScaleState {
   possible,
 
   /// The sequence of pointer events seen thus far has been accepted
+  /// definitively as a scale gesture.
+  accepted,
+
+  /// The sequence of pointer events seen thus far has been accepted
   /// definitively as a scale gesture and the pointers established a focal point
   /// and initial scale.
   started,
 }
 
-enum _PointerGestureScaleState {
-  possible,
-  started,
+class _PointerGestureData {
+  _PointerGestureData({
+    required this.focalPoint,
+    required this.scale,
+    required this.angle
+  });
+  Offset focalPoint;
+  double scale;
+  double angle;
 }
 
 /// Details for [GestureScaleStartCallback].
@@ -177,7 +186,7 @@ class ScaleUpdateDetails {
     ' verticalScale: $verticalScale,'
     ' rotation: $rotation,'
     ' pointerCount: $pointerCount,'
-    ' focalPointDelta: $localFocalPoint)';
+    ' focalPointDelta: $focalPointDelta)';
 }
 
 /// Details for [GestureScaleEndCallback].
@@ -316,7 +325,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   /// The pointers are no longer in contact with the screen.
   GestureScaleEndCallback? onEnd;
 
-  _PointersScaleState _pointersState = _PointersScaleState.ready;
+  _ScaleState _state = _ScaleState.ready;
 
   Matrix4? _lastTransform;
 
@@ -335,10 +344,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   final List<int> _pointerQueue = <int>[]; // A queue to sort pointers in order of entrance
   final Map<int, VelocityTracker> _velocityTrackers = <int, VelocityTracker>{};
   late Offset _delta;
-  final Map<int, _PointerGestureScaleState> _pointerGestureStates = <int, _PointerGestureScaleState>{};
-  final Map<int, PointerGestureMoveEvent> _lastPointerGestures = <int, PointerGestureMoveEvent>{};
-
-  bool _scaleInProgress = false;
+  final Map<int, _PointerGestureData> _pointerGestures = <int, _PointerGestureData>{};
 
   double get _pointerScaleFactor => _initialSpan > 0.0 ? _currentSpan / _initialSpan : 1.0;
 
@@ -347,50 +353,31 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   double get _pointerVerticalScaleFactor => _initialVerticalSpan > 0.0 ? _currentVerticalSpan / _initialVerticalSpan : 1.0;
 
   double get _scaleFactor {
-    double scale = 1;
-    if (_pointersState == _PointersScaleState.started) {
-      scale *= _pointerScaleFactor;
-    }
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
-        scale *= _lastPointerGestures[p]!.scale;
-      }
+    double scale = _pointerScaleFactor;
+    for (final _PointerGestureData p in _pointerGestures.values) {
+      scale *= p.scale;
     }
     return scale;
   }
 
   double get _horizontalScaleFactor {
-    double scale = 1;
-    if (_pointersState == _PointersScaleState.started) {
-      scale *= _pointerHorizontalScaleFactor;
-    }
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
-        scale *= _lastPointerGestures[p]!.scale;
-      }
+    double scale = _pointerHorizontalScaleFactor;
+    for (final _PointerGestureData p in _pointerGestures.values) {
+      scale *= p.scale;
     }
     return scale;
   }
 
   double get _verticalScaleFactor {
-    double scale = 1;
-    if (_pointersState == _PointersScaleState.started) {
-      scale *= _pointerVerticalScaleFactor;
-    }
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
-        scale *= _lastPointerGestures[p]!.scale;
-      }
+    double scale = _pointerVerticalScaleFactor;
+    for (final _PointerGestureData p in _pointerGestures.values) {
+      scale *= p.scale;
     }
     return scale;
   }
 
-  int get _allPointerCount {
-    return _pointerGestureStates.length + _pointerQueue.length;
-  }
-
-  int get _startedPointerCount {
-    return _pointerGestureStates.values.where((_PointerGestureScaleState x) => x == _PointerGestureScaleState.started).length + (_pointersState == _PointersScaleState.started ? _pointerQueue.length : 0);
+  int get _pointerCount {
+    return _pointerGestures.length + _pointerQueue.length;
   }
 
   double _computeRotationFactor() {
@@ -412,10 +399,8 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
     double factor = angle2 - angle1;
 
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.started) {
-        factor += _lastPointerGestures[p]!.angle;
-      }
+    for (final _PointerGestureData p in _pointerGestures.values) {
+      factor += p.angle;
     }
     return factor;
   }
@@ -424,8 +409,8 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   void addAllowedPointer(PointerDownEvent event) {
     super.addAllowedPointer(event);
     _velocityTrackers[event.pointer] = VelocityTracker.withKind(event.kind);
-    if (_pointersState == _PointersScaleState.ready) {
-      _pointersState = _PointersScaleState.possible;
+    if (_state == _ScaleState.ready) {
+      _state = _ScaleState.possible;
       _initialSpan = 0.0;
       _currentSpan = 0.0;
       _initialHorizontalSpan = 0.0;
@@ -442,69 +427,78 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   void addAllowedPointerGesture(PointerGestureDownEvent event) {
     super.addAllowedPointerGesture(event);
     _velocityTrackers[event.pointer] = VelocityTracker.withKind(event.kind);
-    _pointerGestureStates.putIfAbsent(event.pointer, () => _PointerGestureScaleState.possible);
+    if (_state == _ScaleState.ready) {
+      _state = _ScaleState.possible;
+    }
   }
 
   @override
   void handleEvent(PointerEvent event) {
-    bool didChangePointerConfiguration = false;
-    bool didChangePointerGestureConfiguration = false;
-    bool shouldStartIfStopped = false;
-    if (event is PointerGestureDownEvent) {
-      assert(_pointerGestureStates[event.pointer] != null);
-      didChangePointerGestureConfiguration = true;
-      shouldStartIfStopped = true;
-    } else if (event is PointerGestureMoveEvent) {
-      assert(_pointerGestureStates[event.pointer] != null);
+    assert(_state != _ScaleState.ready);
+    bool didChangeConfiguration = false;
+    bool shouldStartIfAccepted = false;
+    if (event is PointerMoveEvent) {
+      final VelocityTracker tracker = _velocityTrackers[event.pointer]!;
       if (!event.synthesized)
-        _velocityTrackers[event.pointer]!.addPosition(event.timeStamp, event.pan);
-      _lastPointerGestures[event.pointer] = event;
-      _lastTransform = event.transform;
-      shouldStartIfStopped = true;
-    } else if (event is PointerGestureUpEvent) {
-      assert(_pointerGestureStates[event.pointer] != null);
-      didChangePointerGestureConfiguration = true;
-    } else if (event is PointerMoveEvent) {
-      assert(_pointersState != _PointersScaleState.ready);
-      if (!event.synthesized)
-        _velocityTrackers[event.pointer]!.addPosition(event.timeStamp, event.position);
+        tracker.addPosition(event.timeStamp, event.position);
       _pointerLocations[event.pointer] = event.position;
-      shouldStartIfStopped = true;
+      shouldStartIfAccepted = true;
       _lastTransform = event.transform;
     } else if (event is PointerDownEvent) {
-      assert(_pointersState != _PointersScaleState.ready);
       _pointerLocations[event.pointer] = event.position;
       _pointerQueue.add(event.pointer);
-      didChangePointerConfiguration = true;
-      shouldStartIfStopped = true;
+      didChangeConfiguration = true;
+      shouldStartIfAccepted = true;
       _lastTransform = event.transform;
     } else if (event is PointerUpEvent || event is PointerCancelEvent) {
-      assert(_pointersState != _PointersScaleState.ready);
       _pointerLocations.remove(event.pointer);
       _pointerQueue.remove(event.pointer);
-      didChangePointerConfiguration = true;
+      didChangeConfiguration = true;
       _lastTransform = event.transform;
+    } else if (event is PointerGestureDownEvent) {
+      assert(_pointerGestures[event.pointer] == null);
+      _pointerGestures[event.pointer] = _PointerGestureData(
+        focalPoint: event.position,
+        scale: 1,
+        angle: 0
+      );
+      didChangeConfiguration = true;
+      shouldStartIfAccepted = true;
+    } else if (event is PointerGestureMoveEvent) {
+      assert(_pointerGestures[event.pointer] != null);
+      if (!event.synthesized)
+        _velocityTrackers[event.pointer]!.addPosition(event.timeStamp, event.pan);
+      _pointerGestures[event.pointer] = _PointerGestureData(
+        focalPoint: event.position + event.pan,
+        scale: event.scale,
+        angle: event.angle
+      );
+      _lastTransform = event.transform;
+      shouldStartIfAccepted = true;
+    } else if (event is PointerGestureUpEvent) {
+      assert(_pointerGestures[event.pointer] != null);
+      _pointerGestures.remove(event.pointer);
+      didChangeConfiguration = true;
     }
 
     _updateLines();
     _update();
 
-    if ((!didChangePointerConfiguration || _reconfigurePointers(event.pointer)) && (!didChangePointerGestureConfiguration || _reconfigurePointerGesture(event.pointer)))
-      _advanceStateMachine(shouldStartIfStopped, event);
+    if (!didChangeConfiguration || _reconfigure(event.pointer))
+      _advanceStateMachine(shouldStartIfAccepted, event);
     stopTrackingIfPointerNoLongerDown(event);
   }
 
-  void _updateFocalPoint() {
+  void _update() {
     final Offset? previousFocalPoint = _currentFocalPoint;
+
+    // Compute the focal point
     Offset focalPoint = Offset.zero;
     for (final int pointer in _pointerLocations.keys)
       focalPoint += _pointerLocations[pointer]!;
-    for (final int p in _pointerGestureStates.keys) {
-      if (_lastPointerGestures[p] != null) {
-        focalPoint += _lastPointerGestures[p]!.position + _lastPointerGestures[p]!.pan;
-      }
-    }
-    _currentFocalPoint = _allPointerCount > 0 ? focalPoint / _allPointerCount.toDouble() : Offset.zero;
+    for (final _PointerGestureData p in _pointerGestures.values)
+      focalPoint += p.focalPoint;
+    _currentFocalPoint = _pointerCount > 0 ? focalPoint / _pointerCount.toDouble() : Offset.zero;
 
     if (previousFocalPoint == null) {
       _localFocalPoint = PointerEvent.transformPosition(
@@ -520,13 +514,10 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
       );
       _delta = _localFocalPoint - localPreviousFocalPoint;
     }
-  }
 
-  void _update() {
+
     final int count = _pointerLocations.keys.length;
 
-    // Compute the focal point
-    _updateFocalPoint();
     Offset pointerFocalPoint = Offset.zero;
     for (final int pointer in _pointerLocations.keys)
       pointerFocalPoint += _pointerLocations[pointer]!;
@@ -579,14 +570,13 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     }
   }
 
-  bool _reconfigurePointers(int pointer) {
+  bool _reconfigure(int pointer) {
     _initialFocalPoint = _currentFocalPoint!;
     _initialSpan = _currentSpan;
     _initialLine = _currentLine;
     _initialHorizontalSpan = _currentHorizontalSpan;
     _initialVerticalSpan = _currentVerticalSpan;
-    // If the gesture was already started, we have to end it now
-    if (_pointersState == _PointersScaleState.started && _scaleInProgress) {
+    if (_state == _ScaleState.started) {
       if (onEnd != null) {
         final VelocityTracker tracker = _velocityTrackers[pointer]!;
 
@@ -595,82 +585,36 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
           final Offset pixelsPerSecond = velocity.pixelsPerSecond;
           if (pixelsPerSecond.distanceSquared > kMaxFlingVelocity * kMaxFlingVelocity)
             velocity = Velocity(pixelsPerSecond: (pixelsPerSecond / pixelsPerSecond.distance) * kMaxFlingVelocity);
-          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: velocity, pointerCount: _startedPointerCount)));
+          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: velocity, pointerCount: _pointerCount)));
         } else {
-          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: Velocity.zero, pointerCount: _startedPointerCount)));
+          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: Velocity.zero, pointerCount: _pointerCount)));
         }
       }
-      _scaleInProgress = false;
-      // Don't advance the state machine because of this
+      _state = _ScaleState.accepted;
       return false;
     }
     return true;
   }
 
-  bool _reconfigurePointerGesture(int pointer) {
-    if (_pointerGestureStates[pointer] == _PointerGestureScaleState.started) {
-      _pointerGestureStates.remove(pointer);
-      _lastPointerGestures.remove(pointer);
-      if (_scaleInProgress) {
-        final VelocityTracker tracker = _velocityTrackers[pointer]!;
+  void _advanceStateMachine(bool shouldStartIfAccepted, PointerEvent event) {
+    if (_state == _ScaleState.ready)
+      _state = _ScaleState.possible;
 
-        Velocity velocity = tracker.getVelocity();
-        if (_isFlingGesture(velocity)) {
-          final Offset pixelsPerSecond = velocity.pixelsPerSecond;
-          if (pixelsPerSecond.distanceSquared > kMaxFlingVelocity * kMaxFlingVelocity)
-            velocity = Velocity(pixelsPerSecond: (pixelsPerSecond / pixelsPerSecond.distance) * kMaxFlingVelocity);
-          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: velocity, pointerCount: 1)));
-        } else {
-          invokeCallback<void>('onEnd', () => onEnd!(ScaleEndDetails(velocity: Velocity.zero, pointerCount: 1)));
-        }
-        _scaleInProgress = false;
-      }
-      return false;
-    }
-    return true;
-  }
-
-  void _advanceStateMachine(bool shouldStartIfStopped, PointerEvent event) {
-    // At least one event came, so we are not idle any more
-    if (_pointersState == _PointersScaleState.ready)
-      _pointersState = _PointersScaleState.possible;
-
-    // Check to see if current scale or pan should be accepted
-    if (_pointersState == _PointersScaleState.possible && _pointerQueue.contains(event.pointer)) {
+    if (_state == _ScaleState.possible) {
       final double spanDelta = (_currentSpan - _initialSpan).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint).distance;
-      if (spanDelta > computeScaleSlop(event.kind) || focalPointDelta > computePanSlop(event.kind, gestureSettings))
-        for (final int p in _pointerQueue)
-          resolvePointer(p, GestureDisposition.accepted);
-    } else if (_pointersState == _PointersScaleState.started) {
-      for (final int p in _pointerQueue)
-        resolvePointer(p, GestureDisposition.accepted);
+      if (spanDelta > computeScaleSlop(event.kind) || focalPointDelta > computePanSlop(event.kind, gestureSettings) || math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) > 1.05)
+        resolve(GestureDisposition.accepted);
+    } else if (_state.index >= _ScaleState.accepted.index) {
+      resolve(GestureDisposition.accepted);
     }
 
-    for (final int p in _pointerGestureStates.keys) {
-      if (_pointerGestureStates[p] == _PointerGestureScaleState.possible && p == event.pointer && (_lastPointerGestures[p] != null)) {
-        if (max(_lastPointerGestures[p]!.scale, 1 / _lastPointerGestures[p]!.scale) > 1.05 || _lastPointerGestures[p]!.pan.distance > computePanSlop(event.kind, gestureSettings))
-          resolvePointer(p, GestureDisposition.accepted);
-      }
+    if (_state == _ScaleState.accepted && shouldStartIfAccepted) {
+      _state = _ScaleState.started;
+      _dispatchOnStartCallbackIfNeeded();
     }
 
-    if ((_startedPointerCount > 0) && shouldStartIfStopped && !_scaleInProgress) {
-      if (_currentFocalPoint == null) {
-        _updateFocalPoint();
-      }
-      if (onStart != null) {
-        invokeCallback<void>('onStart', () {
-          onStart!(ScaleStartDetails(
-            focalPoint: _currentFocalPoint!,
-            localFocalPoint: _localFocalPoint,
-            pointerCount: _startedPointerCount,
-          ));
-        });
-      }
-      _scaleInProgress = true;
-    }
-
-    if (_startedPointerCount > 0 && onUpdate != null)
+    if (_state == _ScaleState.started && onUpdate != null)
       invokeCallback<void>('onUpdate', () {
         onUpdate!(ScaleUpdateDetails(
           scale: _scaleFactor,
@@ -679,68 +623,60 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
           focalPoint: _currentFocalPoint!,
           localFocalPoint: _localFocalPoint,
           rotation: _computeRotationFactor(),
-          pointerCount: _startedPointerCount,
+          pointerCount: _pointerCount,
           focalPointDelta: _delta,
+        ));
+      });
+  }
+
+  void _dispatchOnStartCallbackIfNeeded() {
+    assert(_state == _ScaleState.started);
+    if (onStart != null)
+      invokeCallback<void>('onStart', () {
+        onStart!(ScaleStartDetails(
+          focalPoint: _currentFocalPoint!,
+          localFocalPoint: _localFocalPoint,
+          pointerCount: _pointerCount,
         ));
       });
   }
 
   @override
   void acceptGesture(int pointer) {
-    if (_pointerQueue.contains(pointer)) {
-      if (_pointersState == _PointersScaleState.possible) {
-        _pointersState = _PointersScaleState.started;
-        if (!_scaleInProgress) {
-          if (onStart != null) {
-            invokeCallback<void>('onStart', () {
-              onStart!(ScaleStartDetails(
-                focalPoint: _currentFocalPoint!,
-                localFocalPoint: _localFocalPoint,
-                pointerCount: _startedPointerCount,
-              ));
-            });
-          }
-          _scaleInProgress = true;
-        }
-        if (dragStartBehavior == DragStartBehavior.start) {
-          _initialFocalPoint = _currentFocalPoint!;
-          _initialSpan = _currentSpan;
-          _initialLine = _currentLine;
-          _initialHorizontalSpan = _currentHorizontalSpan;
-          _initialVerticalSpan = _currentVerticalSpan;
-        }
-      }
-    }
-    else {
-      if (_pointerGestureStates[pointer] == _PointerGestureScaleState.possible) {
-        _pointerGestureStates[pointer] = _PointerGestureScaleState.started;
+    if (_state == _ScaleState.possible) {
+      _state = _ScaleState.started;
+      _dispatchOnStartCallbackIfNeeded();
+      if (dragStartBehavior == DragStartBehavior.start) {
+        _initialFocalPoint = _currentFocalPoint!;
+        _initialSpan = _currentSpan;
+        _initialLine = _currentLine;
+        _initialHorizontalSpan = _currentHorizontalSpan;
+        _initialVerticalSpan = _currentVerticalSpan;
       }
     }
   }
 
   @override
   void rejectGesture(int pointer) {
-    if (_pointerQueue.contains(pointer)) {
-      _pointerLocations.remove(pointer);
-      _pointerQueue.remove(pointer);
-    }
     stopTrackingPointer(pointer);
   }
 
   @override
-  void stopTrackingPointer(int pointer) {
-    if (_pointerQueue.isEmpty) {
-      if (_pointersState == _PointersScaleState.possible)
-          resolve(GestureDisposition.rejected);
-      assert(!_scaleInProgress);
-      _pointersState = _PointersScaleState.ready;
-    }
-    super.stopTrackingPointer(pointer);
-  }
-
-  @override
   void didStopTrackingLastPointer(int pointer) {
-
+    switch (_state) {
+      case _ScaleState.possible:
+        resolve(GestureDisposition.rejected);
+        break;
+      case _ScaleState.ready:
+        assert(false); // We should have not seen a pointer yet
+        break;
+      case _ScaleState.accepted:
+        break;
+      case _ScaleState.started:
+        assert(false); // We should be in the accepted state when user is done
+        break;
+    }
+    _state = _ScaleState.ready;
   }
 
   @override

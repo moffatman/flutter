@@ -706,6 +706,7 @@ void main() {
 
   testGesture('Should recognize scale gestures from pointer gestures', (GestureTester tester) {
     final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
+    final HorizontalDragGestureRecognizer drag = HorizontalDragGestureRecognizer();
 
     bool didStartScale = false;
     Offset? updatedFocalPoint;
@@ -733,8 +734,9 @@ void main() {
 
     final TestPointer pointer1 = TestPointer(1);
 
-    final PointerGestureDownEvent start = pointer1.pointerGestureStart(Offset.zero);
+    final PointerGestureDownEvent start = pointer1.gestureDown(Offset.zero);
     scale.addPointerGesture(start);
+    drag.addPointerGesture(start);
 
     tester.closeArena(1);
     expect(didStartScale, isFalse);
@@ -743,7 +745,7 @@ void main() {
     expect(updatedDelta, isNull);
     expect(didEndScale, isFalse);
 
-    // One-finger panning
+    // Panning
     tester.route(start);
     expect(didStartScale, isFalse);
     expect(updatedScale, isNull);
@@ -751,7 +753,7 @@ void main() {
     expect(updatedDelta, isNull);
     expect(didEndScale, isFalse);
 
-    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0)));
+    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0)));
     expect(didStartScale, isTrue);
     didStartScale = false;
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
@@ -763,7 +765,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Zoom in
-    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 2.0));
+    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0), scale: 2.0));
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
     updatedFocalPoint = null;
     expect(updatedScale, 2.0);
@@ -777,7 +779,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Zoom out
-    tester.route(pointer1.pointerGestureUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 1.0));
+    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0), scale: 1.0));
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
     updatedFocalPoint = null;
     expect(updatedScale, 1.0);
@@ -791,7 +793,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // We are done
-    tester.route(pointer1.pointerGestureEnd(Offset.zero));
+    tester.route(pointer1.gestureUp());
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, isNull);
     expect(updatedScale, isNull);
@@ -803,7 +805,235 @@ void main() {
   });
 
   testGesture('Pointer gestures should work alongside touch gestures', (GestureTester tester) {
+    final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
+    final HorizontalDragGestureRecognizer drag = HorizontalDragGestureRecognizer();
 
+    bool didStartScale = false;
+    Offset? updatedFocalPoint;
+    scale.onStart = (ScaleStartDetails details) {
+      didStartScale = true;
+      updatedFocalPoint = details.focalPoint;
+    };
+
+    double? updatedScale;
+    double? updatedHorizontalScale;
+    double? updatedVerticalScale;
+    Offset? updatedDelta;
+    double? updatedRotation;
+    scale.onUpdate = (ScaleUpdateDetails details) {
+      updatedScale = details.scale;
+      updatedHorizontalScale = details.horizontalScale;
+      updatedVerticalScale = details.verticalScale;
+      updatedFocalPoint = details.focalPoint;
+      updatedDelta = details.focalPointDelta;
+      updatedRotation = details.rotation;
+    };
+
+    bool didEndScale = false;
+    scale.onEnd = (ScaleEndDetails details) {
+      didEndScale = true;
+    };
+
+    final TestPointer touchPointer1 = TestPointer(1);
+    final TestPointer touchPointer2 = TestPointer(2);
+    final TestPointer gesturePointer = TestPointer(3);
+
+    final PointerGestureDownEvent gestureStart = gesturePointer.gestureDown(Offset.zero);
+    scale.addPointerGesture(gestureStart);
+    drag.addPointerGesture(gestureStart);
+
+    tester.closeArena(3);
+    expect(didStartScale, isFalse);
+    expect(updatedScale, isNull);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isFalse);
+
+    // Panning starting with trackpad
+    tester.route(gestureStart);
+    expect(didStartScale, isFalse);
+    expect(updatedScale, isNull);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isFalse);
+
+    tester.route(gesturePointer.gestureMove(Offset.zero, pan: const Offset(40, 40)));
+    expect(didStartScale, isTrue);
+    didStartScale = false;
+    expect(updatedFocalPoint, const Offset(40.0, 40.0));
+    updatedFocalPoint = null;
+    expect(updatedScale, 1.0);
+    updatedScale = null;
+    expect(updatedDelta, const Offset(40.0, 40.0));
+    updatedDelta = null;
+    expect(didEndScale, isFalse);
+
+    // Add a touch pointer
+    final PointerDownEvent touchStart1 = touchPointer1.down(const Offset(40, 40));
+    scale.addPointer(touchStart1);
+    drag.addPointer(touchStart1);
+    tester.closeArena(1);
+    tester.route(touchStart1);
+    expect(didEndScale, isTrue);
+    didEndScale = false;
+
+    tester.route(touchPointer1.move(const Offset(10, 10)));
+    expect(didStartScale, isTrue);
+    didStartScale = false;
+    expect(updatedFocalPoint, const Offset(25, 25));
+    updatedFocalPoint = null;
+    // 1 pointer + trackpad gesture should not scale, only pan
+    expect(updatedScale, 1.0);
+    updatedScale = null;
+    expect(updatedDelta, const Offset(-15, -15));
+    updatedDelta = null;
+    expect(didEndScale, isFalse);
+
+    // Add a second touch pointer
+    final PointerDownEvent touchStart2 = touchPointer2.down(const Offset(10, 40));
+    scale.addPointer(touchStart2);
+    drag.addPointer(touchStart2);
+    tester.closeArena(2);
+    tester.route(touchStart2);
+    expect(didEndScale, isTrue);
+    didEndScale = false;
+
+    // Move the second pointer to cause pan, zoom, and rotation
+    tester.route(touchPointer2.move(const Offset(40, 40)));
+    expect(didStartScale, isTrue);
+    didStartScale = false;
+    expect(updatedFocalPoint, const Offset(30, 30));
+    updatedFocalPoint = null;
+    expect(updatedScale, math.sqrt(2));
+    updatedScale = null;
+    expect(updatedDelta, const Offset(10, 0));
+    updatedDelta = null;
+    expect(updatedRotation, -math.pi / 4);
+    updatedRotation = null;
+    expect(didEndScale, isFalse);
+
+    // Change the scale and angle of the trackpad gesture to show the combination
+    // Scale should be multiplied together
+    // Rotation angle should be added together
+    tester.route(gesturePointer.gestureMove(Offset.zero, pan: const Offset(40, 40), scale: math.sqrt(2), angle: math.pi / 3));
+    expect(didStartScale, isFalse);
+    expect(updatedFocalPoint, const Offset(30, 30));
+    updatedFocalPoint = null;
+    expect(updatedScale, closeTo(2, 0.0001));
+    updatedScale = null;
+    expect(updatedDelta, Offset.zero);
+    updatedDelta = null;
+    expect(updatedRotation, closeTo(math.pi / 12, 0.0001));
+    updatedRotation = null;
+    expect(didEndScale, isFalse);
+
+    // Move the trackpad gesture to show the combination
+    tester.route(gesturePointer.gestureMove(const Offset(15, 15), pan: const Offset(55, 55), scale: math.sqrt(2), angle: math.pi / 3));
+    expect(didStartScale, isFalse);
+    expect(updatedFocalPoint, const Offset(40, 40));
+    updatedFocalPoint = null;
+    expect(updatedScale, closeTo(2, 0.0001));
+    updatedScale = null;
+    expect(updatedDelta, const Offset(10, 10));
+    updatedDelta = null;
+    expect(updatedRotation, closeTo(math.pi / 12, 0.0001));
+    updatedRotation = null;
+    expect(didEndScale, isFalse);
+
+    // We are done
+    tester.route(gesturePointer.gestureUp());
+    tester.route(touchPointer1.up());
+    tester.route(touchPointer2.up());
+    expect(didStartScale, isFalse);
+    expect(updatedFocalPoint, isNull);
+    expect(updatedScale, isNull);
+    expect(updatedDelta, isNull);
+    expect(didEndScale, isTrue);
+    didEndScale = false;
+
+    scale.dispose();
+  });
+
+  testGesture('Scale gesture competes with drag for trackpad gesture', (GestureTester tester) {
+    final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
+    final HorizontalDragGestureRecognizer drag = HorizontalDragGestureRecognizer();
+
+    final List<String> log = <String>[];
+
+    scale.onStart = (ScaleStartDetails details) { log.add('scale-start'); };
+    scale.onUpdate = (ScaleUpdateDetails details) { log.add('scale-update'); };
+    scale.onEnd = (ScaleEndDetails details) { log.add('scale-end'); };
+
+    drag.onStart = (DragStartDetails details) { log.add('drag-start'); };
+    drag.onEnd = (DragEndDetails details) { log.add('drag-end'); };
+
+    final TestPointer pointer1 = TestPointer(1);
+
+    final PointerGestureDownEvent down = pointer1.gestureDown(const Offset(10.0, 10.0));
+    scale.addPointerGesture(down);
+    drag.addPointerGesture(down);
+
+    tester.closeArena(1);
+    expect(log, isEmpty);
+
+    // Vertical moves are scales.
+    tester.route(down);
+    expect(log, isEmpty);
+
+    // scale will win if focal point delta exceeds 18.0*2
+
+    tester.route(pointer1.gestureMove(const Offset(10.0, 10.0), pan: const Offset(10.0, 40.0))); // delta of 40.0 exceeds 18.0*2
+    expect(log, equals(<String>['scale-start', 'scale-update']));
+    log.clear();
+
+    final TestPointer pointer2 = TestPointer(2);
+    final PointerGestureDownEvent down2 = pointer2.gestureDown(const Offset(10.0, 20.0));
+    scale.addPointerGesture(down2);
+    drag.addPointerGesture(down2);
+
+    tester.closeArena(2);
+    expect(log, isEmpty);
+
+    // Second pointer joins scale even though it moves horizontally.
+    tester.route(down2);
+    expect(log, <String>['scale-end']);
+    log.clear();
+
+    tester.route(pointer2.gestureMove(const Offset(10.0, 20.0), pan: const Offset(20.0, 0.0)));
+    expect(log, equals(<String>['scale-start', 'scale-update']));
+    log.clear();
+
+    tester.route(pointer1.gestureUp());
+    expect(log, equals(<String>['scale-end']));
+    log.clear();
+
+    tester.route(pointer2.gestureUp());
+    expect(log, isEmpty);
+    log.clear();
+
+    // Horizontal moves are either drags or scales, depending on which wins first.
+    // TODO(ianh): https://github.com/flutter/flutter/issues/11384
+    // In this case, we move fast, so that the scale wins. If we moved slowly,
+    // the horizontal drag would win, since it was added first.
+    final TestPointer pointer3 = TestPointer(3);
+    final PointerGestureDownEvent down3 = pointer3.gestureDown(const Offset(30.0, 30.0));
+    scale.addPointerGesture(down3);
+    drag.addPointerGesture(down3);
+    tester.closeArena(3);
+    tester.route(down3);
+
+    expect(log, isEmpty);
+
+    tester.route(pointer3.gestureMove(const Offset(30.0, 30.0), pan: const Offset(70.0, 0.0)));
+    expect(log, equals(<String>['scale-start', 'scale-update']));
+    log.clear();
+
+    tester.route(pointer3.gestureUp());
+    expect(log, equals(<String>['scale-end']));
+    log.clear();
+
+    scale.dispose();
+    drag.dispose();
   });
 
   testWidgets('ScaleGestureRecognizer asserts when kind and supportedDevices are both set', (WidgetTester tester) async {
