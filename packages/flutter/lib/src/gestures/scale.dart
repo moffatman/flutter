@@ -31,8 +31,8 @@ enum _ScaleState {
   started,
 }
 
-class _PointerGestureData {
-  _PointerGestureData({
+class _PointerFlowData {
+  _PointerFlowData({
     required this.focalPoint,
     required this.scale,
     required this.angle
@@ -344,7 +344,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   final List<int> _pointerQueue = <int>[]; // A queue to sort pointers in order of entrance
   final Map<int, VelocityTracker> _velocityTrackers = <int, VelocityTracker>{};
   late Offset _delta;
-  final Map<int, _PointerGestureData> _pointerGestures = <int, _PointerGestureData>{};
+  final Map<int, _PointerFlowData> _pointerFlows = <int, _PointerFlowData>{};
 
   double get _pointerScaleFactor => _initialSpan > 0.0 ? _currentSpan / _initialSpan : 1.0;
 
@@ -354,7 +354,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   double get _scaleFactor {
     double scale = _pointerScaleFactor;
-    for (final _PointerGestureData p in _pointerGestures.values) {
+    for (final _PointerFlowData p in _pointerFlows.values) {
       scale *= p.scale;
     }
     return scale;
@@ -362,7 +362,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   double get _horizontalScaleFactor {
     double scale = _pointerHorizontalScaleFactor;
-    for (final _PointerGestureData p in _pointerGestures.values) {
+    for (final _PointerFlowData p in _pointerFlows.values) {
       scale *= p.scale;
     }
     return scale;
@@ -370,14 +370,14 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   double get _verticalScaleFactor {
     double scale = _pointerVerticalScaleFactor;
-    for (final _PointerGestureData p in _pointerGestures.values) {
+    for (final _PointerFlowData p in _pointerFlows.values) {
       scale *= p.scale;
     }
     return scale;
   }
 
   int get _pointerCount {
-    return _pointerGestures.length + _pointerQueue.length;
+    return _pointerFlows.length + _pointerQueue.length;
   }
 
   double _computeRotationFactor() {
@@ -399,7 +399,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
     double factor = angle2 - angle1;
 
-    for (final _PointerGestureData p in _pointerGestures.values) {
+    for (final _PointerFlowData p in _pointerFlows.values) {
       factor += p.angle;
     }
     return factor;
@@ -421,11 +421,11 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
-  bool isPointerGestureAllowed(PointerGestureDownEvent event) => true;
+  bool isPointerFlowAllowed(PointerFlowStartEvent event) => true;
 
   @override
-  void addAllowedPointerGesture(PointerGestureDownEvent event) {
-    super.addAllowedPointerGesture(event);
+  void addAllowedPointerFlow(PointerFlowStartEvent event) {
+    super.addAllowedPointerFlow(event);
     _velocityTrackers[event.pointer] = VelocityTracker.withKind(event.kind);
     if (_state == _ScaleState.ready) {
       _state = _ScaleState.possible;
@@ -455,29 +455,29 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
       _pointerQueue.remove(event.pointer);
       didChangeConfiguration = true;
       _lastTransform = event.transform;
-    } else if (event is PointerGestureDownEvent) {
-      assert(_pointerGestures[event.pointer] == null);
-      _pointerGestures[event.pointer] = _PointerGestureData(
+    } else if (event is PointerFlowStartEvent) {
+      assert(_pointerFlows[event.pointer] == null);
+      _pointerFlows[event.pointer] = _PointerFlowData(
         focalPoint: event.position,
         scale: 1,
         angle: 0
       );
       didChangeConfiguration = true;
       shouldStartIfAccepted = true;
-    } else if (event is PointerGestureMoveEvent) {
-      assert(_pointerGestures[event.pointer] != null);
+    } else if (event is PointerFlowUpdateEvent) {
+      assert(_pointerFlows[event.pointer] != null);
       if (!event.synthesized)
         _velocityTrackers[event.pointer]!.addPosition(event.timeStamp, event.pan);
-      _pointerGestures[event.pointer] = _PointerGestureData(
+      _pointerFlows[event.pointer] = _PointerFlowData(
         focalPoint: event.position + event.pan,
         scale: event.scale,
         angle: event.angle
       );
       _lastTransform = event.transform;
       shouldStartIfAccepted = true;
-    } else if (event is PointerGestureUpEvent) {
-      assert(_pointerGestures[event.pointer] != null);
-      _pointerGestures.remove(event.pointer);
+    } else if (event is PointerFlowEndEvent) {
+      assert(_pointerFlows[event.pointer] != null);
+      _pointerFlows.remove(event.pointer);
       didChangeConfiguration = true;
     }
 
@@ -496,7 +496,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     Offset focalPoint = Offset.zero;
     for (final int pointer in _pointerLocations.keys)
       focalPoint += _pointerLocations[pointer]!;
-    for (final _PointerGestureData p in _pointerGestures.values)
+    for (final _PointerFlowData p in _pointerFlows.values)
       focalPoint += p.focalPoint;
     _currentFocalPoint = _pointerCount > 0 ? focalPoint / _pointerCount.toDouble() : Offset.zero;
 

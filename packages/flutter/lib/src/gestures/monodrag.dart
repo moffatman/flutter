@@ -280,11 +280,11 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
-  bool isPointerGestureAllowed(PointerGestureDownEvent event) => true;
+  bool isPointerFlowAllowed(PointerFlowStartEvent event) => true;
 
   @override
-  void addAllowedPointerGesture(PointerGestureDownEvent event) {
-    super.addAllowedPointerGesture(event);
+  void addAllowedPointerFlow(PointerFlowStartEvent event) {
+    super.addAllowedPointerFlow(event);
     _velocityTrackers[event.pointer] = velocityTrackerBuilder(event);
     if (_state == _DragState.ready) {
       _state = _DragState.possible;
@@ -304,10 +304,10 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   void handleEvent(PointerEvent event) {
     assert(_state != _DragState.ready);
     if (!event.synthesized
-        && (event is PointerDownEvent || event is PointerMoveEvent || event is PointerGestureMoveEvent)) {
+        && (event is PointerDownEvent || event is PointerMoveEvent || event is PointerFlowUpdateEvent)) {
       final VelocityTracker tracker = _velocityTrackers[event.pointer]!;
       assert(tracker != null);
-      if (event is PointerGestureMoveEvent) {
+      if (event is PointerFlowUpdateEvent) {
         tracker.addPosition(event.timeStamp, event.pan);
       }
       else {
@@ -343,7 +343,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerGestureMoveEvent) {
+    if (event is PointerFlowUpdateEvent) {
       if (_state == _DragState.accepted) {
         _checkUpdate(
           sourceTimeStamp: event.timeStamp,
@@ -368,7 +368,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           resolve(GestureDisposition.accepted);
       }
     }
-    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerGestureUpEvent) {
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerFlowEndEvent) {
       _giveUpPointer(event.pointer);
     }
   }

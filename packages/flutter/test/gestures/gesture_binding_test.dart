@@ -322,4 +322,23 @@ void main() {
       expect(events[4].buttons, equals(0));
     }
   });
+
+  test('Pointer trackpad gesture events', () {
+    const ui.PointerDataPacket packet = ui.PointerDataPacket(
+      data: <ui.PointerData>[
+        ui.PointerData(change: ui.PointerChange.flowStart),
+        ui.PointerData(change: ui.PointerChange.flowUpdate),
+        ui.PointerData(change: ui.PointerChange.flowEnd),
+      ],
+    );
+
+    final List<PointerEvent> events = <PointerEvent>[];
+    _binding!.callback = events.add;
+
+    ui.window.onPointerDataPacket?.call(packet);
+    expect(events.length, 3);
+    expect(events[0], isA<PointerFlowStartEvent>());
+    expect(events[1], isA<PointerFlowUpdateEvent>());
+    expect(events[2], isA<PointerFlowEndEvent>());
+  });
 }

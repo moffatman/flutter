@@ -734,9 +734,9 @@ void main() {
 
     final TestPointer pointer1 = TestPointer(1);
 
-    final PointerGestureDownEvent start = pointer1.gestureDown(Offset.zero);
-    scale.addPointerGesture(start);
-    drag.addPointerGesture(start);
+    final PointerFlowStartEvent start = pointer1.flowStart(Offset.zero);
+    scale.addPointerFlow(start);
+    drag.addPointerFlow(start);
 
     tester.closeArena(1);
     expect(didStartScale, isFalse);
@@ -753,7 +753,7 @@ void main() {
     expect(updatedDelta, isNull);
     expect(didEndScale, isFalse);
 
-    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0)));
+    tester.route(pointer1.flowUpdate(Offset.zero, pan: const Offset(20.0, 30.0)));
     expect(didStartScale, isTrue);
     didStartScale = false;
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
@@ -765,7 +765,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Zoom in
-    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0), scale: 2.0));
+    tester.route(pointer1.flowUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 2.0));
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
     updatedFocalPoint = null;
     expect(updatedScale, 2.0);
@@ -779,7 +779,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Zoom out
-    tester.route(pointer1.gestureMove(Offset.zero, pan: const Offset(20.0, 30.0), scale: 1.0));
+    tester.route(pointer1.flowUpdate(Offset.zero, pan: const Offset(20.0, 30.0), scale: 1.0));
     expect(updatedFocalPoint, const Offset(20.0, 30.0));
     updatedFocalPoint = null;
     expect(updatedScale, 1.0);
@@ -793,7 +793,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // We are done
-    tester.route(pointer1.gestureUp());
+    tester.route(pointer1.flowEnd());
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, isNull);
     expect(updatedScale, isNull);
@@ -838,9 +838,9 @@ void main() {
     final TestPointer touchPointer2 = TestPointer(2);
     final TestPointer gesturePointer = TestPointer(3);
 
-    final PointerGestureDownEvent gestureStart = gesturePointer.gestureDown(Offset.zero);
-    scale.addPointerGesture(gestureStart);
-    drag.addPointerGesture(gestureStart);
+    final PointerFlowStartEvent gestureStart = gesturePointer.flowStart(Offset.zero);
+    scale.addPointerFlow(gestureStart);
+    drag.addPointerFlow(gestureStart);
 
     tester.closeArena(3);
     expect(didStartScale, isFalse);
@@ -857,7 +857,7 @@ void main() {
     expect(updatedDelta, isNull);
     expect(didEndScale, isFalse);
 
-    tester.route(gesturePointer.gestureMove(Offset.zero, pan: const Offset(40, 40)));
+    tester.route(gesturePointer.flowUpdate(Offset.zero, pan: const Offset(40, 40)));
     expect(didStartScale, isTrue);
     didStartScale = false;
     expect(updatedFocalPoint, const Offset(40.0, 40.0));
@@ -915,7 +915,7 @@ void main() {
     // Change the scale and angle of the trackpad gesture to show the combination
     // Scale should be multiplied together
     // Rotation angle should be added together
-    tester.route(gesturePointer.gestureMove(Offset.zero, pan: const Offset(40, 40), scale: math.sqrt(2), angle: math.pi / 3));
+    tester.route(gesturePointer.flowUpdate(Offset.zero, pan: const Offset(40, 40), scale: math.sqrt(2), angle: math.pi / 3));
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, const Offset(30, 30));
     updatedFocalPoint = null;
@@ -928,7 +928,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Move the trackpad gesture to show the combination
-    tester.route(gesturePointer.gestureMove(const Offset(15, 15), pan: const Offset(55, 55), scale: math.sqrt(2), angle: math.pi / 3));
+    tester.route(gesturePointer.flowUpdate(const Offset(15, 15), pan: const Offset(55, 55), scale: math.sqrt(2), angle: math.pi / 3));
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, const Offset(40, 40));
     updatedFocalPoint = null;
@@ -941,7 +941,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // We are done
-    tester.route(gesturePointer.gestureUp());
+    tester.route(gesturePointer.flowEnd());
     tester.route(touchPointer1.up());
     tester.route(touchPointer2.up());
     expect(didStartScale, isFalse);
@@ -969,9 +969,9 @@ void main() {
 
     final TestPointer pointer1 = TestPointer(1);
 
-    final PointerGestureDownEvent down = pointer1.gestureDown(const Offset(10.0, 10.0));
-    scale.addPointerGesture(down);
-    drag.addPointerGesture(down);
+    final PointerFlowStartEvent down = pointer1.flowStart(const Offset(10.0, 10.0));
+    scale.addPointerFlow(down);
+    drag.addPointerFlow(down);
 
     tester.closeArena(1);
     expect(log, isEmpty);
@@ -982,14 +982,14 @@ void main() {
 
     // scale will win if focal point delta exceeds 18.0*2
 
-    tester.route(pointer1.gestureMove(const Offset(10.0, 10.0), pan: const Offset(10.0, 40.0))); // delta of 40.0 exceeds 18.0*2
+    tester.route(pointer1.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(10.0, 40.0))); // delta of 40.0 exceeds 18.0*2
     expect(log, equals(<String>['scale-start', 'scale-update']));
     log.clear();
 
     final TestPointer pointer2 = TestPointer(2);
-    final PointerGestureDownEvent down2 = pointer2.gestureDown(const Offset(10.0, 20.0));
-    scale.addPointerGesture(down2);
-    drag.addPointerGesture(down2);
+    final PointerFlowStartEvent down2 = pointer2.flowStart(const Offset(10.0, 20.0));
+    scale.addPointerFlow(down2);
+    drag.addPointerFlow(down2);
 
     tester.closeArena(2);
     expect(log, isEmpty);
@@ -999,15 +999,15 @@ void main() {
     expect(log, <String>['scale-end']);
     log.clear();
 
-    tester.route(pointer2.gestureMove(const Offset(10.0, 20.0), pan: const Offset(20.0, 0.0)));
+    tester.route(pointer2.flowUpdate(const Offset(10.0, 20.0), pan: const Offset(20.0, 0.0)));
     expect(log, equals(<String>['scale-start', 'scale-update']));
     log.clear();
 
-    tester.route(pointer1.gestureUp());
+    tester.route(pointer1.flowEnd());
     expect(log, equals(<String>['scale-end']));
     log.clear();
 
-    tester.route(pointer2.gestureUp());
+    tester.route(pointer2.flowEnd());
     expect(log, isEmpty);
     log.clear();
 
@@ -1016,19 +1016,19 @@ void main() {
     // In this case, we move fast, so that the scale wins. If we moved slowly,
     // the horizontal drag would win, since it was added first.
     final TestPointer pointer3 = TestPointer(3);
-    final PointerGestureDownEvent down3 = pointer3.gestureDown(const Offset(30.0, 30.0));
-    scale.addPointerGesture(down3);
-    drag.addPointerGesture(down3);
+    final PointerFlowStartEvent down3 = pointer3.flowStart(const Offset(30.0, 30.0));
+    scale.addPointerFlow(down3);
+    drag.addPointerFlow(down3);
     tester.closeArena(3);
     tester.route(down3);
 
     expect(log, isEmpty);
 
-    tester.route(pointer3.gestureMove(const Offset(30.0, 30.0), pan: const Offset(70.0, 0.0)));
+    tester.route(pointer3.flowUpdate(const Offset(30.0, 30.0), pan: const Offset(70.0, 0.0)));
     expect(log, equals(<String>['scale-start', 'scale-update']));
     log.clear();
 
-    tester.route(pointer3.gestureUp());
+    tester.route(pointer3.flowEnd());
     expect(log, equals(<String>['scale-end']));
     log.clear();
 

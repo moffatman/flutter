@@ -289,13 +289,13 @@ class TestPointer {
     );
   }
 
-  PointerGestureDownEvent gestureDown(
+  PointerFlowStartEvent flowStart(
     Offset location, {
     Duration timeStamp = Duration.zero
   }) {
     _location = location;
     _pan = Offset.zero;
-    return PointerGestureDownEvent(
+    return PointerFlowStartEvent(
       timeStamp: timeStamp,
       kind: kind,
       device: _device,
@@ -304,7 +304,7 @@ class TestPointer {
     );
   }
 
-  PointerGestureMoveEvent gestureMove(
+  PointerFlowUpdateEvent flowUpdate(
     Offset location, {
     Offset pan = Offset.zero,
     double scale = 1,
@@ -314,7 +314,7 @@ class TestPointer {
     _location = location;
     Offset panDelta = pan - _pan!;
     _pan = pan;
-    return PointerGestureMoveEvent(
+    return PointerFlowUpdateEvent(
       timeStamp: timeStamp,
       kind: kind,
       device: _device,
@@ -327,11 +327,11 @@ class TestPointer {
     );
   }
 
-  PointerGestureUpEvent gestureUp({
+  PointerFlowEndEvent flowEnd({
     Duration timeStamp = Duration.zero
   }) {
     _pan = null;
-    return PointerGestureUpEvent(
+    return PointerFlowEndEvent(
       timeStamp: timeStamp,
       kind: kind,
       device: _device,

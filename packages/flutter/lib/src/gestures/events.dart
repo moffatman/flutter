@@ -1986,9 +1986,9 @@ class _TransformedPointerScrollEvent extends _TransformedPointerEvent with _Copy
   }
 }
 
-mixin _CopyPointerGestureDownEvent on PointerEvent {
+mixin _CopyPointerFlowStartEvent on PointerEvent {
   @override
-  PointerGestureDownEvent copyWith({
+  PointerFlowStartEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2012,7 +2012,7 @@ mixin _CopyPointerGestureDownEvent on PointerEvent {
     bool? synthesized,
     int? embedderId,
   }) {
-    return PointerGestureDownEvent(
+    return PointerFlowStartEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2026,13 +2026,13 @@ mixin _CopyPointerGestureDownEvent on PointerEvent {
 ///
 /// See also:
 ///
-///  * [Listener.onPointerGestureDown], which allows callers to be notified of these
+///  * [Listener.onPointerFlowStart], which allows callers to be notified of these
 ///    events in a widget tree.
-class PointerGestureDownEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureDownEvent {
+class PointerFlowStartEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowStartEvent {
   /// Creates a pointer gesture down event.
   ///
   /// All of the arguments must be non-null.
-  const PointerGestureDownEvent({
+  const PointerFlowStartEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
@@ -2055,29 +2055,29 @@ class PointerGestureDownEvent extends PointerEvent with _PointerEventDescription
        );
 
   @override
-  PointerGestureDownEvent transformed(Matrix4? transform) {
+  PointerFlowStartEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerGestureDownEvent(original as PointerGestureDownEvent? ?? this, transform);
+    return _TransformedPointerFlowStartEvent(original as PointerFlowStartEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerGestureDownEvent extends _TransformedPointerEvent with _CopyPointerGestureDownEvent implements PointerGestureDownEvent {
-  _TransformedPointerGestureDownEvent(this.original, this.transform)
+class _TransformedPointerFlowStartEvent extends _TransformedPointerEvent with _CopyPointerFlowStartEvent implements PointerFlowStartEvent {
+  _TransformedPointerFlowStartEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
-  final PointerGestureDownEvent original;
+  final PointerFlowStartEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerGestureDownEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerFlowStartEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
-mixin _CopyPointerGestureMoveEvent on PointerEvent {
+mixin _CopyPointerFlowUpdateEvent on PointerEvent {
   /// The total pan offset of the gesture
   Offset get pan;
   /// The amount the pan offset changed since the last event
@@ -2088,7 +2088,7 @@ mixin _CopyPointerGestureMoveEvent on PointerEvent {
   double get angle;
 
   @override
-  PointerGestureMoveEvent copyWith({
+  PointerFlowUpdateEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2116,7 +2116,7 @@ mixin _CopyPointerGestureMoveEvent on PointerEvent {
     double? scale,
     double? angle,
   }) {
-    return PointerGestureMoveEvent(
+    return PointerFlowUpdateEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2134,13 +2134,13 @@ mixin _CopyPointerGestureMoveEvent on PointerEvent {
 ///
 /// See also:
 ///
-///  * [Listener.onPointerGestureMove], which allows callers to be notified of these
+///  * [Listener.onPointerFlowUpdate], which allows callers to be notified of these
 ///    events in a widget tree.
-class PointerGestureMoveEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureMoveEvent {
+class PointerFlowUpdateEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowUpdateEvent {
   /// Creates a pointer gesture move event.
   ///
   /// All of the arguments must be non-null.
-  const PointerGestureMoveEvent({
+  const PointerFlowUpdateEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
@@ -2175,16 +2175,16 @@ class PointerGestureMoveEvent extends PointerEvent with _PointerEventDescription
   final double angle;
 
   @override
-  PointerGestureMoveEvent transformed(Matrix4? transform) {
+  PointerFlowUpdateEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerGestureMoveEvent(original as PointerGestureMoveEvent? ?? this, transform);
+    return _TransformedPointerFlowUpdateEvent(original as PointerFlowUpdateEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerGestureMoveEvent extends _TransformedPointerEvent with _CopyPointerGestureMoveEvent implements PointerGestureMoveEvent {
-  _TransformedPointerGestureMoveEvent(this.original, this.transform)
+class _TransformedPointerFlowUpdateEvent extends _TransformedPointerEvent with _CopyPointerFlowUpdateEvent implements PointerFlowUpdateEvent {
+  _TransformedPointerFlowUpdateEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
@@ -2200,18 +2200,18 @@ class _TransformedPointerGestureMoveEvent extends _TransformedPointerEvent with 
   double get angle => original.angle;
 
   @override
-  final PointerGestureMoveEvent original;
+  final PointerFlowUpdateEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerGestureMoveEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerFlowUpdateEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
-mixin _CopyPointerGestureUpEvent on PointerEvent {
+mixin _CopyPointerFlowEndEvent on PointerEvent {
   @override
-  PointerGestureUpEvent copyWith({
+  PointerFlowEndEvent copyWith({
     Duration? timeStamp,
     int? pointer,
     PointerDeviceKind? kind,
@@ -2235,7 +2235,7 @@ mixin _CopyPointerGestureUpEvent on PointerEvent {
     bool? synthesized,
     int? embedderId,
   }) {
-    return PointerGestureUpEvent(
+    return PointerFlowEndEvent(
       timeStamp: timeStamp ?? this.timeStamp,
       kind: kind ?? this.kind,
       device: device ?? this.device,
@@ -2249,13 +2249,13 @@ mixin _CopyPointerGestureUpEvent on PointerEvent {
 ///
 /// See also:
 ///
-///  * [Listener.onPointerGestureUp], which allows callers to be notified of these
+///  * [Listener.onPointerFlowEnd], which allows callers to be notified of these
 ///    events in a widget tree.
-class PointerGestureUpEvent extends PointerEvent with _PointerEventDescription, _CopyPointerGestureUpEvent {
+class PointerFlowEndEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowEndEvent {
   /// Creates a pointer gesture up event.
   ///
   /// All of the arguments must be non-null.
-  const PointerGestureUpEvent({
+  const PointerFlowEndEvent({
     Duration timeStamp = Duration.zero,
     PointerDeviceKind kind = PointerDeviceKind.mouse,
     int device = 0,
@@ -2278,26 +2278,26 @@ class PointerGestureUpEvent extends PointerEvent with _PointerEventDescription, 
        );
 
   @override
-  PointerGestureUpEvent transformed(Matrix4? transform) {
+  PointerFlowEndEvent transformed(Matrix4? transform) {
     if (transform == null || transform == this.transform) {
       return this;
     }
-    return _TransformedPointerGestureUpEvent(original as PointerGestureUpEvent? ?? this, transform);
+    return _TransformedPointerFlowEndEvent(original as PointerFlowEndEvent? ?? this, transform);
   }
 }
 
-class _TransformedPointerGestureUpEvent extends _TransformedPointerEvent with _CopyPointerGestureUpEvent implements PointerGestureUpEvent {
-  _TransformedPointerGestureUpEvent(this.original, this.transform)
+class _TransformedPointerFlowEndEvent extends _TransformedPointerEvent with _CopyPointerFlowEndEvent implements PointerFlowEndEvent {
+  _TransformedPointerFlowEndEvent(this.original, this.transform)
     : assert(original != null), assert(transform != null);
 
   @override
-  final PointerGestureUpEvent original;
+  final PointerFlowEndEvent original;
 
   @override
   final Matrix4 transform;
 
   @override
-  PointerGestureUpEvent transformed(Matrix4? transform) => original.transformed(transform);
+  PointerFlowEndEvent transformed(Matrix4? transform) => original.transformed(transform);
 }
 
 mixin _CopyPointerCancelEvent on PointerEvent {

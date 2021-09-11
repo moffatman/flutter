@@ -1507,9 +1507,9 @@ void main() {
     };
 
     final TestPointer pointer = TestPointer(1);
-    final PointerGestureDownEvent start = pointer.gestureDown(const Offset(10.0, 10.0));
-    pan.addPointerGesture(start);
-    competingPan.addPointerGesture(start);
+    final PointerFlowStartEvent start = pointer.flowStart(const Offset(10.0, 10.0));
+    pan.addPointerFlow(start);
+    competingPan.addPointerFlow(start);
     tester.closeArena(1);
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, isNull);
@@ -1521,20 +1521,20 @@ void main() {
     expect(didEndPan, isFalse);
 
     // Gesture will be claimed when distance reaches kPanSlop, which was 36.0 when this test was last updated.
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(20.0, 20.0))); // moved 20 horizontally and 20 vertically which is 28 total
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(20.0, 20.0))); // moved 20 horizontally and 20 vertically which is 28 total
     expect(didStartPan, isFalse); // 28 < 36
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(30.0, 30.0))); // moved 30 horizontally and 30 vertically which is 42 total
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 30.0))); // moved 30 horizontally and 30 vertically which is 42 total
     expect(didStartPan, isTrue); // 42 > 36
     didStartPan = false;
     expect(didEndPan, isFalse);
 
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(30.0, 25.0)));
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 25.0)));
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, const Offset(0.0, -5.0));
     updatedScrollDelta = null;
     expect(didEndPan, isFalse);
 
-    tester.route(pointer.gestureUp());
+    tester.route(pointer.flowEnd());
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, isNull);
     expect(didEndPan, isTrue);
@@ -1563,9 +1563,9 @@ void main() {
     };
 
     final TestPointer pointer = TestPointer(1);
-    final PointerGestureDownEvent start = pointer.gestureDown(const Offset(10.0, 10.0));
-    pan.addPointerGesture(start);
-    competingPan.addPointerGesture(start);
+    final PointerFlowStartEvent start = pointer.flowStart(const Offset(10.0, 10.0));
+    pan.addPointerFlow(start);
+    competingPan.addPointerFlow(start);
     tester.closeArena(1);
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, isNull);
@@ -1577,20 +1577,20 @@ void main() {
     expect(didEndPan, isFalse);
 
     // Gesture will be claimed when distance reaches kPanSlop, which was 36.0 when this test was last updated.
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(20.0, 20.0))); // moved 20 horizontally and 20 vertically which is 28 total
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(20.0, 20.0))); // moved 20 horizontally and 20 vertically which is 28 total
     expect(didStartPan, isFalse); // 28 < 36
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(30.0, 30.0))); // moved 30 horizontally and 30 vertically which is 42 total
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 30.0))); // moved 30 horizontally and 30 vertically which is 42 total
     expect(didStartPan, isTrue); // 42 > 36
     didStartPan = false;
     expect(didEndPan, isFalse);
 
-    tester.route(pointer.gestureMove(const Offset(10.0, 10.0), pan: const Offset(30.0, 25.0)));
+    tester.route(pointer.flowUpdate(const Offset(10.0, 10.0), pan: const Offset(30.0, 25.0)));
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, const Offset(0.0, -5.0));
     updatedScrollDelta = null;
     expect(didEndPan, isFalse);
 
-    tester.route(pointer.gestureUp());
+    tester.route(pointer.flowEnd());
     expect(didStartPan, isFalse);
     expect(updatedScrollDelta, isNull);
     expect(didEndPan, isTrue);

@@ -99,7 +99,7 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// Registers a new pointer gesture that might be relevant to this gesture
   /// detector.
   ///
-  /// The owner of this gesture recognizer calls addPointerGesture() with the
+  /// The owner of this gesture recognizer calls addPointerFlow() with the
   /// PointerDownEvent of each pointer that should be considered for
   /// this gesture.
   ///
@@ -110,13 +110,13 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// that pointer.
   ///
   /// This method is called for each and all pointers being added. In
-  /// most cases, you want to override [addAllowedPointerGesture] instead.
-  void addPointerGesture(PointerGestureDownEvent event) {
+  /// most cases, you want to override [addAllowedPointerFlow] instead.
+  void addPointerFlow(PointerFlowStartEvent event) {
     _pointerToKind[event.pointer] = event.kind;
-    if (isPointerGestureAllowed(event)) {
-      addAllowedPointerGesture(event);
+    if (isPointerFlowAllowed(event)) {
+      addAllowedPointerFlow(event);
     } else {
-      handleNonAllowedPointerGesture(event);
+      handleNonAllowedPointerFlow(event);
     }
   }
 
@@ -124,11 +124,11 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// gesture recognizer.
   ///
   /// Subclasses of [GestureRecognizer] are supposed to override this method
-  /// instead of [addPointerGesture] because [addPointerGesture] will be called for each
-  /// pointer being added while [addAllowedPointerGesture] is only called for pointers
+  /// instead of [addPointerFlow] because [addPointerFlow] will be called for each
+  /// pointer being added while [addAllowedPointerFlow] is only called for pointers
   /// that are allowed by this recognizer.
   @protected
-  void addAllowedPointerGesture(PointerGestureDownEvent event) { }
+  void addAllowedPointerFlow(PointerFlowStartEvent event) { }
 
   /// Registers a new pointer that might be relevant to this gesture
   /// detector.
@@ -185,11 +185,11 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// 
   /// Subclasses can override this method and reject the gesture.
   @protected
-  void handleNonAllowedPointerGesture(PointerGestureDownEvent event) { }
+  void handleNonAllowedPointerFlow(PointerFlowStartEvent event) { }
 
   /// Checks whether or not a pointer gesture is allowed to be tracked by this recognizer.
   @protected
-  bool isPointerGestureAllowed(PointerGestureDownEvent event) {
+  bool isPointerFlowAllowed(PointerFlowStartEvent event) {
     return false;
   }
 
@@ -308,7 +308,7 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
 
   @override
   @protected
-  void addAllowedPointerGesture(PointerGestureDownEvent event) {
+  void addAllowedPointerFlow(PointerFlowStartEvent event) {
     if (!_trackedPointers.contains(event.pointer)) {
       startTrackingPointer(event.pointer, event.transform);
     }
@@ -453,7 +453,7 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// a [PointerUpEvent] or a [PointerCancelEvent] event.
   @protected
   void stopTrackingIfPointerNoLongerDown(PointerEvent event) {
-    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerGestureUpEvent)
+    if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerFlowEndEvent)
       stopTrackingPointer(event.pointer);
   }
 }

@@ -6056,9 +6056,9 @@ class Listener extends SingleChildRenderObjectWidget {
     this.onPointerUp,
     this.onPointerHover,
     this.onPointerCancel,
-    this.onPointerGestureDown,
-    this.onPointerGestureMove,
-    this.onPointerGestureUp,
+    this.onPointerFlowStart,
+    this.onPointerFlowUpdate,
+    this.onPointerFlowEnd,
     this.onPointerSignal,
     this.behavior = HitTestBehavior.deferToChild,
     Widget? child,
@@ -6089,13 +6089,13 @@ class Listener extends SingleChildRenderObjectWidget {
   final PointerCancelEventListener? onPointerCancel;
 
   /// Called when a gesture begins such as a trackpad gesture
-  final PointerGestureDownEventListener? onPointerGestureDown;
+  final PointerFlowStartEventListener? onPointerFlowStart;
 
   /// Called when a gesture is updated
-  final PointerGestureMoveEventListener? onPointerGestureMove;
+  final PointerFlowUpdateEventListener? onPointerFlowUpdate;
 
   /// Called when a gesture finishes
-  final PointerGestureUpEventListener? onPointerGestureUp;
+  final PointerFlowEndEventListener? onPointerFlowEnd;
 
   /// Called when a pointer signal occurs over this object.
   ///
@@ -6116,9 +6116,9 @@ class Listener extends SingleChildRenderObjectWidget {
       onPointerUp: onPointerUp,
       onPointerHover: onPointerHover,
       onPointerCancel: onPointerCancel,
-      onPointerGestureDown: onPointerGestureDown,
-      onPointerGestureMove: onPointerGestureMove,
-      onPointerGestureUp: onPointerGestureUp,
+      onPointerFlowStart: onPointerFlowStart,
+      onPointerFlowUpdate: onPointerFlowUpdate,
+      onPointerFlowEnd: onPointerFlowEnd,
       onPointerSignal: onPointerSignal,
       behavior: behavior,
     );
@@ -6132,9 +6132,9 @@ class Listener extends SingleChildRenderObjectWidget {
       ..onPointerUp = onPointerUp
       ..onPointerHover = onPointerHover
       ..onPointerCancel = onPointerCancel
-      ..onPointerGestureDown = onPointerGestureDown
-      ..onPointerGestureMove = onPointerGestureMove
-      ..onPointerGestureUp = onPointerGestureUp
+      ..onPointerFlowStart = onPointerFlowStart
+      ..onPointerFlowUpdate = onPointerFlowUpdate
+      ..onPointerFlowEnd = onPointerFlowEnd
       ..onPointerSignal = onPointerSignal
       ..behavior = behavior;
   }
@@ -6147,9 +6147,9 @@ class Listener extends SingleChildRenderObjectWidget {
       if (onPointerMove != null) 'move',
       if (onPointerUp != null) 'up',
       if (onPointerCancel != null) 'cancel',
-      if (onPointerGestureDown != null) 'gestureDown',
-      if (onPointerGestureMove != null) 'gestureMove',
-      if (onPointerGestureUp != null) 'gestureUp',
+      if (onPointerFlowStart != null) 'flowStart',
+      if (onPointerFlowUpdate != null) 'flowUpdate',
+      if (onPointerFlowEnd != null) 'flowEnd',
       if (onPointerSignal != null) 'signal',
     ];
     properties.add(IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));

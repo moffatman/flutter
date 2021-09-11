@@ -211,8 +211,8 @@ class PointerEventConverter {
               embedderId: datum.embedderId,
             );
             break;
-          case ui.PointerChange.gestureDown:
-            yield PointerGestureDownEvent(
+          case ui.PointerChange.flowStart:
+            yield PointerFlowStartEvent(
               timeStamp: timeStamp,
               kind: kind,
               device: datum.device,
@@ -221,12 +221,12 @@ class PointerEventConverter {
               synthesized: datum.synthesized,
             );
             break;
-          case ui.PointerChange.gestureMove:
+          case ui.PointerChange.flowUpdate:
             final Offset pan =
                 Offset(datum.panX, datum.panY) / devicePixelRatio;
             final Offset panDelta =
                 Offset(datum.panDeltaX, datum.panDeltaY) / devicePixelRatio;
-            yield PointerGestureMoveEvent(
+            yield PointerFlowUpdateEvent(
               timeStamp: timeStamp,
               kind: kind,
               device: datum.device,
@@ -239,8 +239,8 @@ class PointerEventConverter {
               synthesized: datum.synthesized,
             );
             break;
-          case ui.PointerChange.gestureUp:
-            yield PointerGestureUpEvent(
+          case ui.PointerChange.flowEnd:
+            yield PointerFlowEndEvent(
               timeStamp: timeStamp,
               kind: kind,
               device: datum.device,

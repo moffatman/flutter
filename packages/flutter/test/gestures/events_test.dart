@@ -506,6 +506,42 @@ void main() {
       localPosition: localPosition,
     );
 
+    const PointerFlowStartEvent flowStart = PointerFlowStartEvent(
+      timeStamp: Duration(seconds: 2),
+      kind: PointerDeviceKind.mouse,
+      device: 1,
+      position: Offset(20, 30),
+    );
+    _expectTransformedEvent(
+      original: flowStart,
+      transform: transform,
+      localPosition: localPosition,
+    );
+
+    const PointerFlowUpdateEvent flowUpdate = PointerFlowUpdateEvent(
+      timeStamp: Duration(seconds: 2),
+      kind: PointerDeviceKind.mouse,
+      device: 1,
+      position: Offset(20, 30),
+    );
+    _expectTransformedEvent(
+      original: flowUpdate,
+      transform: transform,
+      localPosition: localPosition,
+    );
+
+    const PointerFlowEndEvent flowEnd = PointerFlowEndEvent(
+      timeStamp: Duration(seconds: 2),
+      kind: PointerDeviceKind.mouse,
+      device: 1,
+      position: Offset(20, 30),
+    );
+    _expectTransformedEvent(
+      original: flowEnd,
+      transform: transform,
+      localPosition: localPosition,
+    );
+
     const PointerUpEvent up = PointerUpEvent(
       timeStamp: Duration(seconds: 2),
       pointer: 45,
