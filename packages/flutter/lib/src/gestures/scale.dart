@@ -40,6 +40,9 @@ class _PointerFlowData {
   Offset focalPoint;
   double scale;
   double angle;
+
+  @override
+  String toString() => '_PointerFlowData(focalPoint: $focalPoint, scale: $scale, angle: $angle)';
 }
 
 /// Details for [GestureScaleStartCallback].
@@ -658,6 +661,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
+    _pointerFlows.remove(pointer);
     stopTrackingPointer(pointer);
   }
 
