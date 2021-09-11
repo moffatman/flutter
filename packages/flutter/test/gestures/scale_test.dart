@@ -906,6 +906,10 @@ void main() {
     updatedFocalPoint = null;
     expect(updatedScale, math.sqrt(2));
     updatedScale = null;
+    expect(updatedHorizontalScale, 1.0);
+    updatedHorizontalScale = null;
+    expect(updatedVerticalScale, 1.0);
+    updatedVerticalScale = null;
     expect(updatedDelta, const Offset(10, 0));
     updatedDelta = null;
     expect(updatedRotation, -math.pi / 4);
@@ -921,6 +925,10 @@ void main() {
     updatedFocalPoint = null;
     expect(updatedScale, closeTo(2, 0.0001));
     updatedScale = null;
+    expect(updatedHorizontalScale, math.sqrt(2));
+    updatedHorizontalScale = null;
+    expect(updatedVerticalScale, math.sqrt(2));
+    updatedVerticalScale = null;
     expect(updatedDelta, Offset.zero);
     updatedDelta = null;
     expect(updatedRotation, closeTo(math.pi / 12, 0.0001));
