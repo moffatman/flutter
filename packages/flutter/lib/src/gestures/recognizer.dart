@@ -96,8 +96,11 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
   /// coming from.
   final Map<int, PointerDeviceKind> _pointerToKind = <int, PointerDeviceKind>{};
 
-  /// Registers a new pointer gesture that might be relevant to this gesture
+  /// Registers a new pointer flow that might be relevant to this gesture
   /// detector.
+  /// 
+  /// A pointer flow is a stream of transform events such as pan, zoom, and rotate
+  /// which most often originate from a multi-finger trackpad gesture. 
   ///
   /// The owner of this gesture recognizer calls addPointerFlow() with the
   /// PointerDownEvent of each pointer that should be considered for
@@ -120,7 +123,7 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
     }
   }
 
-  /// Registers a new pointer gesture that's been checked to be allowed by this
+  /// Registers a new pointer flow that's been checked to be allowed by this
   /// gesture recognizer.
   ///
   /// Subclasses of [GestureRecognizer] are supposed to override this method
@@ -181,17 +184,15 @@ abstract class GestureRecognizer extends GestureArenaMember with DiagnosticableT
     return _supportedDevices == null || _supportedDevices!.contains(event.kind);
   }
 
-  /// Handles a pointer gesture being added that's not allowed by this recognizer.
+  /// Handles a pointer flow being added that's not allowed by this recognizer.
   /// 
   /// Subclasses can override this method and reject the gesture.
   @protected
   void handleNonAllowedPointerFlow(PointerFlowStartEvent event) { }
 
-  /// Checks whether or not a pointer gesture is allowed to be tracked by this recognizer.
+  /// Checks whether or not a pointer flow is allowed to be tracked by this recognizer.
   @protected
-  bool isPointerFlowAllowed(PointerFlowStartEvent event) {
-    return false;
-  }
+  bool isPointerFlowAllowed(PointerFlowStartEvent event) => false;
 
   /// For a given pointer ID, returns the device kind associated with it.
   ///

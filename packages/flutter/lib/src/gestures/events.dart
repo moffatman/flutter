@@ -2029,7 +2029,7 @@ mixin _CopyPointerFlowStartEvent on PointerEvent {
 ///  * [Listener.onPointerFlowStart], which allows callers to be notified of these
 ///    events in a widget tree.
 class PointerFlowStartEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowStartEvent {
-  /// Creates a pointer gesture down event.
+  /// Creates a pointer flow start event.
   ///
   /// All of the arguments must be non-null.
   const PointerFlowStartEvent({
@@ -2137,7 +2137,7 @@ mixin _CopyPointerFlowUpdateEvent on PointerEvent {
 ///  * [Listener.onPointerFlowUpdate], which allows callers to be notified of these
 ///    events in a widget tree.
 class PointerFlowUpdateEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowUpdateEvent {
-  /// Creates a pointer gesture move event.
+  /// Creates a pointer flow update event.
   ///
   /// All of the arguments must be non-null.
   const PointerFlowUpdateEvent({
@@ -2252,7 +2252,7 @@ mixin _CopyPointerFlowEndEvent on PointerEvent {
 ///  * [Listener.onPointerFlowEnd], which allows callers to be notified of these
 ///    events in a widget tree.
 class PointerFlowEndEvent extends PointerEvent with _PointerEventDescription, _CopyPointerFlowEndEvent {
-  /// Creates a pointer gesture up event.
+  /// Creates a pointer flow end event.
   ///
   /// All of the arguments must be non-null.
   const PointerFlowEndEvent({

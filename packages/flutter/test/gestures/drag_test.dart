@@ -1541,7 +1541,7 @@ void main() {
     didEndPan = false;
   });
 
-  testGesture('Pointer gestures should work alongside touch gestures', (GestureTester tester) {
+  testGesture('Pointer flows should work alongside touches', (GestureTester tester) {
     final PanGestureRecognizer pan = PanGestureRecognizer();
     final PanGestureRecognizer competingPan = PanGestureRecognizer(); // No reason
     addTearDown(pan.dispose);

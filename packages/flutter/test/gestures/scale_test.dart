@@ -704,7 +704,7 @@ void main() {
     scale.dispose();
   });
 
-  testGesture('Should recognize scale gestures from pointer gestures', (GestureTester tester) {
+  testGesture('Should recognize scale gestures from pointer flow events', (GestureTester tester) {
     final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
     final HorizontalDragGestureRecognizer drag = HorizontalDragGestureRecognizer();
 
@@ -804,7 +804,7 @@ void main() {
     scale.dispose();
   });
 
-  testGesture('Pointer gestures should work alongside touch gestures', (GestureTester tester) {
+  testGesture('Pointer flows should work alongside touches', (GestureTester tester) {
     final ScaleGestureRecognizer scale = ScaleGestureRecognizer();
     final HorizontalDragGestureRecognizer drag = HorizontalDragGestureRecognizer();
 
@@ -836,9 +836,9 @@ void main() {
 
     final TestPointer touchPointer1 = TestPointer(1);
     final TestPointer touchPointer2 = TestPointer(2);
-    final TestPointer gesturePointer = TestPointer(3);
+    final TestPointer flowPointer = TestPointer(3);
 
-    final PointerFlowStartEvent gestureStart = gesturePointer.flowStart(Offset.zero);
+    final PointerFlowStartEvent gestureStart = flowPointer.flowStart(Offset.zero);
     scale.addPointerFlow(gestureStart);
     drag.addPointerFlow(gestureStart);
 
@@ -857,7 +857,7 @@ void main() {
     expect(updatedDelta, isNull);
     expect(didEndScale, isFalse);
 
-    tester.route(gesturePointer.flowUpdate(Offset.zero, pan: const Offset(40, 40)));
+    tester.route(flowPointer.flowUpdate(Offset.zero, pan: const Offset(40, 40)));
     expect(didStartScale, isTrue);
     didStartScale = false;
     expect(updatedFocalPoint, const Offset(40.0, 40.0));
@@ -915,7 +915,7 @@ void main() {
     // Change the scale and angle of the trackpad gesture to show the combination
     // Scale should be multiplied together
     // Rotation angle should be added together
-    tester.route(gesturePointer.flowUpdate(Offset.zero, pan: const Offset(40, 40), scale: math.sqrt(2), angle: math.pi / 3));
+    tester.route(flowPointer.flowUpdate(Offset.zero, pan: const Offset(40, 40), scale: math.sqrt(2), angle: math.pi / 3));
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, const Offset(30, 30));
     updatedFocalPoint = null;
@@ -928,7 +928,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // Move the trackpad gesture to show the combination
-    tester.route(gesturePointer.flowUpdate(const Offset(15, 15), pan: const Offset(55, 55), scale: math.sqrt(2), angle: math.pi / 3));
+    tester.route(flowPointer.flowUpdate(const Offset(15, 15), pan: const Offset(55, 55), scale: math.sqrt(2), angle: math.pi / 3));
     expect(didStartScale, isFalse);
     expect(updatedFocalPoint, const Offset(40, 40));
     updatedFocalPoint = null;
@@ -941,7 +941,7 @@ void main() {
     expect(didEndScale, isFalse);
 
     // We are done
-    tester.route(gesturePointer.flowEnd());
+    tester.route(flowPointer.flowEnd());
     tester.route(touchPointer1.up());
     tester.route(touchPointer2.up());
     expect(didStartScale, isFalse);
