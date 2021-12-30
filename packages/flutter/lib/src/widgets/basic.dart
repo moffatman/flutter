@@ -6057,6 +6057,9 @@ class Listener extends SingleChildRenderObjectWidget {
     this.onPointerUp,
     this.onPointerHover,
     this.onPointerCancel,
+    this.onPointerPanZoomStart,
+    this.onPointerPanZoomUpdate,
+    this.onPointerPanZoomEnd,
     this.onPointerSignal,
     this.behavior = HitTestBehavior.deferToChild,
     Widget? child,
@@ -6086,6 +6089,15 @@ class Listener extends SingleChildRenderObjectWidget {
   /// no longer directed towards this receiver.
   final PointerCancelEventListener? onPointerCancel;
 
+  /// Called when a pan/zoom begins such as from a trackpad gesture
+  final PointerPanZoomStartEventListener? onPointerPanZoomStart;
+
+  /// Called when a pan/zoom is updated
+  final PointerPanZoomUpdateEventListener? onPointerPanZoomUpdate;
+
+  /// Called when a pan/zoom finishes
+  final PointerPanZoomEndEventListener? onPointerPanZoomEnd;
+
   /// Called when a pointer signal occurs over this object.
   ///
   /// See also:
@@ -6105,6 +6117,9 @@ class Listener extends SingleChildRenderObjectWidget {
       onPointerUp: onPointerUp,
       onPointerHover: onPointerHover,
       onPointerCancel: onPointerCancel,
+      onPointerPanZoomStart: onPointerPanZoomStart,
+      onPointerPanZoomUpdate: onPointerPanZoomUpdate,
+      onPointerPanZoomEnd: onPointerPanZoomEnd,
       onPointerSignal: onPointerSignal,
       behavior: behavior,
     );
@@ -6118,6 +6133,9 @@ class Listener extends SingleChildRenderObjectWidget {
       ..onPointerUp = onPointerUp
       ..onPointerHover = onPointerHover
       ..onPointerCancel = onPointerCancel
+      ..onPointerPanZoomStart = onPointerPanZoomStart
+      ..onPointerPanZoomUpdate = onPointerPanZoomUpdate
+      ..onPointerPanZoomEnd = onPointerPanZoomEnd
       ..onPointerSignal = onPointerSignal
       ..behavior = behavior;
   }
@@ -6131,6 +6149,9 @@ class Listener extends SingleChildRenderObjectWidget {
       if (onPointerUp != null) 'up',
       if (onPointerHover != null) 'hover',
       if (onPointerCancel != null) 'cancel',
+      if (onPointerPanZoomStart != null) 'panZoomStart',
+      if (onPointerPanZoomUpdate != null) 'panZoomUpdate',
+      if (onPointerPanZoomEnd != null) 'panZoomEnd',
       if (onPointerSignal != null) 'signal',
     ];
     properties.add(IterableProperty<String>('listeners', listeners, ifEmpty: '<none>'));
