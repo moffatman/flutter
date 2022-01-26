@@ -22,6 +22,7 @@ const Set<PointerDeviceKind> _kTouchLikeDeviceTypes = <PointerDeviceKind>{
   // The VoiceAccess sends pointer events with unknown type when scrolling
   // scrollables.
   PointerDeviceKind.unknown,
+  PointerDeviceKind.trackpad,
 };
 
 /// The default overscroll indicator applied on [TargetPlatform.android].
