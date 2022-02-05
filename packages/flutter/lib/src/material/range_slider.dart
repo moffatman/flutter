@@ -619,7 +619,7 @@ class _RangeSliderState extends State<RangeSlider> with TickerProviderStateMixin
     // This size is used as the max bounds for the painting of the value
     // indicators. It must be kept in sync with the function with the same name
     // in slider.dart.
-    Size screenSize() => MediaQuery.of(context).size;
+    Size screenSize() => MediaQuery.of(context, MediaQueryAspect.size).size;
 
     return CompositedTransformTarget(
       link: _layerLink,
@@ -628,7 +628,7 @@ class _RangeSliderState extends State<RangeSlider> with TickerProviderStateMixin
         divisions: widget.divisions,
         labels: widget.labels,
         sliderTheme: sliderTheme,
-        textScaleFactor: MediaQuery.of(context).textScaleFactor,
+        textScaleFactor: MediaQuery.of(context, MediaQueryAspect.textScaleFactor).textScaleFactor,
         screenSize: screenSize(),
         onChanged: (widget.onChanged != null) && (widget.max > widget.min) ? _handleChanged : null,
         onChangeStart: widget.onChangeStart != null ? _handleDragStart : null,

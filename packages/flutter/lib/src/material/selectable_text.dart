@@ -643,7 +643,7 @@ class _SelectableTextState extends State<SelectableText> implements TextSelectio
         cursorColor = widget.cursorColor ?? selectionStyle.cursorColor ?? cupertinoTheme.primaryColor;
         selectionColor = selectionStyle.selectionColor ?? cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
-        cursorOffset = Offset(iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        cursorOffset = Offset(iOSHorizontalOffset / MediaQuery.of(context, MediaQueryAspect.devicePixelRatio).devicePixelRatio, 0);
         break;
 
       case TargetPlatform.macOS:
@@ -655,7 +655,7 @@ class _SelectableTextState extends State<SelectableText> implements TextSelectio
         cursorColor = widget.cursorColor ?? selectionStyle.cursorColor ?? cupertinoTheme.primaryColor;
         selectionColor = selectionStyle.selectionColor ?? cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
-        cursorOffset = Offset(iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        cursorOffset = Offset(iOSHorizontalOffset / MediaQuery.of(context, MediaQueryAspect.devicePixelRatio).devicePixelRatio, 0);
         break;
 
       case TargetPlatform.android:
