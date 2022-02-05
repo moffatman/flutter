@@ -13,6 +13,7 @@ import 'basic.dart';
 import 'binding.dart';
 import 'debug.dart';
 import 'framework.dart';
+import 'inherited_model.dart';
 
 /// Whether in portrait or landscape.
 enum Orientation {
@@ -21,6 +22,50 @@ enum Orientation {
 
   /// Wider than tall.
   landscape
+}
+
+/// A specific part of MediaQueryData to depend on
+enum MediaQueryAspect {
+  /// MediaQueryData.size
+  size,
+  /// MediaQueryData.size.width
+  width,
+  /// MediaQueryData.size.height
+  height,
+  /// MediaQueryData.orientation
+  orientation,
+  /// MediaQueryData.devicePixelRatio
+  devicePixelRatio,
+  /// MediaQueryData.textScaleFactor
+  textScaleFactor,
+  /// MediaQueryData.platformBrightness
+  platformBrightness,
+  /// MediaQueryData.padding
+  padding,
+  /// MediaQueryData.viewInsets
+  viewInsets,
+  /// MediaQueryData.systemGestureInsets
+  systemGestureInsets,
+  /// MediaQueryData.viewPadding
+  viewPadding,
+  /// MediaQueryData.alwaysUse24HourFormat
+  alwaysUse24HourFormat,
+  /// MediaQueryData.accessibleNavigation
+  accessibleNavigation,
+  /// MediaQueryData.invertColors
+  invertColors,
+  /// MediaQueryData.highContrast
+  highContrast,
+  /// MediaQueryData.disableAnimations
+  disableAnimations,
+  /// MediaQueryData.boldText
+  boldText,
+  /// MediaQueryData.navigationMode
+  navigationMode,
+  /// MediaQueryData.gestureSettings
+  gestureSettings,
+  /// MediaQueryData.displayFeatures
+  displayFeatures,
 }
 
 /// Information about a piece of media (e.g., a window).
@@ -666,7 +711,7 @@ class MediaQueryData {
 ///  * [WidgetsApp] and [MaterialApp], which introduce a [MediaQuery] and keep
 ///    it up to date with the current screen metrics as they change.
 ///  * [MediaQueryData], the data structure that represents the metrics.
-class MediaQuery extends InheritedWidget {
+class MediaQuery extends InheritedModel<MediaQueryAspect> {
   /// Creates a widget that provides [MediaQueryData] to its descendants.
   ///
   /// The [data] and [child] arguments must not be null.
@@ -859,14 +904,24 @@ class MediaQuery extends InheritedWidget {
   /// exception in release builds, and throw a descriptive [FlutterError] in
   /// debug builds.
   ///
+  /// Provide an [aspect] if you are only interested in one part of the
+  /// returned [MediaQueryData]. Your widget will only be scheduled to be rebuilt
+  /// when that media parameter changes, instead of rebuilding when any part of
+  /// [MediaQueryData] changes.
+  ///
+  /// For example:
+  /// ```dart
+  /// double height = MediaQuery.of(context, MediaQueryAspect.height).size.height;
+  /// ```
+  ///
   /// See also:
   ///
   ///  * [maybeOf], which doesn't throw or assert if it doesn't find a
   ///    [MediaQuery] ancestor, it returns null instead.
-  static MediaQueryData of(BuildContext context) {
+  static MediaQueryData of(BuildContext context, [MediaQueryAspect? aspect]) {
     assert(context != null);
     assert(debugCheckHasMediaQuery(context));
-    return context.dependOnInheritedWidgetOfExactType<MediaQuery>()!.data;
+    return InheritedModel.inheritFrom<MediaQuery>(context, aspect: aspect)!.data;
   }
 
   /// The data from the closest instance of this class that encloses the given
@@ -892,19 +947,29 @@ class MediaQuery extends InheritedWidget {
   /// }
   /// ```
   ///
+  /// Provide an [aspect] if you are only interested in one part of the
+  /// returned [MediaQueryData]. Your widget will only be scheduled to be rebuilt
+  /// when that media parameter changes, instead of rebuilding when any part of
+  /// [MediaQueryData] changes.
+  ///
+  /// For example:
+  /// ```dart
+  /// double? height = MediaQuery.maybeOf(context, MediaQueryAspect.height)?.size.height;
+  /// ```
+  ///
   /// See also:
   ///
   ///  * [of], which will throw if it doesn't find a [MediaQuery] ancestor,
   ///    instead of returning null.
-  static MediaQueryData? maybeOf(BuildContext context) {
+  static MediaQueryData? maybeOf(BuildContext context, [MediaQueryAspect? aspect]) {
     assert(context != null);
-    return context.dependOnInheritedWidgetOfExactType<MediaQuery>()?.data;
+    return InheritedModel.inheritFrom<MediaQuery>(context, aspect: aspect)?.data;
   }
 
   /// Returns textScaleFactor for the nearest MediaQuery ancestor or 1.0, if
   /// no such ancestor exists.
   static double textScaleFactorOf(BuildContext context) {
-    return MediaQuery.maybeOf(context)?.textScaleFactor ?? 1.0;
+    return MediaQuery.maybeOf(context, MediaQueryAspect.textScaleFactor)?.textScaleFactor ?? 1.0;
   }
 
   /// Returns platformBrightness for the nearest MediaQuery ancestor or
@@ -913,7 +978,7 @@ class MediaQuery extends InheritedWidget {
   /// Use of this method will cause the given [context] to rebuild any time that
   /// any property of the ancestor [MediaQuery] changes.
   static Brightness platformBrightnessOf(BuildContext context) {
-    return MediaQuery.maybeOf(context)?.platformBrightness ?? Brightness.light;
+    return MediaQuery.maybeOf(context, MediaQueryAspect.platformBrightness)?.platformBrightness ?? Brightness.light;
   }
 
   /// Returns highContrast for the nearest MediaQuery ancestor or false, if no
@@ -924,13 +989,13 @@ class MediaQuery extends InheritedWidget {
   ///  * [MediaQueryData.highContrast], which indicates the platform's
   ///    desire to increase contrast.
   static bool highContrastOf(BuildContext context) {
-    return MediaQuery.maybeOf(context)?.highContrast ?? false;
+    return MediaQuery.maybeOf(context, MediaQueryAspect.highContrast)?.highContrast ?? false;
   }
 
   /// Returns the boldText accessibility setting for the nearest MediaQuery
   /// ancestor, or false if no such ancestor exists.
   static bool boldTextOverride(BuildContext context) {
-    return MediaQuery.maybeOf(context)?.boldText ?? false;
+    return MediaQuery.maybeOf(context, MediaQueryAspect.boldText)?.boldText ?? false;
   }
 
   @override
@@ -940,6 +1005,29 @@ class MediaQuery extends InheritedWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<MediaQueryData>('data', data, showName: false));
+  }
+
+  @override
+  bool updateShouldNotifyDependent(MediaQuery oldWidget, Set<MediaQueryAspect> dependencies) {
+    return (data.size != oldWidget.data.size && dependencies.contains(MediaQueryAspect.size))
+        || (data.size.width != oldWidget.data.size.width && dependencies.contains(MediaQueryAspect.width))
+        || (data.size.height != oldWidget.data.size.height && dependencies.contains(MediaQueryAspect.height))
+        || (data.orientation != oldWidget.data.orientation && dependencies.contains(MediaQueryAspect.orientation))
+        || (data.devicePixelRatio != oldWidget.data.devicePixelRatio && dependencies.contains(MediaQueryAspect.devicePixelRatio))
+        || (data.textScaleFactor != oldWidget.data.textScaleFactor && dependencies.contains(MediaQueryAspect.textScaleFactor))
+        || (data.platformBrightness != oldWidget.data.platformBrightness && dependencies.contains(MediaQueryAspect.platformBrightness))
+        || (data.viewInsets != oldWidget.data.viewInsets && dependencies.contains(MediaQueryAspect.viewInsets))
+        || (data.systemGestureInsets != oldWidget.data.systemGestureInsets && dependencies.contains(MediaQueryAspect.systemGestureInsets))
+        || (data.viewPadding != oldWidget.data.viewPadding && dependencies.contains(MediaQueryAspect.viewPadding))
+        || (data.alwaysUse24HourFormat != oldWidget.data.alwaysUse24HourFormat && dependencies.contains(MediaQueryAspect.alwaysUse24HourFormat))
+        || (data.accessibleNavigation != oldWidget.data.accessibleNavigation && dependencies.contains(MediaQueryAspect.accessibleNavigation))
+        || (data.invertColors != oldWidget.data.invertColors && dependencies.contains(MediaQueryAspect.invertColors))
+        || (data.highContrast != oldWidget.data.highContrast && dependencies.contains(MediaQueryAspect.highContrast))
+        || (data.disableAnimations != oldWidget.data.disableAnimations && dependencies.contains(MediaQueryAspect.disableAnimations))
+        || (data.boldText != oldWidget.data.boldText && dependencies.contains(MediaQueryAspect.boldText))
+        || (data.navigationMode != oldWidget.data.navigationMode && dependencies.contains(MediaQueryAspect.navigationMode))
+        || (data.gestureSettings != oldWidget.data.gestureSettings && dependencies.contains(MediaQueryAspect.gestureSettings))
+        || (data.displayFeatures != oldWidget.data.displayFeatures && dependencies.contains(MediaQueryAspect.displayFeatures));
   }
 }
 
