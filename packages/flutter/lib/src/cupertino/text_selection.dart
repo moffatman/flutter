@@ -113,7 +113,7 @@ class _CupertinoTextSelectionControlsToolbarState extends State<_CupertinoTextSe
     final List<Widget> items = <Widget>[];
     final CupertinoLocalizations localizations = CupertinoLocalizations.of(context);
     final Widget onePhysicalPixelVerticalDivider =
-        SizedBox(width: 1.0 / MediaQuery.of(context).devicePixelRatio);
+        SizedBox(width: 1.0 / MediaQuery.of(context, MediaQueryAspect.devicePixelRatio).devicePixelRatio);
 
     void addToolbarButton(
       String text,
