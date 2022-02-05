@@ -87,7 +87,7 @@ class TextSelectionToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double paddingAbove = MediaQuery.of(context).padding.top
+    final double paddingAbove = MediaQuery.of(context, MediaQueryAspect.padding).padding.top
         + _kToolbarScreenPadding;
     final double availableHeight = anchorAbove.dy - paddingAbove;
     final bool fitsAbove = _kToolbarHeight <= availableHeight;
