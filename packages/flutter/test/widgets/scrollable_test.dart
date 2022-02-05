@@ -1370,6 +1370,36 @@ void main() {
     expect(syntheticScrollableNode!.hasFlag(ui.SemanticsFlag.hasImplicitScrolling), isTrue);
     handle.dispose();
   });
+
+    testWidgets('PointerScroll distances are multiplied by 3 on macOS and iPadOS', (WidgetTester tester) async {
+    final ScrollController controller = ScrollController();
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          controller: controller,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  for (int i = 0; i < 100; i++)
+                    Text('SingleChildScrollView $i'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    ));
+    expect(controller.position.pixels, 0.0);
+    final Offset scrollable = tester.getCenter(find.text('SingleChildScrollView 3'));
+    final TestPointer testPointer = TestPointer(1, ui.PointerDeviceKind.mouse);
+    // Hover over the outer scroll view and create a pointer scroll.
+    testPointer.hover(scrollable);
+    await tester.sendEventToBinding(testPointer.scroll(const Offset(0.0, 20.0)));
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(controller.position.pixels, 60.0);
+  }, variant: const TargetPlatformVariant(<TargetPlatform>{TargetPlatform.macOS, TargetPlatform.iOS}));
 }
 
 // ignore: must_be_immutable

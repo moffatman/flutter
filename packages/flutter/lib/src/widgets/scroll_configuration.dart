@@ -90,6 +90,7 @@ class ScrollBehavior {
     Set<PointerDeviceKind>? dragDevices,
     ScrollPhysics? physics,
     TargetPlatform? platform,
+    double? discreteScrollMultiplier,
     AndroidOverscrollIndicator? androidOverscrollIndicator,
   }) {
     return _WrappedScrollBehavior(
@@ -98,6 +99,7 @@ class ScrollBehavior {
       overscroll: overscroll ?? true,
       physics: physics,
       platform: platform,
+      discreteScrollMultiplier: discreteScrollMultiplier,
       dragDevices: dragDevices,
       androidOverscrollIndicator: androidOverscrollIndicator
     );
@@ -234,6 +236,20 @@ class ScrollBehavior {
     }
   }
 
+  /// A factor to multiply each discrete scroll delta with
+  double getDiscreteScrollMultiplier(BuildContext context) {
+    switch (getPlatform(context)) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return 3.0;
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return 1.0;
+    }
+  }
+
   /// Called whenever a [ScrollConfiguration] is rebuilt with a new
   /// [ScrollBehavior] of the same [runtimeType].
   ///
@@ -257,6 +273,7 @@ class _WrappedScrollBehavior implements ScrollBehavior {
     this.overscroll = true,
     this.physics,
     this.platform,
+    this.discreteScrollMultiplier,
     Set<PointerDeviceKind>? dragDevices,
     AndroidOverscrollIndicator? androidOverscrollIndicator,
   }) : _androidOverscrollIndicator = androidOverscrollIndicator,
@@ -268,6 +285,7 @@ class _WrappedScrollBehavior implements ScrollBehavior {
   final ScrollPhysics? physics;
   final TargetPlatform? platform;
   final Set<PointerDeviceKind>? _dragDevices;
+  final double? discreteScrollMultiplier;
   @override
   final AndroidOverscrollIndicator? _androidOverscrollIndicator;
 
@@ -302,6 +320,7 @@ class _WrappedScrollBehavior implements ScrollBehavior {
     bool? overscroll,
     ScrollPhysics? physics,
     TargetPlatform? platform,
+    double? discreteScrollMultiplier,
     Set<PointerDeviceKind>? dragDevices,
     AndroidOverscrollIndicator? androidOverscrollIndicator
   }) {
@@ -310,6 +329,7 @@ class _WrappedScrollBehavior implements ScrollBehavior {
       overscroll: overscroll ?? this.overscroll,
       physics: physics ?? this.physics,
       platform: platform ?? this.platform,
+      discreteScrollMultiplier: discreteScrollMultiplier ?? this.discreteScrollMultiplier,
       dragDevices: dragDevices ?? this.dragDevices,
       androidOverscrollIndicator: androidOverscrollIndicator ?? this.androidOverscrollIndicator,
     );
@@ -326,6 +346,11 @@ class _WrappedScrollBehavior implements ScrollBehavior {
   }
 
   @override
+  double getDiscreteScrollMultiplier(BuildContext context) {
+    return discreteScrollMultiplier ?? delegate.getDiscreteScrollMultiplier(context);
+  }
+
+  @override
   bool shouldNotify(_WrappedScrollBehavior oldDelegate) {
     return oldDelegate.delegate.runtimeType != delegate.runtimeType
         || oldDelegate.scrollbars != scrollbars
@@ -333,6 +358,7 @@ class _WrappedScrollBehavior implements ScrollBehavior {
         || oldDelegate.physics != physics
         || oldDelegate.platform != platform
         || setEquals<PointerDeviceKind>(oldDelegate.dragDevices, dragDevices)
+        || oldDelegate.discreteScrollMultiplier != discreteScrollMultiplier
         || delegate.shouldNotify(oldDelegate.delegate);
   }
 

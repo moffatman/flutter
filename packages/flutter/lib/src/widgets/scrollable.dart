@@ -677,7 +677,7 @@ class ScrollableState extends State<Scrollable> with TickerProviderStateMixin, R
   // position, taking min/max scroll extent into account.
   double _targetScrollOffsetForPointerScroll(double delta) {
     return math.min(
-      math.max(position.pixels + delta, position.minScrollExtent),
+      math.max(position.pixels + (_configuration.getDiscreteScrollMultiplier(context) * delta), position.minScrollExtent),
       position.maxScrollExtent,
     );
   }
@@ -692,7 +692,7 @@ class ScrollableState extends State<Scrollable> with TickerProviderStateMixin, R
     if (axisDirectionIsReversed(widget.axisDirection)) {
       delta *= -1;
     }
-    return delta;
+    return delta * _configuration.getDiscreteScrollMultiplier(context);
   }
 
   void _receivedPointerSignal(PointerSignalEvent event) {
