@@ -105,7 +105,7 @@ void main() {
 
       // Start a press on the child.
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // The _DecoyChild is showing directly on top of the child.
       expect(findDecoyChild(child), findsOneWidget);
@@ -170,7 +170,7 @@ void main() {
 
       // Start a press on the child.
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // The _DecoyChild is showing directly on top of the child.
       expect(findDecoyChild(child), findsOneWidget);
@@ -257,7 +257,7 @@ void main() {
 
       // Start a press on the child.
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // The _DecoyChild is showing directly on top of the child.
       expect(findDecoyChild(child), findsOneWidget);
@@ -305,7 +305,7 @@ void main() {
 
       // Open the CupertinoContextMenu
       final TestGesture firstGesture = await tester.startGesture(tester.getCenter(find.byWidget(child)));
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await firstGesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -337,7 +337,7 @@ void main() {
 
       // Open the CupertinoContextMenu
       final TestGesture secondGesture = await tester.startGesture(tester.getCenter(find.byWidget(child)));
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await secondGesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -352,7 +352,7 @@ void main() {
       // Open the CupertinoContextMenu
       final Rect childRect = tester.getRect(find.byWidget(child));
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -370,7 +370,7 @@ void main() {
       // Open the CupertinoContextMenu
       final Rect childRect = tester.getRect(find.byWidget(child));
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -412,7 +412,7 @@ void main() {
       // Open the CupertinoContextMenu
       final Rect childRect = tester.getRect(find.byWidget(child));
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -438,7 +438,7 @@ void main() {
       // Open the CupertinoContextMenu
       final Rect childRect = tester.getRect(find.byWidget(child));
       final TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
       expect(findStatic(), findsOneWidget);
@@ -460,7 +460,7 @@ void main() {
       expect(find.byType(CupertinoContextMenuAction), findsNothing);
       Rect childRect = tester.getRect(find.byWidget(child));
       TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 
@@ -483,7 +483,7 @@ void main() {
       await tester.pumpAndSettle();
       childRect = tester.getRect(find.byWidget(child));
       gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 
@@ -506,7 +506,7 @@ void main() {
       expect(find.byType(CupertinoContextMenuAction), findsNothing);
       childRect = tester.getRect(find.byWidget(child));
       gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 
@@ -528,7 +528,7 @@ void main() {
       expect(find.byType(CupertinoContextMenuAction), findsNothing);
       Rect childRect = tester.getRect(find.byWidget(child));
       TestGesture gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 
@@ -550,7 +550,7 @@ void main() {
       expect(find.byType(CupertinoContextMenuAction), findsNothing);
       childRect = tester.getRect(find.byWidget(child));
       gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 
@@ -573,7 +573,7 @@ void main() {
       expect(find.byType(CupertinoContextMenuAction), findsNothing);
       childRect = tester.getRect(find.byWidget(child));
       gesture = await tester.startGesture(childRect.center);
-      await tester.pumpAndSettle();
+      await tester.pumpAndSettle(const Duration(milliseconds: 250));
       await gesture.up();
       await tester.pumpAndSettle();
 

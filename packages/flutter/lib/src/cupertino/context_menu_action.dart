@@ -57,11 +57,10 @@ class _CupertinoContextMenuActionState extends State<CupertinoContextMenuAction>
     color: Color(0xFFDDDDDD),
     darkColor: Color(0xFF3F3F40),
   );
-  static const double _kButtonHeight = 56.0;
   static const TextStyle _kActionSheetActionStyle = TextStyle(
     fontFamily: '.SF UI Text',
     inherit: false,
-    fontSize: 20.0,
+    fontSize: 18.0,
     fontWeight: FontWeight.w400,
     color: CupertinoColors.black,
     textBaseline: TextBaseline.alphabetic,
@@ -115,37 +114,33 @@ class _CupertinoContextMenuActionState extends State<CupertinoContextMenuAction>
         onTapCancel: onTapCancel,
         onTap: widget.onPressed,
         behavior: HitTestBehavior.opaque,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: _kButtonHeight,
-          ),
-          child: Semantics(
-            button: true,
-            child: Container(
-              decoration: BoxDecoration(
-                color: _isPressed
-                  ? CupertinoDynamicColor.resolve(_kBackgroundColorPressed, context)
-                  : CupertinoDynamicColor.resolve(_kBackgroundColor, context),
-              ),
-              padding: const EdgeInsets.symmetric(
-                vertical: 16.0,
-                horizontal: 10.0,
-              ),
-              child: DefaultTextStyle(
-                style: _textStyle,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Flexible(
-                      child: widget.child,
+        child: Semantics(
+          button: true,
+          child: Container(
+            decoration: BoxDecoration(
+              color: _isPressed
+                ? CupertinoDynamicColor.resolve(_kBackgroundColorPressed, context)
+                : CupertinoDynamicColor.resolve(_kBackgroundColor, context),
+            ),
+            padding: const EdgeInsets.symmetric(
+              vertical: 12.0,
+              horizontal: 10.0,
+            ),
+            child: DefaultTextStyle(
+              style: _textStyle,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Flexible(
+                    child: widget.child,
+                  ),
+                  if (widget.trailingIcon != null)
+                    Icon(
+                      widget.trailingIcon,
+                      color: _textStyle.color,
+                      size: 22,
                     ),
-                    if (widget.trailingIcon != null)
-                      Icon(
-                        widget.trailingIcon,
-                        color: _textStyle.color,
-                      ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
