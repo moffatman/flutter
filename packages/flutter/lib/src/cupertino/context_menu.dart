@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart' show kMinFlingVelocity, kLongPressTimeout;
+import 'package:flutter/gestures.dart' show GestureRecognizer, LongPressDownDetails, LongPressGestureRecognizer, PointerDeviceKind, kLongPressTimeout, kMinFlingVelocity;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/src/gestures/velocity_tracker.dart';
 import 'package:flutter/widgets.dart';
 
 import 'colors.dart';
@@ -198,20 +199,37 @@ class CupertinoContextMenu extends StatefulWidget {
 class _CupertinoContextMenuState extends State<CupertinoContextMenu> with TickerProviderStateMixin {
   final GlobalKey _childGlobalKey = GlobalKey();
   bool _childHidden = false;
+  // Animated thi child while it's being long-pressed
+  late AnimationController _glowController;
   // Animates the child while it's opening.
   late AnimationController _openController;
   Rect? _decoyChildEndRect;
   OverlayEntry? _lastOverlayEntry;
   _ContextMenuRoute<void>? _route;
+  late final GestureRecognizer recognizer;
+  final StreamController<Offset> _dragUpdateStream = StreamController<Offset>.broadcast();
+  final StreamController<DragEndDetails> _dragEndStream = StreamController<DragEndDetails>.broadcast();
+  late VelocityTracker _tracker;
+  late DateTime _trackingStartTime;
 
   @override
   void initState() {
     super.initState();
+    _glowController = AnimationController(
+      duration: kLongPressTimeout ~/ 2,
+      vsync: this
+    );
     _openController = AnimationController(
       duration: kLongPressTimeout,
       vsync: this,
     );
     _openController.addStatusListener(_onDecoyAnimationStatusChange);
+    recognizer = LongPressGestureRecognizer(duration: kLongPressTimeout ~/ 2)
+      ..onLongPressDown = _onLongPressDown
+      ..onLongPressUp = _onLongPressUp
+      ..onLongPress = _onLongPress
+      ..onLongPressMoveUpdate = _onLongPressMoveUpdate
+      ..onLongPressCancel = _onLongPressCancel;
   }
 
   // Determine the _ContextMenuLocation based on the location of the original
@@ -256,6 +274,8 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
       ),
       contextMenuLocation: _contextMenuLocation,
       previousChildRect: _decoyChildEndRect!,
+      dragUpdateStream: _dragUpdateStream.stream,
+      dragEndStream: _dragEndStream.stream,
       builder: (BuildContext context, Animation<double> animation) {
         if (widget.previewBuilder == null) {
           return widget.child;
@@ -307,32 +327,44 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
     if (status != AnimationStatus.dismissed) {
       return;
     }
-    setState(() {
-      _childHidden = false;
-    });
+    if (mounted) {
+      setState(() {
+        _childHidden = false;
+      });
+    }
     _route!.animation!.removeStatusListener(_routeAnimationStatusListener);
     _route = null;
   }
 
-  void _onTap() {
+  void _onLongPressCancel() {
+    _glowController.reverse();
     if (_openController.isAnimating && _openController.value < 0.5) {
       _openController.reverse();
     }
   }
 
-  void _onTapCancel() {
+  void _onLongPressUp() {
     if (_openController.isAnimating && _openController.value < 0.5) {
       _openController.reverse();
     }
+    _dragEndStream.add(DragEndDetails(
+      velocity: _tracker.getVelocity()
+    ));
   }
 
-  void _onTapUp(TapUpDetails details) {
-    if (_openController.isAnimating && _openController.value < 0.5) {
-      _openController.reverse();
-    }
+  void _onLongPressDown(LongPressDownDetails details) {
+    // _glowController.forward();
+    _tracker = VelocityTracker.withKind(details.kind ?? PointerDeviceKind.touch);
+    _trackingStartTime = DateTime.now();
   }
 
-  void _onTapDown(TapDownDetails details) {
+  void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    _dragUpdateStream.add(details.offsetFromOrigin);
+    _tracker.addPosition(DateTime.now().difference(_trackingStartTime), details.offsetFromOrigin);
+  }
+
+  void _onLongPress() {
+    _glowController.reverse();
     setState(() {
       _childHidden = true;
     });
@@ -358,7 +390,7 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
           beginRect: childRect,
           controller: _openController,
           endRect: _decoyChildEndRect,
-          child: widget.child,
+          child: widget.previewBuilder?.call(context, const AlwaysStoppedAnimation<double>(0), widget.child) ?? widget.child,
         );
       },
     );
@@ -368,21 +400,36 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: kIsWeb ? SystemMouseCursors.click : MouseCursor.defer,
-      child: GestureDetector(
-        onTapCancel: _onTapCancel,
-        onTapDown: _onTapDown,
-        onTapUp: _onTapUp,
-        onTap: _onTap,
-        child: TickerMode(
-          enabled: !_childHidden,
+    return Listener(
+      onPointerDown: recognizer.addPointer,
+      child: TickerMode(
+        enabled: !_childHidden,
+        child: Opacity(
+          key: _childGlobalKey,
+          opacity: _childHidden ? 0.0 : 1.0,
+          child: widget.child,
+        ),
+        /*child: AnimatedBuilder(
+          animation: _glowController,
+          builder: (context, child) {
+            final CurveTween tween1 = CurveTween(curve: Curves.ease);
+            final ColorTween tween2 = ColorTween(begin: const Color(0xFFFFFFFF), end: const Color(0xFF888888));
+            final Color newColor = tween2.evaluate(_glowController.drive(tween1))!;
+            return ShaderMask(
+              shaderCallback: (Rect bounds) => LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[newColor, newColor]
+              ).createShader(bounds),
+              child: child
+            );
+          },
           child: Opacity(
             key: _childGlobalKey,
             opacity: _childHidden ? 0.0 : 1.0,
             child: widget.child,
           ),
-        ),
+        ),*/
       ),
     );
   }
@@ -441,8 +488,13 @@ class _DecoyChildState extends State<_DecoyChild> with TickerProviderStateMixin 
       intervalOff: 0.5,
     );
 
-    final Rect midRect =  widget.beginRect!.deflate(
+    /*final Rect midRect =  widget.beginRect!.deflate(
       widget.beginRect!.width * (_kOpenScale - 1.0) / 2,
+    );*/
+    final Rect midRect = Rect.fromCenter(
+      center: widget.beginRect!.center,
+      width: widget.beginRect!.width * (1 - ((_kOpenScale - 1) / 2)),
+      height: widget.beginRect!.height * (1 - ((_kOpenScale - 1) / 2))
     );
     _rect = TweenSequence<Rect?>(<TweenSequenceItem<Rect?>>[
       TweenSequenceItem<Rect?>(
@@ -518,6 +570,8 @@ class _ContextMenuRoute<T> extends PopupRoute<T> {
   _ContextMenuRoute({
     required List<Widget> actions,
     required _ContextMenuLocation contextMenuLocation,
+    required this.dragUpdateStream,
+    required this.dragEndStream,
     this.barrierLabel,
     _ContextMenuPreviewBuilderChildless? builder,
     super.filter,
@@ -541,6 +595,8 @@ class _ContextMenuRoute<T> extends PopupRoute<T> {
   final _ContextMenuPreviewBuilderChildless? _builder;
   final GlobalKey _childGlobalKey = GlobalKey();
   final _ContextMenuLocation _contextMenuLocation;
+  final Stream<Offset> dragUpdateStream;
+  final Stream<DragEndDetails> dragEndStream;
   bool _externalOffstage = false;
   bool _internalOffstage = false;
   Orientation? _lastOrientation;
@@ -796,11 +852,16 @@ class _ContextMenuRoute<T> extends PopupRoute<T> {
           onDismiss: _onDismiss,
           orientation: orientation,
           sheetGlobalKey: _sheetGlobalKey,
+          dragUpdateStream: dragUpdateStream,
+          dragEndStream: dragEndStream,
           child: _builder!(context, animation),
         );
       },
     );
   }
+
+  @override
+  bool get shouldCancelActivePointers => false;
 }
 
 // The final state of the _ContextMenuRoute after animating in and before
@@ -811,6 +872,8 @@ class _ContextMenuRouteStatic extends StatefulWidget {
     required this.child,
     this.childGlobalKey,
     required this.contextMenuLocation,
+    required this.dragUpdateStream,
+    required this.dragEndStream,
     this.onDismiss,
     required this.orientation,
     this.sheetGlobalKey,
@@ -824,6 +887,8 @@ class _ContextMenuRouteStatic extends StatefulWidget {
   final _DismissCallback? onDismiss;
   final Orientation orientation;
   final GlobalKey? sheetGlobalKey;
+  final Stream<Offset> dragUpdateStream;
+  final Stream<DragEndDetails> dragEndStream;
 
   @override
   _ContextMenuRouteStaticState createState() => _ContextMenuRouteStaticState();
@@ -846,6 +911,8 @@ class _ContextMenuRouteStaticState extends State<_ContextMenuRouteStatic> with T
   late Animation<Offset> _moveAnimation;
   late Animation<double> _sheetScaleAnimation;
   late Animation<double> _sheetOpacityAnimation;
+  late StreamSubscription<Offset> _dragUpdateStreamSubscription;
+  late StreamSubscription<DragEndDetails> _dragEndStreamSubscription;
 
   // The scale of the child changes as a function of the distance it is dragged.
   static double _getScale(Orientation orientation, double maxDragDistance, double dy) {
@@ -1064,6 +1131,10 @@ class _ContextMenuRouteStaticState extends State<_ContextMenuRouteStatic> with T
   @override
   void initState() {
     super.initState();
+    _dragUpdateStreamSubscription = widget.dragUpdateStream.listen((Offset offset) {
+      _setDragOffset(offset);
+    });
+    _dragEndStreamSubscription = widget.dragEndStream.listen(_onPanEnd);
     _moveController = AnimationController(
       duration: _kMoveControllerDuration,
       value: 1.0,
@@ -1095,6 +1166,8 @@ class _ContextMenuRouteStaticState extends State<_ContextMenuRouteStatic> with T
   void dispose() {
     _moveController.dispose();
     _sheetController.dispose();
+    _dragUpdateStreamSubscription.cancel();
+    _dragEndStreamSubscription.cancel();
     super.dispose();
   }
 
@@ -1106,11 +1179,13 @@ class _ContextMenuRouteStaticState extends State<_ContextMenuRouteStatic> with T
     );
 
     return SafeArea(
+      bottom: false,
       child: Padding(
         padding: const EdgeInsets.all(_kPadding),
         child: Align(
           alignment: Alignment.topLeft,
           child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
             onPanEnd: _onPanEnd,
             onPanStart: _onPanStart,
             onPanUpdate: _onPanUpdate,
@@ -1155,31 +1230,36 @@ class _ContextMenuSheet extends StatelessWidget {
   // Get the children, whose order depends on orientation and
   // contextMenuLocation.
   List<Widget> getChildren(BuildContext context) {
-    final Widget menu = Flexible(
-      fit: FlexFit.tight,
-      flex: 2,
-      child: IntrinsicHeight(
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(13.0)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              actions.first,
-              for (Widget action in actions.skip(1))
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: CupertinoDynamicColor.resolve(_borderColor, context),
-                        width: 0.5,
-                      )
+    final Widget menu = SizedBox(
+      width: 250,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: <Widget>[
+            ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(15.0)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  actions.first,
+                  for (Widget action in actions.skip(1))
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(
+                            color: CupertinoDynamicColor.resolve(_borderColor, context),
+                            width: 0.5,
+                          )
+                        ),
+                      ),
+                      position: DecorationPosition.foreground,
+                      child: action,
                     ),
-                  ),
-                  position: DecorationPosition.foreground,
-                  child: action,
-                ),
-            ],
-          ),
+                ],
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(context).padding.bottom),
+          ],
         ),
       ),
     );
@@ -1231,6 +1311,9 @@ class _OnOffAnimation<T> extends CompoundAnimation<T> {
     required double intervalOn,
     required double intervalOff,
   }) : _offValue = offValue,
+       _onValue = onValue,
+       _intervalOn = intervalOn,
+       _controller = controller,
        assert(intervalOn >= 0.0 && intervalOn <= 1.0),
        assert(intervalOff >= 0.0 && intervalOff <= 1.0),
        assert(intervalOn <= intervalOff),
@@ -1250,7 +1333,10 @@ class _OnOffAnimation<T> extends CompoundAnimation<T> {
        );
 
   final T _offValue;
+  final T _onValue;
+  final double _intervalOn;
+  final AnimationController _controller;
 
   @override
-  T get value => next.value == _offValue ? next.value : first.value;
+  T get value => next.value == _offValue ? next.value : ((_controller.value == _intervalOn) ? _onValue : first.value);
 }
