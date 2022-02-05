@@ -336,7 +336,7 @@ EdgeInsetsGeometry _scaledPadding(BuildContext context) {
     const EdgeInsets.all(8),
     const EdgeInsets.symmetric(horizontal: 8),
     const EdgeInsets.symmetric(horizontal: 4),
-    MediaQuery.maybeOf(context)?.textScaleFactor ?? 1,
+    MediaQuery.maybeOf(context, MediaQueryAspect.textScaleFactor)?.textScaleFactor ?? 1,
   );
 }
 
@@ -423,7 +423,7 @@ class _TextButtonWithIcon extends TextButton {
       const EdgeInsets.all(8),
       const EdgeInsets.symmetric(horizontal: 4),
       const EdgeInsets.symmetric(horizontal: 4),
-      MediaQuery.maybeOf(context)?.textScaleFactor ?? 1,
+      MediaQuery.maybeOf(context, MediaQueryAspect.textScaleFactor)?.textScaleFactor ?? 1,
     );
     return super.defaultStyleOf(context).copyWith(
       padding: MaterialStateProperty.all<EdgeInsetsGeometry>(scaledPadding),
@@ -442,7 +442,7 @@ class _TextButtonWithIconChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double scale = MediaQuery.maybeOf(context)?.textScaleFactor ?? 1;
+    final double scale = MediaQuery.maybeOf(context, MediaQueryAspect.textScaleFactor)?.textScaleFactor ?? 1;
     final double gap = scale <= 1 ? 8 : lerpDouble(8, 4, math.min(scale - 1, 1))!;
     return Row(
       mainAxisSize: MainAxisSize.min,
