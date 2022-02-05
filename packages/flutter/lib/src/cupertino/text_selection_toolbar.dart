@@ -444,7 +444,7 @@ class _CupertinoTextSelectionToolbarContentState extends State<_CupertinoTextSel
           onPressed: _handlePreviousPage,
           text: '◀',
         ),
-        dividerWidth: 1.0 / MediaQuery.of(context).devicePixelRatio,
+        dividerWidth: 1.0 / MediaQuery.of(context, MediaQueryAspect.devicePixelRatio).devicePixelRatio,
         nextButton: CupertinoTextSelectionToolbarButton.text(
           onPressed: _handleNextPage,
           text: '▶',
