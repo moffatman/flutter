@@ -1010,7 +1010,7 @@ class _BottomNavigationBarState extends State<BottomNavigationBar> with TickerPr
     final BottomNavigationBarLandscapeLayout layout = widget.landscapeLayout
       ?? bottomTheme.landscapeLayout
       ?? BottomNavigationBarLandscapeLayout.spread;
-    final double additionalBottomPadding = MediaQuery.of(context).padding.bottom;
+    final double additionalBottomPadding = MediaQuery.of(context, MediaQueryAspect.padding).padding.bottom;
 
     Color? backgroundColor;
     switch (_effectiveType) {
