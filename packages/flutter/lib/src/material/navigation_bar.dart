@@ -918,7 +918,7 @@ class _ClampTextScaleFactor extends StatelessWidget {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
-        textScaleFactor: MediaQuery.of(context).textScaleFactor.clamp(
+        textScaleFactor: MediaQuery.of(context, MediaQueryAspect.textScaleFactor).textScaleFactor.clamp(
           0.0,
           upperLimit,
         ),
