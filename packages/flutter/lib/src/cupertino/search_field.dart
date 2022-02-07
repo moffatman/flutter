@@ -151,6 +151,7 @@ class CupertinoSearchTextField extends StatefulWidget {
     this.onSuffixTap,
     this.restorationId,
     this.focusNode,
+    this.smartQuotesType,
     this.autofocus = false,
     this.onTap,
     this.autocorrect = true,
@@ -297,6 +298,9 @@ class CupertinoSearchTextField extends StatefulWidget {
   /// {@macro flutter.widgets.editableText.autocorrect}
   final bool autocorrect;
 
+  /// {@macro flutter.services.TextInputConfiguration.smartQuotesType}
+  final SmartQuotesType? smartQuotesType;
+
   /// Disables the text field when false.
   ///
   /// Text fields in disabled states have a light grey background and don't
@@ -435,6 +439,7 @@ class _CupertinoSearchTextFieldState extends State<CupertinoSearchTextField>
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       autocorrect: widget.autocorrect,
+      smartQuotesType: widget.smartQuotesType,
       textInputAction: TextInputAction.search,
     );
   }
