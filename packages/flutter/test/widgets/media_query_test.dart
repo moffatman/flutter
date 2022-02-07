@@ -946,19 +946,19 @@ void main() {
 
     final Widget showWidth = Builder(
       builder: (BuildContext context) {
-        return Text('width: ${MediaQuery.of(context, MediaQueryAspect.width).size.width}');
+        return Text('width: ${MediaQuery.of(context, MediaQueryAspect.width).size.width.toStringAsFixed(0)}');
       }
     );
 
     final Widget showStaleWidth = Builder(
       builder: (BuildContext context) {
-        return Text('stale width: ${MediaQuery.of(context, MediaQueryAspect.height).size.width}');
+        return Text('stale width: ${MediaQuery.of(context, MediaQueryAspect.height).size.width.toStringAsFixed(0)}');
       }
     );
 
     final Widget showHeight = Builder(
       builder: (BuildContext context) {
-        return Text('height: ${MediaQuery.of(context, MediaQueryAspect.height).size.height}');
+        return Text('height: ${MediaQuery.of(context, MediaQueryAspect.height).size.height.toStringAsFixed(0)}');
       }
     );
 
@@ -996,24 +996,24 @@ void main() {
     );
 
     await tester.pumpWidget(MaterialApp(home: page));
-
-    expect(find.text('width: 800.0'), findsOneWidget);
-    expect(find.text('stale width: 800.0'), findsOneWidget);
-    expect(find.text('height: 600.0'), findsOneWidget);
+    debugDumpApp();
+    expect(find.text('width: 800'), findsOneWidget);
+    expect(find.text('stale width: 800'), findsOneWidget);
+    expect(find.text('height: 600'), findsOneWidget);
 
     await tester.tap(find.text('Increase width by 100'));
     await tester.pumpAndSettle();
     // Verify that only the 'width:' text was updated
-    expect(find.text('width: 900.0'), findsOneWidget);
-    expect(find.text('stale width: 800.0'), findsOneWidget);
-    expect(find.text('height: 600.0'), findsOneWidget);
+    expect(find.text('width: 900'), findsOneWidget);
+    expect(find.text('stale width: 800'), findsOneWidget);
+    expect(find.text('height: 600'), findsOneWidget);
 
     await tester.tap(find.text('Increase height by 100'));
     await tester.pumpAndSettle();
     // Verify that the 'height:' text was updated, and that
     // it caused the 'stale width:' text to update
-    expect(find.text('width: 900.0'), findsOneWidget);
-    expect(find.text('stale width: 900.0'), findsOneWidget);
-    expect(find.text('height: 700.0'), findsOneWidget);
+    expect(find.text('width: 900'), findsOneWidget);
+    expect(find.text('stale width: 900'), findsOneWidget);
+    expect(find.text('height: 700'), findsOneWidget);
   });
 }
