@@ -151,7 +151,7 @@ class NavigationBar extends StatelessWidget {
     final NavigationDestinationLabelBehavior effectiveLabelBehavior = labelBehavior
       ?? navigationBarTheme.labelBehavior
       ?? NavigationDestinationLabelBehavior.alwaysShow;
-    final double additionalBottomPadding = MediaQuery.of(context).padding.bottom;
+    final double additionalBottomPadding = MediaQuery.of(context, MediaQueryAspect.padding).padding.bottom;
 
     return Material(
       // With Material 3, the NavigationBar uses an overlay blend for the
@@ -917,7 +917,7 @@ class _ClampTextScaleFactor extends StatelessWidget {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
-        textScaleFactor: MediaQuery.of(context).textScaleFactor.clamp(
+        textScaleFactor: MediaQuery.of(context, MediaQueryAspect.textScaleFactor).textScaleFactor.clamp(
           0.0,
           upperLimit,
         ),
