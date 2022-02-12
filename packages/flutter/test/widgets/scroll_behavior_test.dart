@@ -134,6 +134,7 @@ void main() {
         PointerDeviceKind.touch,
         PointerDeviceKind.stylus,
         PointerDeviceKind.invertedStylus,
+        PointerDeviceKind.trackpad,
       });
 
       // Use copyWith to modify drag devices
