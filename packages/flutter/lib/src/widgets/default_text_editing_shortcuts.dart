@@ -238,20 +238,10 @@ class DefaultTextEditingShortcuts extends Shortcuts {
   // platform:
   //   * End
   //   * Home
-  //   * Meta + X
-  //   * Meta + C
-  //   * Meta + V
-  //   * Meta + A
   //   * Meta + shift? + Z
-  //   * Meta + shift? + arrow down
-  //   * Meta + shift? + arrow left
-  //   * Meta + shift? + arrow right
-  //   * Meta + shift? + arrow up
   //   * Shift + end
   //   * Shift + home
-  //   * Meta + shift? + delete
-  //   * Meta + shift? + backspace
-  static final Map<ShortcutActivator, Intent> _iOSShortcuts = _commonShortcuts;
+  static final Map<ShortcutActivator, Intent> _iOSShortcuts = _macShortcuts;
 
   static final Map<ShortcutActivator, Intent> _linuxShortcuts = <ShortcutActivator, Intent>{
     ..._commonShortcuts,
