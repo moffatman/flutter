@@ -355,7 +355,7 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
 
   void _onLongPressDown(LongPressDownDetails details) {
     // _glowController.forward();
-    _tracker = VelocityTracker(details.kind ?? PointerDeviceKind.touch);
+    _tracker = VelocityTracker.withKind(details.kind ?? PointerDeviceKind.touch);
     _trackingStartTime = DateTime.now();
   }
 
