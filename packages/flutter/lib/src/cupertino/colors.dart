@@ -973,7 +973,7 @@ class CupertinoDynamicColor extends Color with Diagnosticable {
     }
     bool isHighContrastEnabled = false;
     if (_isHighContrastDependent) {
-      isHighContrastEnabled = MediaQuery.maybeOf(context)?.highContrast ?? false;
+      isHighContrastEnabled = MediaQuery.maybeOf(context, MediaQueryAspect.highContrast)?.highContrast ?? false;
     }
 
     final CupertinoUserInterfaceLevelData level = _isInterfaceElevationDependent
