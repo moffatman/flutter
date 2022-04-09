@@ -1039,6 +1039,9 @@ class MultiFrameImageStreamCompleter extends ImageStreamCompleter {
       );
       _shownTimestamp = timestamp;
       _frameDuration = _nextFrame!.duration;
+      if (_frameDuration!.inMilliseconds <= 10) {
+        _frameDuration = const Duration(milliseconds: 100);
+      }
       _nextFrame!.image.dispose();
       _nextFrame = null;
       if (_codec == null) {
