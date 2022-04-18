@@ -982,7 +982,6 @@ void main() {
     );
 
     await tester.pumpWidget(MaterialApp(home: page));
-    debugDumpApp();
     expect(find.text('width: 800'), findsOneWidget);
     expect(find.text('stale width: 800'), findsOneWidget);
     expect(find.text('height: 600'), findsOneWidget);
