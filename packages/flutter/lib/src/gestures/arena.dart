@@ -49,8 +49,8 @@ class GestureArenaEntry {
   ///
   /// It's fine to attempt to resolve a gesture recognizer for an arena that is
   /// already resolved.
-  void resolve(GestureDisposition disposition) {
-    _arena._resolve(_pointer, _member, disposition);
+  void resolve(GestureDisposition disposition, [double bid = 1]) {
+    _arena._resolve(_pointer, _member, disposition, bid);
   }
 }
 
@@ -59,6 +59,8 @@ class _GestureArena {
   bool isOpen = true;
   bool isHeld = false;
   bool hasPendingSweep = false;
+  final Map<GestureArenaMember, double> bids = <GestureArenaMember, double>{};
+  bool isRouting = false;
 
   /// If a member attempts to win while the arena is still open, it becomes the
   /// "eager winner". We look for an eager winner when closing the arena to new
@@ -123,6 +125,33 @@ class GestureArenaManager {
       return; // This arena either never existed or has been resolved.
     state.isOpen = false;
     assert(_debugLogDiagnostic(pointer, 'Closing', state));
+    _tryToResolveArena(pointer, state);
+  }
+  
+  /// Called at the beginning of routing an event to arena members
+  void startRouting(int pointer) {
+    final _GestureArena? state = _arenas[pointer];
+    if (state == null)
+      return;
+    assert(_debugLogDiagnostic(pointer, 'Starting Routing', state));
+    state.isRouting = true;
+  }
+
+  /// Called at the end of routing an event to arena members
+  void endRouting(int pointer) {
+    final _GestureArena? state = _arenas[pointer];
+    if (state == null)
+      return;
+    assert(_debugLogDiagnostic(pointer, 'Starting Routing', state));
+    state.isRouting = false;
+  }
+
+  /// Resolve based on bids
+  void gavel(int pointer) {
+    final _GestureArena? state = _arenas[pointer];
+    if (state == null)
+      return; // This arena either never existed or has been resolved.
+    assert(_debugLogDiagnostic(pointer, 'Gavelling', state));
     _tryToResolveArena(pointer, state);
   }
 
@@ -203,7 +232,7 @@ class GestureArenaManager {
   /// Reject or accept a gesture recognizer.
   ///
   /// This is called by calling [GestureArenaEntry.resolve] on the object returned from [add].
-  void _resolve(int pointer, GestureArenaMember member, GestureDisposition disposition) {
+  void _resolve(int pointer, GestureArenaMember member, GestureDisposition disposition, [double bid = 1]) {
     final _GestureArena? state = _arenas[pointer];
     if (state == null)
       return; // This arena has already resolved.
@@ -216,9 +245,14 @@ class GestureArenaManager {
         _tryToResolveArena(pointer, state);
     } else {
       assert(disposition == GestureDisposition.accepted);
-      if (state.isOpen) {
+      if (state.isOpen && bid > 0) {
         state.eagerWinner ??= member;
-      } else {
+      } else if (state.isRouting) {
+        // Synchronous callback
+        state.bids[member] = bid;
+      }
+      else {
+        // Asynchronous callback
         assert(_debugLogDiagnostic(pointer, 'Self-declared winner: $member'));
         _resolveInFavorOf(pointer, state, member);
       }
@@ -236,6 +270,20 @@ class GestureArenaManager {
     } else if (state.eagerWinner != null) {
       assert(_debugLogDiagnostic(pointer, 'Eager winner: ${state.eagerWinner}'));
       _resolveInFavorOf(pointer, state, state.eagerWinner!);
+    } else if (!state.isHeld) {
+      // Should probably be 1.0, but it's a matter of opinion.
+      double bestBid = 0.5;
+      GestureArenaMember? winner;
+      for (final MapEntry<GestureArenaMember, double> bid in state.bids.entries) {
+        // Need to use > so that tie is broken by later map insertion (deeper inside element tree)
+        if (bid.value > bestBid) {
+          bestBid = bid.value;
+          winner = bid.key;
+        }
+      }
+      if (winner != null) {
+        _resolveInFavorOf(pointer, state, winner);
+      }
     }
   }
 

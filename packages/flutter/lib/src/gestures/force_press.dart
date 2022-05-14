@@ -287,6 +287,7 @@ class ForcePressGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
+    super.acceptGesture(pointer);
     if (_state == _ForceState.possible)
       _state = _ForceState.accepted;
 
@@ -320,6 +321,7 @@ class ForcePressGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
+    super.rejectGesture(pointer);
     stopTrackingPointer(pointer);
     didStopTrackingLastPointer(pointer);
   }
