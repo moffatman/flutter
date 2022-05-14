@@ -442,13 +442,17 @@ mixin GestureBinding on BindingBase implements HitTestable, HitTestDispatcher, H
 
   @override // from HitTestTarget
   void handleEvent(PointerEvent event, HitTestEntry entry) {
+    gestureArena.startRouting(event.pointer);
     pointerRouter.route(event);
+    gestureArena.endRouting(event.pointer);
     if (event is PointerDownEvent || event is PointerPanZoomStartEvent) {
       gestureArena.close(event.pointer);
     } else if (event is PointerUpEvent || event is PointerPanZoomEndEvent) {
       gestureArena.sweep(event.pointer);
     } else if (event is PointerSignalEvent) {
       pointerSignalResolver.resolve(event);
+    } else if (event is PointerMoveEvent || event is PointerPanZoomUpdateEvent) {
+      gestureArena.gavel(event.pointer);
     }
   }
 

@@ -13,8 +13,8 @@ class _CombiningGestureArenaEntry implements GestureArenaEntry {
   final GestureArenaMember _member;
 
   @override
-  void resolve(GestureDisposition disposition) {
-    _combiner._resolve(_member, disposition);
+  void resolve(GestureDisposition disposition, [double bid = 1]) {
+    _combiner._resolve(_member, disposition, bid);
   }
 }
 
@@ -65,18 +65,18 @@ class _CombiningGestureArenaMember extends GestureArenaMember {
     return _CombiningGestureArenaEntry(this, member);
   }
 
-  void _resolve(GestureArenaMember member, GestureDisposition disposition) {
+  void _resolve(GestureArenaMember member, GestureDisposition disposition, [double bid = 1]) {
     if (_resolved)
       return;
     if (disposition == GestureDisposition.rejected) {
       _members.remove(member);
       member.rejectGesture(_pointer);
       if (_members.isEmpty)
-        _entry!.resolve(disposition);
+        _entry!.resolve(disposition, bid);
     } else {
       assert(disposition == GestureDisposition.accepted);
       _winner ??= _owner.captain ?? member;
-      _entry!.resolve(disposition);
+      _entry!.resolve(disposition, bid);
     }
   }
 }

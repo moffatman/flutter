@@ -489,11 +489,13 @@ class _UiKitViewGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
+    super.acceptGesture(pointer);
     controller.acceptGesture();
   }
 
   @override
   void rejectGesture(int pointer) {
+    super.rejectGesture(pointer);
     controller.rejectGesture();
   }
 
@@ -581,12 +583,14 @@ class _PlatformViewGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
+    super.acceptGesture(pointer);
     _flushPointerCache(pointer);
     forwardedPointers.add(pointer);
   }
 
   @override
   void rejectGesture(int pointer) {
+    super.rejectGesture(pointer);
     stopTrackingPointer(pointer);
     cachedEvents.remove(pointer);
   }

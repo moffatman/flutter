@@ -328,10 +328,18 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   void handleEvent(PointerEvent event);
 
   @override
-  void acceptGesture(int pointer) { }
+  @mustCallSuper
+  void acceptGesture(int pointer) {
+    print('$this accept $pointer');
+    _entries.remove(pointer);
+  }
 
   @override
-  void rejectGesture(int pointer) { }
+  @mustCallSuper
+  void rejectGesture(int pointer) {
+    print('$this reject $pointer');
+    _entries.remove(pointer);
+  }
 
   /// Called when the number of pointers this recognizer is tracking changes from one to zero.
   ///
@@ -344,22 +352,21 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// given disposition.
   @protected
   @mustCallSuper
-  void resolve(GestureDisposition disposition) {
+  void resolve(GestureDisposition disposition, [double bid = 1]) {
     final List<GestureArenaEntry> localEntries = List<GestureArenaEntry>.of(_entries.values);
-    _entries.clear();
     for (final GestureArenaEntry entry in localEntries)
-      entry.resolve(disposition);
+      entry.resolve(disposition, bid);
   }
 
   /// Resolves this recognizer's participation in the given gesture arena with
   /// the given disposition.
   @protected
   @mustCallSuper
-  void resolvePointer(int pointer, GestureDisposition disposition) {
+  void resolvePointer(int pointer, GestureDisposition disposition, [double bid = 1]) {
     final GestureArenaEntry? entry = _entries[pointer];
     if (entry != null) {
       _entries.remove(pointer);
-      entry.resolve(disposition);
+      entry.resolve(disposition, bid);
     }
   }
 
@@ -633,6 +640,7 @@ abstract class PrimaryPointerGestureRecognizer extends OneSequenceGestureRecogni
 
   @override
   void acceptGesture(int pointer) {
+    super.acceptGesture(pointer);
     if (pointer == primaryPointer) {
       _stopTimer();
       _gestureAccepted = true;
@@ -641,6 +649,7 @@ abstract class PrimaryPointerGestureRecognizer extends OneSequenceGestureRecogni
 
   @override
   void rejectGesture(int pointer) {
+    super.rejectGesture(pointer);
     if (pointer == primaryPointer && state == GestureRecognizerState.possible) {
       _stopTimer();
       _state = GestureRecognizerState.defunct;

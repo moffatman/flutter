@@ -612,8 +612,8 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     if (_state == _ScaleState.possible) {
       final double spanDelta = (_currentSpan - _initialSpan).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint).distance;
-      if (spanDelta > computeScaleSlop(pointerDeviceKind) || focalPointDelta > computePanSlop(pointerDeviceKind, gestureSettings) || math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) > 1.05)
-        resolve(GestureDisposition.accepted);
+      final double scaleDelta = math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) - 1;
+      resolve(GestureDisposition.accepted, math.max(math.max(spanDelta / computeScaleSlop(pointerDeviceKind), focalPointDelta / computePanSlop(pointerDeviceKind, gestureSettings)), scaleDelta / 0.05));
     } else if (_state.index >= _ScaleState.accepted.index) {
       resolve(GestureDisposition.accepted);
     }
@@ -652,6 +652,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void acceptGesture(int pointer) {
+    super.acceptGesture(pointer);
     if (_state == _ScaleState.possible) {
       _state = _ScaleState.started;
       _dispatchOnStartCallbackIfNeeded();
@@ -674,6 +675,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
+    super.rejectGesture(pointer);
     _pointerPanZooms.remove(pointer);
     _pointerLocations.remove(pointer);
     _pointerQueue.remove(pointer);
