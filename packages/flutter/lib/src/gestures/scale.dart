@@ -451,6 +451,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   double _initialPanZoomScaleFactor = 1;
   double _initialPanZoomRotationFactor = 0;
   Duration? _initialEventTimestamp;
+  bool _updateAvailable = false;
 
   double get _pointerScaleFactor => _initialSpan > 0.0 ? _currentSpan / _initialSpan : 1.0;
 
@@ -641,6 +642,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     _currentSpan = count > 0 ? totalDeviation / count : 0.0;
     _currentHorizontalSpan = count > 0 ? totalHorizontalDeviation / count : 0.0;
     _currentVerticalSpan = count > 0 ? totalVerticalDeviation / count : 0.0;
+    _updateAvailable = true;
   }
 
   /// Updates [_initialLine] and [_currentLine] accordingly to the situation of
@@ -743,11 +745,8 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     if (_state == _ScaleState.possible) {
       final double spanDelta = (_currentSpan - _initialSpan).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint).distance;
-      if (spanDelta > computeScaleSlop(event.kind) ||
-          focalPointDelta > computePanSlop(event.kind, gestureSettings) ||
-          math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) > 1.05) {
-        resolve(GestureDisposition.accepted);
-      }
+      final double scaleDelta = math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) - 1;
+      resolve(GestureDisposition.accepted, bid: math.max(math.max(spanDelta / computeScaleSlop(event.kind), focalPointDelta / computePanSlop(event.kind, gestureSettings)), scaleDelta / 0.05));
     } else if (_state.index >= _ScaleState.accepted.index) {
       resolve(GestureDisposition.accepted);
     }
@@ -760,7 +759,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
 
     if (_state == _ScaleState.started) {
       _scaleVelocityTracker?.addPosition(event.timeStamp, Offset(_scaleFactor, 0));
-      if (onUpdate != null) {
+      if (onUpdate != null && _updateAvailable) {
         invokeCallback<void>('onUpdate', () {
           onUpdate!(
             ScaleUpdateDetails(
@@ -776,6 +775,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
             ),
           );
         });
+        _updateAvailable = false;
       }
     }
   }
@@ -822,6 +822,21 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
               .map((_PointerPanZoomData x) => x.rotation)
               .reduce((double a, double b) => a + b);
         }
+      }
+      if (onUpdate != null && _updateAvailable) {
+        invokeCallback<void>('onUpdate', () {
+          onUpdate!(ScaleUpdateDetails(
+            scale: _scaleFactor,
+            horizontalScale: _horizontalScaleFactor,
+            verticalScale: _verticalScaleFactor,
+            focalPoint: _currentFocalPoint!,
+            localFocalPoint: _localFocalPoint,
+            rotation: _computeRotationFactor(),
+            pointerCount: pointerCount,
+            focalPointDelta: _delta,
+          ));
+        });
+        _updateAvailable = false;
       }
     }
   }
