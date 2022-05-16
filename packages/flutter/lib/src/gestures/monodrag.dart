@@ -371,10 +371,9 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   /// Whether the [globalDistanceMoved] is big enough to accept the gesture.
   ///
   /// If this method returns `true`, it means this recognizer should declare win in the gesture arena.
-  bool hasSufficientGlobalDistanceToAccept(
-    PointerDeviceKind pointerDeviceKind,
-    double? deviceTouchSlop,
-  );
+  bool hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop)
+    => calculateAcceptFactor(pointerDeviceKind, deviceTouchSlop) >= 1;
+  double calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop);
   bool _hasDragThresholdBeenMet = false;
 
   final Map<int, VelocityTracker> _velocityTrackers = <int, VelocityTracker>{};
@@ -691,17 +690,15 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           _lastPendingEventTimestamp = event.timeStamp;
           _lastTransform = event.transform;
           final Offset movedLocally = _getDeltaForDetails(localDelta);
-          final Matrix4? localToGlobalTransform = event.transform == null
-              ? null
-              : Matrix4.tryInvert(event.transform!);
-          _globalDistanceMoved +=
-              PointerEvent.transformDeltaViaPositions(
-                transform: localToGlobalTransform,
-                untransformedDelta: movedLocally,
-                untransformedEndPosition: localPosition,
-              ).distance *
-              (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-          if (hasSufficientGlobalDistanceToAccept(event.kind, gestureSettings?.touchSlop)) {
+          final Matrix4? localToGlobalTransform = event.transform == null ? null : Matrix4.tryInvert(event.transform!);
+          _globalDistanceMoved += PointerEvent.transformDeltaViaPositions(
+            transform: localToGlobalTransform,
+            untransformedDelta: movedLocally,
+            untransformedEndPosition: localPosition
+          ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
+          resolve(GestureDisposition.accepted, bid: calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
+        // TODO(moffatman): Not sure this is right
+          if (calculateAcceptFactor(event.kind, gestureSettings?.touchSlop) >= 1) {
             _hasDragThresholdBeenMet = true;
             if (_acceptedActivePointers.contains(event.pointer)) {
               _checkDrag(event.pointer);
@@ -962,11 +959,8 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool hasSufficientGlobalDistanceToAccept(
-    PointerDeviceKind pointerDeviceKind,
-    double? deviceTouchSlop,
-  ) {
-    return globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
+  double calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -1026,11 +1020,8 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool hasSufficientGlobalDistanceToAccept(
-    PointerDeviceKind pointerDeviceKind,
-    double? deviceTouchSlop,
-  ) {
-    return globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
+  double calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -1083,11 +1074,8 @@ class PanGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool hasSufficientGlobalDistanceToAccept(
-    PointerDeviceKind pointerDeviceKind,
-    double? deviceTouchSlop,
-  ) {
-    return globalDistanceMoved.abs() > computePanSlop(pointerDeviceKind, gestureSettings);
+  double calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return globalDistanceMoved.abs() / computePanSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override

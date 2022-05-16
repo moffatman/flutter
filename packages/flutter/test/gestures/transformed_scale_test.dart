@@ -33,8 +33,8 @@ void main() {
     );
     await pointer2.moveTo(tester.getCenter(find.byKey(redContainer)) + const Offset(20, 20));
 
-    expect(updateDetails.single.localFocalPoint, const Offset(50, 50));
-    expect(updateDetails.single.focalPoint, const Offset(400, 300));
+    expect(updateDetails[1].localFocalPoint, const Offset(50, 50));
+    expect(updateDetails[1].focalPoint, const Offset(400, 300));
 
     expect(startDetails, hasLength(2));
     expect(startDetails.first.localFocalPoint, const Offset(30, 30));
