@@ -301,7 +301,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
 
   Offset _getDeltaForDetails(Offset delta);
   double? _getPrimaryValueFromOffset(Offset value);
-  bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop);
+  double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop);
   bool _hasDragThresholdBeenMet = false;
 
   final Map<int, VelocityTracker> _velocityTrackers = <int, VelocityTracker>{};
@@ -404,12 +404,12 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           untransformedDelta: movedLocally,
           untransformedEndPosition: localPosition
         ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-        if (_hasSufficientGlobalDistanceToAccept(event.kind, gestureSettings?.touchSlop)) {
+        resolve(GestureDisposition.accepted, bid: _calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
+        // TODO(moffatman): Not sure this is right
+        if (_calculateAcceptFactor(event.kind, gestureSettings?.touchSlop) > 1) {
           _hasDragThresholdBeenMet = true;
           if (_acceptedActivePointers.contains(event.pointer)) {
             _checkDrag(event.pointer);
-          } else {
-            resolve(GestureDisposition.accepted);
           }
         }
       }
@@ -631,8 +631,21 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
+  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
+    if (!isFlingGesture(estimate, kind)) {
+      return null;
+    }
+    final double maxVelocity = maxFlingVelocity ?? kMaxFlingVelocity;
+    final double dy = clampDouble(estimate.pixelsPerSecond.dy, -maxVelocity, maxVelocity);
+    return DragEndDetails(
+      velocity: Velocity(pixelsPerSecond: Offset(0, dy)),
+      primaryVelocity: dy,
+    );
+  }
+
+  @override
+  double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -686,8 +699,21 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() > computeHitSlop(pointerDeviceKind, gestureSettings);
+  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
+    if (!isFlingGesture(estimate, kind)) {
+      return null;
+    }
+    final double maxVelocity = maxFlingVelocity ?? kMaxFlingVelocity;
+    final double dx = clampDouble(estimate.pixelsPerSecond.dx, -maxVelocity, maxVelocity);
+    return DragEndDetails(
+      velocity: Velocity(pixelsPerSecond: Offset(dx, 0)),
+      primaryVelocity: dx,
+    );
+  }
+
+  @override
+  double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -736,8 +762,18 @@ class PanGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  bool _hasSufficientGlobalDistanceToAccept(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() > computePanSlop(pointerDeviceKind, gestureSettings);
+  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
+    if (!isFlingGesture(estimate, kind)) {
+      return null;
+    }
+    final Velocity velocity = Velocity(pixelsPerSecond: estimate.pixelsPerSecond)
+        .clampMagnitude(minFlingVelocity ?? kMinFlingVelocity, maxFlingVelocity ?? kMaxFlingVelocity);
+    return DragEndDetails(velocity: velocity);
+  }
+
+  @override
+  double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
+    return _globalDistanceMoved.abs() / computePanSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
