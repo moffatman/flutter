@@ -280,7 +280,7 @@ class GestureArenaManager {
           winner = bid.key;
         }
       }
-      if (winner != null && bestBid >= 1) {
+      if (winner != null && bestBid >= 0.5) {
         _resolveInFavorOf(pointer, state, winner);
       }
     }
