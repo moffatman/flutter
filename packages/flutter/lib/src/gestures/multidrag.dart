@@ -69,11 +69,12 @@ abstract class MultiDragPointerState {
     _arenaEntry = entry;
   }
 
-  /// Resolve this pointer's entry in the [GestureArenaManager] with the given disposition.
+  /// Resolve this pointer's entry in the [GestureArenaManager] with the given disposition
+  /// and bid.
   @protected
   @mustCallSuper
-  void resolve(GestureDisposition disposition) {
-    _arenaEntry!.resolve(disposition);
+  void resolve(GestureDisposition disposition, {double? bid}) {
+    _arenaEntry!.resolve(disposition, bid: bid);
   }
 
   void _move(PointerMoveEvent event) {
@@ -337,9 +338,7 @@ class _ImmediatePointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.distance > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
-    }
+    resolve(GestureDisposition.accepted, bid: pendingDelta!.distance / computeHitSlop(kind, gestureSettings));
   }
 
   @override
@@ -394,9 +393,7 @@ class _HorizontalPointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.dx.abs() > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
-    }
+    resolve(GestureDisposition.accepted, bid: pendingDelta!.dx.abs() / computeHitSlop(kind, gestureSettings));
   }
 
   @override
@@ -451,9 +448,7 @@ class _VerticalPointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.dy.abs() > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
-    }
+    resolve(GestureDisposition.accepted, bid: pendingDelta!.dy.abs() / computeHitSlop(kind, gestureSettings));
   }
 
   @override
