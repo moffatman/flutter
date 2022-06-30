@@ -262,6 +262,14 @@ class PointerEventConverter {
                 scrollDelta: scrollDelta,
                 embedderId: datum.embedderId,
               );
+            case ui.PointerSignalKind.scrollInertiaCancel:
+              return PointerScrollInertiaCancelEvent(
+                timeStamp: timeStamp,
+                kind: kind,
+                device: datum.device,
+                position: position,
+                embedderId: datum.embedderId,
+              );
             case ui.PointerSignalKind.unknown:
               // This branch should already have 'unknown' filtered out, but
               // we don't want to return anything or miss if someone adds a new
