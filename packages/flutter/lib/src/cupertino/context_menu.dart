@@ -52,8 +52,10 @@ Rect _getRect(GlobalKey globalKey) {
   final RenderBox renderBoxContainer = globalKey.currentContext!.findRenderObject()! as RenderBox;
   return Rect.fromPoints(renderBoxContainer.localToGlobal(
     renderBoxContainer.paintBounds.topLeft,
+    ancestor: Overlay.of(globalKey.currentContext!, rootOverlay: true)?.context.findRenderObject()
   ), renderBoxContainer.localToGlobal(
-    renderBoxContainer.paintBounds.bottomRight
+    renderBoxContainer.paintBounds.bottomRight,
+    ancestor: Overlay.of(globalKey.currentContext!, rootOverlay: true)?.context.findRenderObject()
   ));
 }
 
