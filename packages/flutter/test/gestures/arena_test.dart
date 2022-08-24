@@ -167,29 +167,43 @@ void main() {
     tester.expectSecondWin();
   });
 
-  test('Highest bid over 1.0 wins', () {
+  test('Lowest priority wins', () {
     final GestureTester tester = GestureTester();
     tester.addFirst();
     tester.addSecond();
     tester.arena.close(primaryKey);
     tester.expectNothing();
-    tester.firstEntry.resolve(GestureDisposition.accepted, bid: 1.1);
-    tester.secondEntry.resolve(GestureDisposition.accepted, bid: 1.2);
+    tester.firstEntry.resolve(GestureDisposition.accepted, priority: 0.4);
+    tester.secondEntry.resolve(GestureDisposition.accepted, priority: 0.2);
     tester.expectNothing();
     tester.arena.gavel(primaryKey);
     tester.expectSecondWin();
   });
 
-  test('Synchronous resolve wins over bidder', () {
+  test('Resolve without priority wins versus priority', () {
     final GestureTester tester = GestureTester();
     tester.addFirst();
     tester.addSecond();
     tester.arena.close(primaryKey);
     tester.expectNothing();
-    tester.firstEntry.resolve(GestureDisposition.accepted, bid: 1.1);
+    tester.firstEntry.resolve(GestureDisposition.accepted, priority: 0.2);
+    tester.expectNothing();
     tester.secondEntry.resolve(GestureDisposition.accepted);
     tester.expectSecondWin();
     tester.arena.gavel(primaryKey);
     tester.expectSecondWin();
+  });
+
+  test('Resolves with priority wait until gavel', () {
+    final GestureTester tester = GestureTester();
+    tester.addFirst();
+    tester.addSecond();
+    tester.arena.close(primaryKey);
+    tester.expectNothing();
+    tester.firstEntry.resolve(GestureDisposition.accepted, priority: 0.0);
+    tester.secondEntry.resolve(GestureDisposition.accepted, priority: 0.0);
+    tester.expectNothing();
+    tester.arena.gavel(primaryKey);
+    tester.expectFirstWin();
   });
 }

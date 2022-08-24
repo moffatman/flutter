@@ -239,6 +239,7 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop);
 
   final Map<int, VelocityTracker> _velocityTrackers = <int, VelocityTracker>{};
+  double? _lastBid;
 
   @override
   bool isPointerAllowed(PointerEvent event) {
@@ -345,7 +346,13 @@ abstract class DragGestureRecognizer extends OneSequenceGestureRecognizer {
           untransformedDelta: movedLocally,
           untransformedEndPosition: localPosition
         ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-        resolve(GestureDisposition.accepted, bid: _calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
+        final double bid = _calculateAcceptFactor(event.kind, gestureSettings?.touchSlop);
+        if (bid >= 0) {
+          resolve(GestureDisposition.accepted, priority: _lastBid == null ? _calculateInitialAcceptFactor(event.kind, gestureSettings?.touchSlop) : 0 - _lastBid!);
+        }
+        else {
+          _lastBid = bid;
+        }
       }
     }
     if (event is PointerUpEvent || event is PointerCancelEvent || event is PointerPanZoomEndEvent) {
@@ -571,7 +578,7 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
+    return _globalDistanceMoved.abs() - computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -617,7 +624,7 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
 
   @override
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
+    return _globalDistanceMoved.abs() - computeHitSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override
@@ -656,7 +663,7 @@ class PanGestureRecognizer extends DragGestureRecognizer {
 
   @override
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
-    return _globalDistanceMoved.abs() / computePanSlop(pointerDeviceKind, gestureSettings);
+    return _globalDistanceMoved.abs() - computePanSlop(pointerDeviceKind, gestureSettings);
   }
 
   @override

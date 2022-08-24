@@ -350,6 +350,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   double _initialPanZoomScaleFactor = 1;
   double _initialPanZoomRotationFactor = 0;
   bool _updateAvailable = false;
+  double? _lastBid;
 
   double get _pointerScaleFactor => _initialSpan > 0.0 ? _currentSpan / _initialSpan : 1.0;
 
@@ -628,7 +629,13 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
       final double spanDelta = (_currentSpan - _initialSpan).abs();
       final double focalPointDelta = (_currentFocalPoint! - _initialFocalPoint).distance;
       final double scaleDelta = math.max(_scaleFactor / _pointerScaleFactor, _pointerScaleFactor / _scaleFactor) - 1;
-      resolve(GestureDisposition.accepted, bid: math.max(math.max(spanDelta / computeScaleSlop(pointerDeviceKind), focalPointDelta / computePanSlop(pointerDeviceKind, gestureSettings)), scaleDelta / 0.05));
+      final double bid = math.max(math.max(spanDelta - computeScaleSlop(pointerDeviceKind), focalPointDelta - computePanSlop(pointerDeviceKind, gestureSettings)), (scaleDelta * 300) - 15);
+      if (bid >= 0) {
+        resolve(GestureDisposition.accepted, priority: _lastBid == null ? computeScaleSlop(pointerDeviceKind) : 0 - _lastBid!);
+      }
+      else {
+        _lastBid = bid;
+      }
     } else if (_state.index >= _ScaleState.accepted.index) {
       resolve(GestureDisposition.accepted);
     }

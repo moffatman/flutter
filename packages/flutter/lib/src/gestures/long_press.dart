@@ -830,7 +830,7 @@ class LongPressGestureRecognizer extends PrimaryPointerGestureRecognizer {
   }
 
   @override
-  void resolve(GestureDisposition disposition, {double? bid}) {
+  void resolve(GestureDisposition disposition, {double? priority}) {
     if (disposition == GestureDisposition.rejected) {
       if (_longPressAccepted) {
         // This can happen if the gesture has been canceled. For example when
@@ -840,7 +840,7 @@ class LongPressGestureRecognizer extends PrimaryPointerGestureRecognizer {
         _checkLongPressCancel();
       }
     }
-    super.resolve(disposition, bid: bid);
+    super.resolve(disposition, priority: priority);
   }
 
   @override

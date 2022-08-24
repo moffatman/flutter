@@ -350,13 +350,11 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// given disposition and bid.
   @protected
   @mustCallSuper
-  void resolve(GestureDisposition disposition, {double? bid}) {
+  void resolve(GestureDisposition disposition, {double? priority}) {
     final List<GestureArenaEntry> localEntries = List<GestureArenaEntry>.of(_entries.values);
-    if (bid == null) {
-      _entries.clear();
-    }
+    _entries.clear();
     for (final GestureArenaEntry entry in localEntries) {
-      entry.resolve(disposition, bid: bid);
+      entry.resolve(disposition, priority: priority);
     }
   }
 
@@ -364,11 +362,11 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// the given disposition.
   @protected
   @mustCallSuper
-  void resolvePointer(int pointer, GestureDisposition disposition, {double? bid}) {
+  void resolvePointer(int pointer, GestureDisposition disposition, {double? priority}) {
     final GestureArenaEntry? entry = _entries[pointer];
     if (entry != null) {
       _entries.remove(pointer);
-      entry.resolve(disposition, bid: bid);
+      entry.resolve(disposition, priority: priority);
     }
   }
 

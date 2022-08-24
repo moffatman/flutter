@@ -413,11 +413,11 @@ void main() {
     expect(log, isEmpty);
 
     tester.route(pointer3.move(const Offset(100.0, 30.0)));
-    expect(log, equals(<String>['drag-start']));
+    expect(log, equals(<String>['scale-start', 'scale-update']));
     log.clear();
 
     tester.route(pointer3.up());
-    expect(log, equals(<String>['drag-end']));
+    expect(log, equals(<String>['scale-end']));
     log.clear();
 
     scale.dispose();
