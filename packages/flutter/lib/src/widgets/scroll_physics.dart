@@ -16,6 +16,14 @@ import 'scroll_simulation.dart';
 
 export 'package:flutter/physics.dart' show ScrollSpringSimulation, Simulation, Tolerance;
 
+/// The rate at which scroll momentum will be decelerated.
+enum ScrollDecelerationRate {
+  /// The standard deceleration expected on touchscreen apps.
+  normal,
+  /// Faster deceleration aligned with desktop software conventions.
+  fast
+}
+
 // Examples can assume:
 // class FooScrollPhysics extends ScrollPhysics {
 //   const FooScrollPhysics({ super.parent });
@@ -608,7 +616,13 @@ class RangeMaintainingScrollPhysics extends ScrollPhysics {
 ///    of different types to get the desired scroll physics.
 class BouncingScrollPhysics extends ScrollPhysics {
   /// Creates scroll physics that bounce back from the edge.
-  const BouncingScrollPhysics({ super.parent });
+  const BouncingScrollPhysics({
+    this.decelerationRate = ScrollDecelerationRate.normal,
+    super.parent,
+  });
+
+  /// Used to determine parameters for friction simulations.
+  final ScrollDecelerationRate decelerationRate;
 
   @override
   BouncingScrollPhysics applyTo(ScrollPhysics? ancestor) {
@@ -623,7 +637,12 @@ class BouncingScrollPhysics extends ScrollPhysics {
   /// This factor starts at 0.52 and progressively becomes harder to overscroll
   /// as more of the area past the edge is dragged in (represented by an increasing
   /// `overscrollFraction` which starts at 0 when there is no overscroll).
-  double frictionFactor(double overscrollFraction) => 0.52 * math.pow(1 - overscrollFraction, 2);
+  double frictionFactor(double overscrollFraction) {
+    if (decelerationRate == ScrollDecelerationRate.fast) {
+      return 0.07 * math.pow(1 - overscrollFraction, 2);
+    }
+    return 0.52 * math.pow(1 - overscrollFraction, 2);
+  }
 
   @override
   double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
@@ -677,6 +696,7 @@ class BouncingScrollPhysics extends ScrollPhysics {
         leadingExtent: position.minScrollExtent,
         trailingExtent: position.maxScrollExtent,
         tolerance: tolerance,
+        constantDeceleration: decelerationRate == ScrollDecelerationRate.fast ? 1400 : 0
       );
     }
     return null;
@@ -711,6 +731,26 @@ class BouncingScrollPhysics extends ScrollPhysics {
   // from the natural motion of lifting the finger after a scroll.
   @override
   double get dragStartDistanceMotionThreshold => 3.5;
+
+  @override
+  double get maxFlingVelocity {
+    if (decelerationRate == ScrollDecelerationRate.fast) {
+      return kMaxFlingVelocity * 8.0;
+    }
+    return super.maxFlingVelocity;
+  }
+
+  @override
+  SpringDescription get spring {
+    if (decelerationRate == ScrollDecelerationRate.fast) {
+      return SpringDescription.withDampingRatio(
+        mass: 0.3,
+        stiffness: 75.0,
+        ratio: 1.3,
+      );
+    }
+    return super.spring;
+  }
 }
 
 /// Scroll physics for environments that prevent the scroll offset from reaching
