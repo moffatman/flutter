@@ -307,6 +307,7 @@ class DraggableScrollableSheet extends StatefulWidget {
     this.snapSizes,
     this.snapAnimationDuration,
     this.controller,
+    this.shouldIgnorePointer = true,
     required this.builder,
   })  : assert(minChildSize >= 0.0),
         assert(maxChildSize <= 1.0),
@@ -394,6 +395,8 @@ class DraggableScrollableSheet extends StatefulWidget {
   /// use the provided [ScrollController] to enable dragging and scrolling
   /// of the contents.
   final ScrollableWidgetBuilder builder;
+
+  final bool shouldIgnorePointer;
 
   @override
   State<DraggableScrollableSheet> createState() => _DraggableScrollableSheetState();
@@ -631,7 +634,10 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
       snapAnimationDuration: widget.snapAnimationDuration,
       initialSize: widget.initialChildSize,
     );
-    _scrollController = _DraggableScrollableSheetScrollController(extent: _extent);
+    _scrollController = _DraggableScrollableSheetScrollController(
+      extent: _extent,
+      shouldIgnorePointer: widget.shouldIgnorePointer
+    );
     widget.controller?._attach(_scrollController);
   }
 
@@ -769,10 +775,12 @@ class _DraggableScrollableSheetState extends State<DraggableScrollableSheet> {
 class _DraggableScrollableSheetScrollController extends ScrollController {
   _DraggableScrollableSheetScrollController({
     required this.extent,
+    this.shouldIgnorePointer = true,
   });
 
   _DraggableSheetExtent extent;
   VoidCallback? onPositionDetached;
+  final bool shouldIgnorePointer;
 
   @override
   _DraggableScrollableSheetScrollPosition createScrollPosition(
@@ -785,6 +793,7 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
       context: context,
       oldPosition: oldPosition,
       getExtent: () => extent,
+      shouldIgnorePointer: shouldIgnorePointer,
     );
   }
 
@@ -822,6 +831,33 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
   }
 }
 
+class _NonBlockingScrollPosition extends ScrollPositionWithSingleContext {
+  _NonBlockingScrollPosition({
+    required super.physics,
+    required super.context,
+    super.oldPosition,
+    this.shouldIgnorePointer = true,
+  });
+
+  final bool shouldIgnorePointer;
+
+  @override
+  void goBallistic(double velocity) {
+    assert(hasPixels);
+    final Simulation? simulation = physics.createBallisticSimulation(this, velocity);
+    if (simulation != null) {
+      beginActivity(BallisticScrollActivity(
+        this,
+        simulation,
+        context.vsync,
+        shouldIgnorePointer,
+      ));
+    } else {
+      goIdle();
+    }
+  }
+}
+
 /// A scroll position that manages scroll activities for
 /// [_DraggableScrollableSheetScrollController].
 ///
@@ -834,12 +870,13 @@ class _DraggableScrollableSheetScrollController extends ScrollController {
 /// See also:
 ///
 ///  * [_DraggableScrollableSheetScrollController], which uses this as its [ScrollPosition].
-class _DraggableScrollableSheetScrollPosition extends ScrollPositionWithSingleContext {
+class _DraggableScrollableSheetScrollPosition extends _NonBlockingScrollPosition {
   _DraggableScrollableSheetScrollPosition({
     required super.physics,
     required super.context,
     super.oldPosition,
     required this.getExtent,
+    super.shouldIgnorePointer,
   });
 
   VoidCallback? _dragCancelCallback;
