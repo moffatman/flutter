@@ -67,6 +67,8 @@ abstract class MultiDragPointerState {
 
   Duration? _lastPendingEventTimestamp;
 
+  double? _lastBid;
+
   GestureArenaEntry? _arenaEntry;
   void _setArenaEntry(GestureArenaEntry entry) {
     assert(_arenaEntry == null);
@@ -75,11 +77,12 @@ abstract class MultiDragPointerState {
     _arenaEntry = entry;
   }
 
-  /// Resolve this pointer's entry in the [GestureArenaManager] with the given disposition.
+  /// Resolve this pointer's entry in the [GestureArenaManager] with the given disposition
+  /// and bid.
   @protected
   @mustCallSuper
-  void resolve(GestureDisposition disposition) {
-    _arenaEntry!.resolve(disposition);
+  void resolve(GestureDisposition disposition, {double? priority}) {
+    _arenaEntry!.resolve(disposition, priority: priority);
   }
 
   void _move(PointerMoveEvent event) {
@@ -343,8 +346,12 @@ class _ImmediatePointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.distance > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
+    final double bid = pendingDelta!.distance - computeHitSlop(kind, gestureSettings);
+    if (bid >= 0) {
+      resolve(GestureDisposition.accepted, priority: _lastBid == 0 ? computeHitSlop(kind, gestureSettings) : 0 - _lastBid!);
+    }
+    else {
+      _lastBid = bid;
     }
   }
 
@@ -400,8 +407,12 @@ class _HorizontalPointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.dx.abs() > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
+    final double bid = pendingDelta!.dx.abs() - computeHitSlop(kind, gestureSettings);
+    if (bid >= 0) {
+      resolve(GestureDisposition.accepted, priority: 0 - _lastBid);
+    }
+    else {
+      _lastBid = bid;
     }
   }
 
@@ -457,8 +468,12 @@ class _VerticalPointerState extends MultiDragPointerState {
   @override
   void checkForResolutionAfterMove() {
     assert(pendingDelta != null);
-    if (pendingDelta!.dy.abs() > computeHitSlop(kind, gestureSettings)) {
-      resolve(GestureDisposition.accepted);
+    final double bid = pendingDelta!.dy.abs() - computeHitSlop(kind, gestureSettings);
+    if (bid >= 0) {
+      resolve(GestureDisposition.accepted, priority: 0 - _lastBid);
+    }
+    else {
+      _lastBid = bid;
     }
   }
 

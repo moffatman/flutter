@@ -347,14 +347,14 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   void didStopTrackingLastPointer(int pointer);
 
   /// Resolves this recognizer's participation in each gesture arena with the
-  /// given disposition.
+  /// given disposition and bid.
   @protected
   @mustCallSuper
-  void resolve(GestureDisposition disposition) {
+  void resolve(GestureDisposition disposition, {double? priority}) {
     final List<GestureArenaEntry> localEntries = List<GestureArenaEntry>.of(_entries.values);
     _entries.clear();
     for (final GestureArenaEntry entry in localEntries) {
-      entry.resolve(disposition);
+      entry.resolve(disposition, priority: priority);
     }
   }
 
@@ -362,11 +362,11 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   /// the given disposition.
   @protected
   @mustCallSuper
-  void resolvePointer(int pointer, GestureDisposition disposition) {
+  void resolvePointer(int pointer, GestureDisposition disposition, {double? priority}) {
     final GestureArenaEntry? entry = _entries[pointer];
     if (entry != null) {
       _entries.remove(pointer);
-      entry.resolve(disposition);
+      entry.resolve(disposition, priority: priority);
     }
   }
 
@@ -377,7 +377,6 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
       GestureBinding.instance.pointerRouter.removeRoute(pointer, handleEvent);
     }
     _trackedPointers.clear();
-    assert(_entries.isEmpty);
     super.dispose();
   }
 
