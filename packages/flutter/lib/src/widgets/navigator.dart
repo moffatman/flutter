@@ -577,6 +577,12 @@ abstract class Route<T> {
     }
     return _navigator!._firstRouteEntryWhereOrNull(_RouteEntry.isRoutePredicate(this))?.isPresent ?? false;
   }
+
+  /// Whether current active pointer should be cancelled.
+  /// 
+  /// Usually, this should be set to true, but a route might be interested in keeping
+  /// pointers alive to pop itself using the same touch that pushed it
+  bool get shouldCancelActivePointers => true;
 }
 
 /// Data that might be useful in constructing a [Route].
@@ -4831,7 +4837,9 @@ class NavigatorState extends State<Navigator> with TickerProviderStateMixin, Res
         'route': routeJsonable,
       });
     }
-    _cancelActivePointers();
+    if (route?.shouldCancelActivePointers ?? true) {
+      _cancelActivePointers();
+    }
   }
 
   /// Replace the current route of the navigator by pushing the given route and
