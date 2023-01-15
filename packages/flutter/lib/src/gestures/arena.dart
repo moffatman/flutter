@@ -279,7 +279,7 @@ class GestureArenaManager {
       GestureArenaMember? winner;
       for (final MapEntry<GestureArenaMember, double> bid in state.bids.entries) {
         // Need to use > so that tie is broken by later map insertion (deeper inside element tree)
-        if (bid.value > bestBid) {
+        if (bid.value > bestBid && (bid.value - bestBid).abs() > precisionErrorTolerance) {
           bestBid = bid.value;
           winner = bid.key;
         }
