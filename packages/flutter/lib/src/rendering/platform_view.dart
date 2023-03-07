@@ -374,11 +374,13 @@ class RenderUiKitView extends RenderBox {
 
   @override
   void handleEvent(PointerEvent event, HitTestEntry entry) {
-    if (event is! PointerDownEvent) {
-      return;
+    if (event is PointerDownEvent) {
+      _gestureRecognizer!.addPointer(event);
+      _lastPointerDownEvent = event.original ?? event;
     }
-    _gestureRecognizer!.addPointer(event);
-    _lastPointerDownEvent = event.original ?? event;
+    else if (event is PointerPanZoomStartEvent) {
+      _gestureRecognizer!.addPointerPanZoom(event);
+    }
   }
 
   // This is registered as a global PointerRoute while the render object is attached.
@@ -468,6 +470,14 @@ class _UiKitViewGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   @override
+  void addAllowedPointerPanZoom(PointerPanZoomStartEvent event) {
+    super.addAllowedPointerPanZoom(event);
+    for (final OneSequenceGestureRecognizer recognizer in _gestureRecognizers) {
+      recognizer.addPointerPanZoom(event);
+    }
+  }
+
+  @override
   String get debugDescription => 'UIKit view';
 
   @override
@@ -551,6 +561,14 @@ class _PlatformViewGestureRecognizer extends OneSequenceGestureRecognizer {
     super.addAllowedPointer(event);
     for (final OneSequenceGestureRecognizer recognizer in _gestureRecognizers) {
       recognizer.addPointer(event);
+    }
+  }
+
+  @override
+  void addAllowedPointerPanZoom(PointerPanZoomStartEvent event) {
+    super.addAllowedPointerPanZoom(event);
+    for (final OneSequenceGestureRecognizer recognizer in _gestureRecognizers) {
+      recognizer.addPointerPanZoom(event);
     }
   }
 
@@ -759,6 +777,9 @@ mixin _PlatformViewGestureMixin on RenderBox implements MouseTrackerAnnotation {
   void handleEvent(PointerEvent event, HitTestEntry entry) {
     if (event is PointerDownEvent) {
       _gestureRecognizer!.addPointer(event);
+    }
+    if (event is PointerPanZoomStartEvent) {
+      _gestureRecognizer!.addPointerPanZoom(event);
     }
     if (event is PointerHoverEvent) {
       _handlePointerEvent?.call(event);
