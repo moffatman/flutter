@@ -5210,6 +5210,11 @@ class NavigatorState extends State<Navigator> with TickerProviderStateMixin, Res
     _activePointers.remove(event.pointer);
   }
 
+  /// Use this to override the _shouldIgnoreFocusRequest for all routes.
+  ///
+  /// You can use it to allow touch input to below route during transition.
+  bool? get overrideShouldIgnoreFocusRequest => null;
+
   void _cancelActivePointers() {
     // TODO(abarth): This mechanism is far from perfect. See https://github.com/flutter/flutter/issues/4770
     if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
