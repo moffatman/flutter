@@ -597,19 +597,6 @@ class VerticalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
-    if (!isFlingGesture(estimate, kind)) {
-      return null;
-    }
-    final double maxVelocity = maxFlingVelocity ?? kMaxFlingVelocity;
-    final double dy = clampDouble(estimate.pixelsPerSecond.dy, -maxVelocity, maxVelocity);
-    return DragEndDetails(
-      velocity: Velocity(pixelsPerSecond: Offset(0, dy)),
-      primaryVelocity: dy,
-    );
-  }
-
-  @override
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
     return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
@@ -665,19 +652,6 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
   }
 
   @override
-  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
-    if (!isFlingGesture(estimate, kind)) {
-      return null;
-    }
-    final double maxVelocity = maxFlingVelocity ?? kMaxFlingVelocity;
-    final double dx = clampDouble(estimate.pixelsPerSecond.dx, -maxVelocity, maxVelocity);
-    return DragEndDetails(
-      velocity: Velocity(pixelsPerSecond: Offset(dx, 0)),
-      primaryVelocity: dx,
-    );
-  }
-
-  @override
   double _calculateAcceptFactor(PointerDeviceKind pointerDeviceKind, double? deviceTouchSlop) {
     return _globalDistanceMoved.abs() / computeHitSlop(pointerDeviceKind, gestureSettings);
   }
@@ -715,16 +689,6 @@ class PanGestureRecognizer extends DragGestureRecognizer {
     final double minDistance = minFlingDistance ?? computeHitSlop(kind, gestureSettings);
     return estimate.pixelsPerSecond.distanceSquared > minVelocity * minVelocity
         && estimate.offset.distanceSquared > minDistance * minDistance;
-  }
-
-  @override
-  DragEndDetails? _considerFling(VelocityEstimate estimate, PointerDeviceKind kind) {
-    if (!isFlingGesture(estimate, kind)) {
-      return null;
-    }
-    final Velocity velocity = Velocity(pixelsPerSecond: estimate.pixelsPerSecond)
-        .clampMagnitude(minFlingVelocity ?? kMinFlingVelocity, maxFlingVelocity ?? kMaxFlingVelocity);
-    return DragEndDetails(velocity: velocity);
   }
 
   @override
