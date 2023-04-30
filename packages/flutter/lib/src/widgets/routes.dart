@@ -871,8 +871,9 @@ class _ModalScopeState<T> extends State<_ModalScope<T>> {
   }
 
   bool get _shouldIgnoreFocusRequest {
-    return widget.route.animation?.status == AnimationStatus.reverse ||
-      (widget.route.navigator?.userGestureInProgress ?? false);
+    return widget.route.navigator?.overrideShouldIgnoreFocusRequest ??
+      (widget.route.animation?.status == AnimationStatus.reverse ||
+       (widget.route.navigator?.userGestureInProgress ?? false));
   }
 
   bool get _shouldRequestFocus {
