@@ -756,7 +756,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
             focalPoint: _currentFocalPoint!,
             localFocalPoint: _localFocalPoint,
             rotation: _computeRotationFactor(),
-            pointerCount: _pointerCount,
+            pointerCount: pointerCount,
             focalPointDelta: _delta,
           ));
         });
