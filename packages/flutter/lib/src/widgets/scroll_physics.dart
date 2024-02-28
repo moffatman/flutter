@@ -265,7 +265,10 @@ class ScrollPhysics {
   /// deferred.
   bool recommendDeferredLoading(double velocity, ScrollMetrics metrics, BuildContext context) {
     if (parent == null) {
-      final double maxPhysicalPixels = View.of(context).physicalSize.longestSide;
+      final double? maxPhysicalPixels = View.maybeOf(context)?.physicalSize.longestSide;
+      if (maxPhysicalPixels == null) {
+        return false;
+      }
       return velocity.abs() > maxPhysicalPixels;
     }
     return parent!.recommendDeferredLoading(velocity, metrics, context);
