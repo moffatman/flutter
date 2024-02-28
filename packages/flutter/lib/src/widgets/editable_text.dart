@@ -308,6 +308,22 @@ class TextEditingController extends ValueNotifier<TextEditingValue> {
     );
   }
 
+  TextSpan buildTextSpanWithSpellCheckingResults({
+    required BuildContext context,
+    TextStyle? style,
+    required TextStyle misspelledTextStyle,
+    required bool withComposing,
+    required SpellCheckResults spellCheckResults
+  }) {
+    return buildTextSpanWithSpellCheckSuggestions(
+      value,
+      !value.isComposingRangeValid || !withComposing,
+      style,
+      misspelledTextStyle,
+      spellCheckResults
+    );
+  }
+
   /// The currently selected range within [text].
   ///
   /// If the selection is collapsed, then this property gives the offset of the
@@ -5379,14 +5395,12 @@ class EditableTextState extends State<EditableText> with AutomaticKeepAliveClien
       // be thrown and this EditableText will be built with a broken subtree.
       assert(!_value.composing.isValid || !withComposing || _value.isComposingRangeValid);
 
-      final bool composingRegionOutOfRange = !_value.isComposingRangeValid || !withComposing;
-
-      return buildTextSpanWithSpellCheckSuggestions(
-        _value,
-        composingRegionOutOfRange,
-        _style,
-        _spellCheckConfiguration.misspelledTextStyle!,
-        spellCheckResults!,
+      return widget.controller.buildTextSpanWithSpellCheckingResults(
+        context: context,
+        style: _style,
+        misspelledTextStyle: _spellCheckConfiguration.misspelledTextStyle!,
+        withComposing: withComposing,
+        spellCheckResults: spellCheckResults!,
       );
     }
 
