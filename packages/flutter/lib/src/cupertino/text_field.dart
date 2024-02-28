@@ -1225,7 +1225,7 @@ class _CupertinoTextFieldState extends State<CupertinoTextField> with Restoratio
               // the cost of the ability to compute the intrinsic dimensions of
               // this widget.
               // See also https://github.com/flutter/flutter/issues/13715.
-              alignment: AlignmentDirectional.center,
+              alignment: AlignmentDirectional.topStart,
               textDirection: widget.textDirection,
               children: <Widget>[
                 if (placeholder != null) placeholder,
