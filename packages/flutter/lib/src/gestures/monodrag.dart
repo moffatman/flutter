@@ -89,6 +89,7 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
     this.velocityTrackerBuilder = _defaultBuilder,
     this.onlyAcceptDragOnThreshold = false,
     super.supportedDevices,
+    this.shouldStartDrag,
     super.allowedButtonsFilter = _defaultButtonAcceptBehavior,
   });
 
@@ -287,6 +288,8 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   ///    determining the initial fling velocity for a [Scrollable] on iOS, to
   ///    match the native behavior on that platform.
   GestureVelocityTrackerBuilder velocityTrackerBuilder;
+
+  bool Function(double)? shouldStartDrag;
 
   _DragState _state = _DragState.ready;
   late OffsetPair _initialPosition;
@@ -696,14 +699,16 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
             untransformedDelta: movedLocally,
             untransformedEndPosition: localPosition
           ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-          resolve(GestureDisposition.accepted, bid: calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
-        // TODO(moffatman): Not sure this is right
-          if (calculateAcceptFactor(event.kind, gestureSettings?.touchSlop) >= 1) {
-            _hasDragThresholdBeenMet = true;
-            if (_acceptedActivePointers.contains(event.pointer)) {
-              _checkDrag(event.pointer);
-            } else {
-              resolve(GestureDisposition.accepted);
+          if (shouldStartDrag?.call(_globalDistanceMoved) ?? true) {
+            resolve(GestureDisposition.accepted, bid: calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
+          // TODO(moffatman): Not sure this is right
+            if (calculateAcceptFactor(event.kind, gestureSettings?.touchSlop) >= 1) {
+              _hasDragThresholdBeenMet = true;
+              if (_acceptedActivePointers.contains(event.pointer)) {
+                _checkDrag(event.pointer);
+              } else {
+                resolve(GestureDisposition.accepted);
+              }
             }
           }
         case _DragState.accepted:
@@ -994,6 +999,7 @@ class HorizontalDragGestureRecognizer extends DragGestureRecognizer {
     super.debugOwner,
     super.supportedDevices,
     super.allowedButtonsFilter,
+    super.shouldStartDrag,
   });
 
   @override
