@@ -755,7 +755,6 @@ class _SliderState extends State<Slider> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    assert(debugCheckHasMaterial(context));
     assert(debugCheckHasMediaQuery(context));
 
     switch (widget._sliderType) {
@@ -779,6 +778,7 @@ class _SliderState extends State<Slider> with TickerProviderStateMixin {
   }
 
   Widget _buildMaterialSlider(BuildContext context) {
+    assert(debugCheckHasMaterial(context));
     final ThemeData theme = Theme.of(context);
     SliderThemeData sliderTheme = SliderTheme.of(context);
     final SliderThemeData defaults = theme.useMaterial3 ? _SliderDefaultsM3(context) : _SliderDefaultsM2(context);
