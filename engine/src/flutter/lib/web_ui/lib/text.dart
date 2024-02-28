@@ -11,7 +11,7 @@ const double kTextHeightNone = 0.0;
 
 enum FontStyle { normal, italic }
 
-enum PlaceholderAlignment { baseline, aboveBaseline, belowBaseline, top, bottom, middle }
+enum PlaceholderAlignment { baseline, aboveBaseline, belowBaseline, top, bottom, middle, stretchUp }
 
 class FontWeight {
   const FontWeight._(this.index, this.value);

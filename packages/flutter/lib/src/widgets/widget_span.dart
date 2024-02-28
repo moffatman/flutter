@@ -6,7 +6,7 @@
 /// @docImport 'text.dart';
 library;
 
-import 'dart:ui' as ui show ParagraphBuilder, PlaceholderAlignment;
+import 'dart:ui' as ui show ParagraphBuilder, PlaceholderAlignment, PlaceholderFloating;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
@@ -78,8 +78,13 @@ class WidgetSpan extends PlaceholderSpan {
   ///
   /// A [TextStyle] may be provided with the [style] property, but only the
   /// decoration, foreground, background, and spacing options will be used.
-  const WidgetSpan({required this.child, super.alignment, super.baseline, super.style})
-    : assert(
+  const WidgetSpan({
+    required this.child,
+    super.alignment,
+    super.baseline,
+    super.style,
+    this.floating = ui.PlaceholderFloating.none,
+  }) : assert(
         baseline != null ||
             !(identical(alignment, ui.PlaceholderAlignment.aboveBaseline) ||
                 identical(alignment, ui.PlaceholderAlignment.belowBaseline) ||
@@ -145,6 +150,8 @@ class WidgetSpan extends PlaceholderSpan {
   /// The widget to embed inline within text.
   final Widget child;
 
+  final ui.PlaceholderFloating floating;
+
   /// Adds a placeholder box to the paragraph builder if a size has been
   /// calculated for the widget.
   ///
@@ -173,6 +180,7 @@ class WidgetSpan extends PlaceholderSpan {
       alignment,
       baseline: currentDimensions.baseline,
       baselineOffset: currentDimensions.baselineOffset,
+      floating: floating,
     );
     if (hasStyle) {
       builder.pop();
@@ -215,7 +223,9 @@ class WidgetSpan extends PlaceholderSpan {
       return RenderComparison.layout;
     }
     final WidgetSpan typedOther = other as WidgetSpan;
-    if (child != typedOther.child || alignment != typedOther.alignment) {
+    if (child != typedOther.child ||
+        alignment != typedOther.alignment ||
+        floating != typedOther.floating) {
       return RenderComparison.layout;
     }
     RenderComparison result = RenderComparison.identical;

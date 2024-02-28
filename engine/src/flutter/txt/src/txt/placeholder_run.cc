@@ -12,11 +12,13 @@ PlaceholderRun::PlaceholderRun(double width,
                                double height,
                                PlaceholderAlignment alignment,
                                TextBaseline baseline,
-                               double baseline_offset)
+                               double baseline_offset,
+                               PlaceholderFloating floating)
     : width(width),
       height(height),
       alignment(alignment),
       baseline(baseline),
-      baseline_offset(baseline_offset) {}
+      baseline_offset(baseline_offset),
+      floating(floating) {}
 
 }  // namespace txt

@@ -76,6 +76,8 @@ void ParagraphBuilderSkia::AddPlaceholder(PlaceholderRun& span) {
   placeholder_style.fBaselineOffset = span.baseline_offset;
   placeholder_style.fAlignment =
       static_cast<skt::PlaceholderAlignment>(span.alignment);
+  placeholder_style.fFloating =
+      static_cast<skt::PlaceholderFloating>(span.floating);
 
   builder_->addPlaceholder(placeholder_style);
 }

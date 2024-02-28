@@ -524,10 +524,12 @@ void ParagraphBuilder::addPlaceholder(double width,
                                       double height,
                                       unsigned alignment,
                                       double baseline_offset,
-                                      unsigned baseline) {
+                                      unsigned baseline,
+                                      unsigned floating) {
   txt::PlaceholderRun placeholder_run(
       width, height, static_cast<txt::PlaceholderAlignment>(alignment),
-      static_cast<txt::TextBaseline>(baseline), baseline_offset);
+      static_cast<txt::TextBaseline>(baseline), baseline_offset,
+      static_cast<txt::PlaceholderFloating>(floating));
 
   m_paragraph_builder_->AddPlaceholder(placeholder_run);
 }

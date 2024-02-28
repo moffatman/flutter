@@ -36,6 +36,17 @@ enum class PlaceholderAlignment {
   /// placeholder is very tall, the extra space will grow equally from
   /// the top and bottom of the line.
   kMiddle,
+
+  // TODO
+  kStretchUp,
+};
+
+enum class PlaceholderFloating {
+  kNone,
+  kLeft,
+  kRight,
+  kStart,
+  kEnd,
 };
 
 // Represents the metrics required to fully define a rect that will fit a
@@ -63,13 +74,16 @@ class PlaceholderRun {
   // the alphabetic baseline.
   double baseline_offset = 0;
 
+  PlaceholderFloating floating;
+
   PlaceholderRun();
 
   PlaceholderRun(double width,
                  double height,
                  PlaceholderAlignment alignment,
                  TextBaseline baseline,
-                 double baseline_offset);
+                 double baseline_offset,
+                 PlaceholderFloating floating);
 };
 
 }  // namespace txt
