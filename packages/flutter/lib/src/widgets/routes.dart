@@ -2022,7 +2022,15 @@ abstract class ModalRoute<T> extends TransitionRoute<T> with LocalHistoryRoute<T
   @override
   void onPopInvokedWithResult(bool didPop, T? result) {
     for (final PopEntry<Object?> popEntry in _popEntries) {
-      popEntry.onPopInvokedWithResult(didPop, result);
+      if (!didPop && !popEntry.canPopNotifier.value) {
+        // Only the first entry which doesn't want to pop gets the no-pop notification
+        popEntry.onPopInvokedWithResult(didPop, result);
+        break;
+      }
+      else if (didPop) {
+        // Everyone gets the successful-pop notification
+        popEntry.onPopInvokedWithResult(didPop, result);
+      }
     }
     super.onPopInvokedWithResult(didPop, result);
   }
