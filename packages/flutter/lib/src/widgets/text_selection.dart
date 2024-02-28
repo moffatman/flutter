@@ -2261,7 +2261,7 @@ class TextSelectionGestureDetectorBuilder {
     // TODO(justinmc): Should a desktop platform show its selection toolbar when
     // receiving a tap event?  Say a Windows device with a touchscreen.
     // https://github.com/flutter/flutter/issues/106586
-    _shouldShowSelectionToolbar = kind == null
+    _shouldShowSelectionToolbar = true || kind == null
       || kind == PointerDeviceKind.touch
       || kind == PointerDeviceKind.stylus;
 
