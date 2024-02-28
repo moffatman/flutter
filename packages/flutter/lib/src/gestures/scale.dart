@@ -393,7 +393,7 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
   /// Typically this is the number of fingers being used to pan the widget using the gesture
   /// recognizer.
   int get pointerCount {
-    return _pointerPanZooms.length + _pointerQueue.length;
+    return (2 * _pointerPanZooms.length) + _pointerQueue.length;
   }
 
   late Offset _initialFocalPoint;
