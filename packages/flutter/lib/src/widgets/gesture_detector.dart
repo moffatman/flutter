@@ -294,6 +294,7 @@ class GestureDetector extends StatelessWidget {
     this.trackpadScrollCausesScale = false,
     this.trackpadScrollToScaleFactor = kDefaultTrackpadScrollToScaleFactor,
     this.supportedDevices,
+    this.shouldStartDrag,
   }) : assert(() {
          final bool haveVerticalDrag = onVerticalDragStart != null || onVerticalDragUpdate != null || onVerticalDragEnd != null;
          final bool haveHorizontalDrag = onHorizontalDragStart != null || onHorizontalDragUpdate != null || onHorizontalDragEnd != null;
@@ -1023,6 +1024,8 @@ class GestureDetector extends StatelessWidget {
   /// {@macro flutter.gestures.scale.trackpadScrollToScaleFactor}
   final Offset trackpadScrollToScaleFactor;
 
+  final bool Function(double)? shouldStartDrag;
+
   @override
   Widget build(BuildContext context) {
     final Map<Type, GestureRecognizerFactory> gestures = <Type, GestureRecognizerFactory>{};
@@ -1169,7 +1172,8 @@ class GestureDetector extends StatelessWidget {
             ..dragStartBehavior = dragStartBehavior
             ..multitouchDragStrategy = configuration.getMultitouchDragStrategy(context)
             ..gestureSettings = gestureSettings
-            ..supportedDevices = supportedDevices;
+            ..supportedDevices = supportedDevices
+            ..shouldStartDrag = shouldStartDrag;
         },
       );
     }

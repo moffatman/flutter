@@ -685,6 +685,12 @@ class _DismissibleState extends State<Dismissible> with TickerProviderStateMixin
       onVerticalDragStart: _directionIsXAxis ? null : _handleDragStart,
       onVerticalDragUpdate: _directionIsXAxis ? null : _handleDragUpdate,
       onVerticalDragEnd: _directionIsXAxis ? null : _handleDragEnd,
+      shouldStartDrag: (double offset) {
+        if (widget.direction == DismissDirection.startToEnd) {
+          return offset > 0;
+        }
+        return true;
+      },
       behavior: widget.behavior,
       dragStartBehavior: widget.dragStartBehavior,
       child: content,
