@@ -132,7 +132,8 @@ mixin RenderInlineChildrenContainerDefaults on RenderBox, ContainerRenderObjectM
             ui.PlaceholderAlignment.belowBaseline ||
             ui.PlaceholderAlignment.bottom ||
             ui.PlaceholderAlignment.middle ||
-            ui.PlaceholderAlignment.top      => null,
+            ui.PlaceholderAlignment.top ||
+            ui.PlaceholderAlignment.stretchUp => null,
             ui.PlaceholderAlignment.baseline => child.getDistanceToBaseline(span.baseline!),
           },
         );
@@ -696,7 +697,8 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
         ui.PlaceholderAlignment.belowBaseline => false,
         ui.PlaceholderAlignment.top ||
         ui.PlaceholderAlignment.middle ||
-        ui.PlaceholderAlignment.bottom => true,
+        ui.PlaceholderAlignment.bottom ||
+        ui.PlaceholderAlignment.stretchUp => true,
       };
     });
   }
@@ -721,13 +723,15 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
   @override
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
     final TextPosition textPosition = _textPainter.getPositionForOffset(position);
-    switch (_textPainter.text!.getSpanForPosition(textPosition)) {
-      case final HitTestTarget span:
-        result.add(HitTestEntry(span));
-        return true;
-      case _:
-        return hitTestInlineChildren(result, position);
+    if (hitTestInlineChildren(result, position)) {
+      return true;
     }
+    final Object? span = _textPainter.text!.getSpanForPosition(textPosition);
+    if (span is HitTestTarget) {
+      result.add(HitTestEntry(span));
+      return true;
+    }
+    return false;
   }
 
   bool _needsClipping = false;
@@ -909,6 +913,8 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
           ..blendMode = BlendMode.modulate
           ..shader = _overflowShader;
         context.canvas.drawRect(Offset.zero & size, paint);
+        // TODO(moffatman): Understand why this is needed
+        context.canvas.translate(-offset.dx, -offset.dy);
       }
       context.canvas.restore();
     }

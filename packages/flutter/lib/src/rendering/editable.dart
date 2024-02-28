@@ -2259,7 +2259,8 @@ class RenderEditable extends RenderBox with RelayoutWhenSystemFontsChangeMixin, 
         ui.PlaceholderAlignment.belowBaseline => false,
         ui.PlaceholderAlignment.top ||
         ui.PlaceholderAlignment.middle ||
-        ui.PlaceholderAlignment.bottom => true,
+        ui.PlaceholderAlignment.bottom ||
+        ui.PlaceholderAlignment.stretchUp => true,
       };
     }) ?? true;
   }
