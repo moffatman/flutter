@@ -2441,9 +2441,9 @@ class TextSelectionGestureDetectorBuilder {
     // TODO(justinmc): Should a desktop platform show its selection toolbar when
     // receiving a tap event?  Say a Windows device with a touchscreen.
     // https://github.com/flutter/flutter/issues/106586
-    _shouldShowSelectionToolbar =
-        kind == null || kind == PointerDeviceKind.touch || kind == PointerDeviceKind.stylus;
-    _shouldShowSelectionHandles = _shouldShowSelectionToolbar;
+    _shouldShowSelectionToolbar = true || kind == null
+      || kind == PointerDeviceKind.touch
+      || kind == PointerDeviceKind.stylus;
 
     // It is impossible to extend the selection when the shift key is pressed, if the
     // renderEditable.selection is invalid.
