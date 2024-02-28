@@ -119,7 +119,7 @@ class MDnsVmServiceDiscovery {
         useDeviceIPAsHost: useDeviceIPAsHost,
         timeout: timeout,
       );
-    } else if (results.length > 1) {
+    } else if (false && results.length > 1) {
       final buffer = StringBuffer();
       buffer.writeln('There are multiple Dart VM Services available.');
       buffer.writeln(
