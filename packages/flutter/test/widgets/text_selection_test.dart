@@ -1164,28 +1164,32 @@ void main() {
       VoidCallback? onSelectionHandleTapped,
       TextSelectionControls? selectionControls,
       TextMagnifierConfiguration? magnifierConfiguration,
+      double rootScale = 1.0,
     }) async {
       final UniqueKey column = UniqueKey();
       final LayerLink startHandleLayerLink = LayerLink();
       final LayerLink endHandleLayerLink = LayerLink();
       final LayerLink toolbarLayerLink = LayerLink();
-      await tester.pumpWidget(MaterialApp(
-        home: Column(
-          key: column,
-          children: <Widget>[
-            CompositedTransformTarget(
-              link: startHandleLayerLink,
-              child: const Text('start handle'),
-            ),
-            CompositedTransformTarget(
-              link: endHandleLayerLink,
-              child: const Text('end handle'),
-            ),
-            CompositedTransformTarget(
-              link: toolbarLayerLink,
-              child: const Text('toolbar'),
-            ),
-          ],
+      await tester.pumpWidget(Transform.scale(
+        scale: rootScale,
+        child: MaterialApp(
+          home: Column(
+            key: column,
+            children: <Widget>[
+              CompositedTransformTarget(
+                link: startHandleLayerLink,
+                child: const Text('start handle'),
+              ),
+              CompositedTransformTarget(
+                link: endHandleLayerLink,
+                child: const Text('end handle'),
+              ),
+              CompositedTransformTarget(
+                link: toolbarLayerLink,
+                child: const Text('toolbar'),
+              ),
+            ],
+          ),
         ),
       ));
 
@@ -1417,11 +1421,15 @@ void main() {
 
     testWidgets('can show magnifier when no handles exist', (WidgetTester tester) async {
       final GlobalKey magnifierKey = GlobalKey();
+      Offset? builtGlobalGesturePosition;
+      Rect? builtFieldBounds;
       final SelectionOverlay selectionOverlay = await pumpApp(
         tester,
         magnifierConfiguration: TextMagnifierConfiguration(
           shouldDisplayHandlesInMagnifier: false,
           magnifierBuilder: (BuildContext context, MagnifierController controller, ValueNotifier<MagnifierInfo>? notifier) {
+            builtGlobalGesturePosition =  notifier?.value.globalGesturePosition;
+            builtFieldBounds = notifier?.value.fieldBounds;
             return SizedBox.shrink(
               key: magnifierKey,
             );
@@ -1431,10 +1439,12 @@ void main() {
 
       expect(find.byKey(magnifierKey), findsNothing);
 
+      const Offset globalGesturePosition = Offset(10, 10);
+      final Rect fieldBounds = Offset.zero & const Size(200.0, 50.0);
       final MagnifierInfo info = MagnifierInfo(
-        globalGesturePosition: Offset.zero,
+        globalGesturePosition: globalGesturePosition,
         caretRect: Offset.zero & const Size(5.0, 20.0),
-        fieldBounds: Offset.zero & const Size(200.0, 50.0),
+        fieldBounds: fieldBounds,
         currentLineBoundaries: Offset.zero & const Size(200.0, 50.0),
       );
       selectionOverlay.showMagnifier(info);
@@ -1442,6 +1452,57 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.byKey(magnifierKey), findsOneWidget);
+      expect(builtFieldBounds, fieldBounds);
+      expect(builtGlobalGesturePosition, globalGesturePosition);
+    });
+
+    testWidgets('magnifier is in correct position when there is transform above Overlay', (WidgetTester tester) async {
+      final GlobalKey magnifierKey = GlobalKey();
+      Offset? builtGlobalGesturePosition;
+      Rect? builtFieldBounds;
+      const double rootScale = 0.5;
+      final SelectionOverlay selectionOverlay = await pumpApp(
+        tester,
+        rootScale: rootScale,
+        magnifierConfiguration: TextMagnifierConfiguration(
+          shouldDisplayHandlesInMagnifier: false,
+          magnifierBuilder: (BuildContext context, MagnifierController controller, ValueNotifier<MagnifierInfo>? notifier) {
+            builtGlobalGesturePosition = notifier?.value.globalGesturePosition;
+            builtFieldBounds = notifier?.value.fieldBounds;
+            return SizedBox.shrink(
+              key: magnifierKey,
+            );
+          },
+        ),
+      );
+
+      expect(find.byKey(magnifierKey), findsNothing);
+
+      const Offset globalGesturePosition = Offset(10, 10);
+      final Rect fieldBounds = Offset.zero & const Size(200.0, 50.0);
+      final MagnifierInfo info = MagnifierInfo(
+        globalGesturePosition: globalGesturePosition,
+        caretRect: Offset.zero & const Size(5.0, 20.0),
+        fieldBounds: fieldBounds,
+        currentLineBoundaries: Offset.zero & const Size(200.0, 50.0),
+      );
+      selectionOverlay.showMagnifier(info);
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(magnifierKey), findsOneWidget);
+      print(builtFieldBounds);
+      print(Rect.fromPoints(
+        fieldBounds.topLeft * rootScale,
+        fieldBounds.bottomRight * rootScale
+      ));
+      print(builtGlobalGesturePosition);
+      print(globalGesturePosition * rootScale);
+      expect(builtFieldBounds, Rect.fromPoints(
+        fieldBounds.topLeft * rootScale,
+        fieldBounds.bottomRight * rootScale
+      ));
+      expect(builtGlobalGesturePosition, globalGesturePosition * rootScale);
     });
   });
 

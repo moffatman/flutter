@@ -631,7 +631,10 @@ class TextSelectionOverlay {
     required Offset globalGesturePosition,
     required TextPosition currentTextPosition,
   }) {
-    final Offset globalRenderEditableTopLeft = renderEditable.localToGlobal(Offset.zero);
+    final RenderBox? overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject() as RenderBox?;
+    final Offset globalGesturePosition2 = overlay?.globalToLocal(globalGesturePosition) ?? globalGesturePosition;
+    final Offset globalRenderEditableTopLeft = renderEditable.localToGlobal(Offset.zero, ancestor: overlay);
+    final Offset globalRenderEditableBottomRight = renderEditable.localToGlobal((Offset.zero & renderEditable.size).bottomRight, ancestor: overlay);
     final Rect localCaretRect = renderEditable.getLocalRectForCaret(currentTextPosition);
 
     final TextSelection lineAtOffset = renderEditable.getLineAtOffset(currentTextPosition);
@@ -651,8 +654,8 @@ class TextSelectionOverlay {
     );
 
     return MagnifierInfo(
-      fieldBounds: globalRenderEditableTopLeft & renderEditable.size,
-      globalGesturePosition: globalGesturePosition,
+      fieldBounds: Rect.fromPoints(globalRenderEditableTopLeft, globalRenderEditableBottomRight),
+      globalGesturePosition: globalGesturePosition2,
       caretRect: localCaretRect.shift(globalRenderEditableTopLeft),
       currentLineBoundaries: lineBoundaries.shift(globalRenderEditableTopLeft),
     );
