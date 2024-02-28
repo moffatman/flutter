@@ -1132,8 +1132,8 @@ mixin SchedulerBinding on BindingBase {
   /// end of the corresponding [handleDrawFrame], i.e. while a frame is being
   /// produced.
   Duration get currentFrameTimeStamp {
-    assert(_currentFrameTimeStamp != null);
-    return _currentFrameTimeStamp!;
+    //assert(_currentFrameTimeStamp != null);
+    return _currentFrameTimeStamp ?? Duration.zero;
   }
 
   Duration? _currentFrameTimeStamp;
