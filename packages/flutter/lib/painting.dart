@@ -22,7 +22,7 @@
 library painting;
 
 export 'dart:ui'
-    show PlaceholderAlignment, Shadow, TextHeightBehavior, TextLeadingDistribution, kTextHeightNone;
+    show PlaceholderAlignment, PlaceholderFloating, Shadow, TextHeightBehavior, TextLeadingDistribution, kTextHeightNone;
 
 export 'src/painting/alignment.dart';
 export 'src/painting/basic_types.dart';
