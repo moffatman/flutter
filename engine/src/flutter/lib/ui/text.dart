@@ -1344,6 +1344,8 @@ enum TextBaseline {
   ideographic,
 }
 
+enum PlaceholderFloating { none, left, right, start, end }
+
 /// A linear decoration to draw near the text.
 final class TextDecoration {
   const TextDecoration._(this._mask);
@@ -2851,6 +2853,8 @@ enum PlaceholderAlignment {
   /// When the placeholder is very tall, the extra space will grow equally
   /// from the top and bottom of the line.
   middle,
+  // TODO
+  stretchUp,
 }
 
 /// [LineMetrics] stores the measurements and statistics of a single line in the
@@ -3543,6 +3547,7 @@ abstract class ParagraphBuilder {
     double scale = 1.0,
     double? baselineOffset,
     TextBaseline? baseline,
+    PlaceholderFloating floating = PlaceholderFloating.none,
   });
 
   /// Applies the given paragraph style and returns a [Paragraph] containing the
@@ -3736,6 +3741,7 @@ base class _NativeParagraphBuilder extends NativeFieldWrapperClass1 implements P
     double scale = 1.0,
     double? baselineOffset,
     TextBaseline? baseline,
+    PlaceholderFloating floating = PlaceholderFloating.none,
   }) {
     // Require a baseline to be specified if using a baseline-based alignment.
     assert(
@@ -3753,12 +3759,13 @@ base class _NativeParagraphBuilder extends NativeFieldWrapperClass1 implements P
       alignment.index,
       baselineOffset * scale,
       (baseline ?? TextBaseline.alphabetic).index,
+      floating.index,
     );
     _placeholderCount++;
     _placeholderScales.add(scale);
   }
 
-  @Native<Void Function(Pointer<Void>, Double, Double, Uint32, Double, Uint32)>(
+  @Native<Void Function(Pointer<Void>, Double, Double, Uint32, Double, Uint32, Uint32)>(
     symbol: 'ParagraphBuilder::addPlaceholder',
   )
   external void _addPlaceholder(
@@ -3767,6 +3774,7 @@ base class _NativeParagraphBuilder extends NativeFieldWrapperClass1 implements P
     int alignment,
     double baselineOffset,
     int baseline,
+    int floating,
   );
 
   @override

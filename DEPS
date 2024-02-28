@@ -15,7 +15,7 @@ vars = {
   'skia_git': 'https://skia.googlesource.com',
   'llvm_git': 'https://llvm.googlesource.com',
   'dart_ai_rev': '9c96bfe5f091c9451eff5b59c9bffeb2e806b875',
-  'skia_revision': 'c440712584c76492566d92b5a1dabc4b68e6cf79',
+  'skia_revision': '1eae77317b9ef9e60cd51fe120d6a09700f28993',
 
   # Do not download the Emscripten SDK by default.
   # This prevents us from downloading the Emscripten toolchain for builds
@@ -505,7 +505,7 @@ deps = {
    Var('flutter_git') + '/third_party/freetype2' + '@' + 'be4bcb57914154fc1b9e2900bf8e4b516057e2b8',
 
   'engine/src/flutter/third_party/skia':
-   Var('skia_git') + '/skia.git' + '@' +  Var('skia_revision'),
+   'https:///github.com/moffatman/skia.git' + '@' +  Var('skia_revision'),
 
   'engine/src/flutter/third_party/ocmock':
    Var('flutter_git') + '/third_party/ocmock' + '@' +  Var('ocmock_rev'),

@@ -64,7 +64,8 @@ class ParagraphBuilder : public RefCountedDartWrappable<ParagraphBuilder> {
                       double height,
                       unsigned alignment,
                       double baseline_offset,
-                      unsigned baseline);
+                      unsigned baseline,
+                      unsigned floating);
 
   void build(Dart_Handle paragraph_handle);
 
