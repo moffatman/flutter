@@ -620,6 +620,9 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
     _tapGestureRecognizer.dispose();
     _openController.dispose();
     super.dispose();
+    _lastOverlayEntry?.remove();
+    _lastOverlayEntry?.dispose();
+    _lastOverlayEntry = null;
   }
 }
 
