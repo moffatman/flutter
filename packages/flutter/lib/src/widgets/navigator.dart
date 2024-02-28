@@ -579,7 +579,7 @@ abstract class Route<T> {
   }
 
   /// Whether current active pointer should be cancelled.
-  /// 
+  ///
   /// Usually, this should be set to true, but a route might be interested in keeping
   /// pointers alive to pop itself using the same touch that pushed it
   bool get shouldCancelActivePointers => true;
