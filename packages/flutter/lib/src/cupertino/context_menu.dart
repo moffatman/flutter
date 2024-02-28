@@ -687,6 +687,9 @@ class _CupertinoContextMenuState extends State<CupertinoContextMenu> with Ticker
   void dispose() {
     _openController.dispose();
     super.dispose();
+    _lastOverlayEntry?.remove();
+    _lastOverlayEntry?.dispose();
+    _lastOverlayEntry = null;
   }
 }
 
