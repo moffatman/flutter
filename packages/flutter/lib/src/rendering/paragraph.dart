@@ -145,7 +145,8 @@ mixin RenderInlineChildrenContainerDefaults on RenderBox, ContainerRenderObjectM
             ui.PlaceholderAlignment.belowBaseline ||
             ui.PlaceholderAlignment.bottom ||
             ui.PlaceholderAlignment.middle ||
-            ui.PlaceholderAlignment.top => null,
+            ui.PlaceholderAlignment.top ||
+            ui.PlaceholderAlignment.stretchUp => null,
             ui.PlaceholderAlignment.baseline => getBaseline(child, childConstraints, span.baseline!),
           },
         );
@@ -724,6 +725,9 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
   @override
   @protected
   bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
+    if (hitTestInlineChildren(result, position)) {
+      return true;
+    }
     final GlyphInfo? glyph = _textPainter.getClosestGlyphForOffset(position);
     // The hit-test can't fall through the horizontal gaps between visually
     // adjacent characters on the same line, even with a large letter-spacing or
@@ -737,9 +741,8 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
       case final HitTestTarget span:
         result.add(HitTestEntry(span));
         return true;
-      case _:
-        return hitTestInlineChildren(result, position);
     }
+    return false;
   }
 
   bool _needsClipping = false;
@@ -918,6 +921,8 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
           ..blendMode = BlendMode.modulate
           ..shader = _overflowShader;
         context.canvas.drawRect(Offset.zero & size, paint);
+        // TODO(moffatman): Understand why this is needed
+        context.canvas.translate(-offset.dx, -offset.dy);
       }
       context.canvas.restore();
     }

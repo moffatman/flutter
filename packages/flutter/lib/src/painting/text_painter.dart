@@ -133,6 +133,7 @@ class PlaceholderDimensions {
       ui.PlaceholderAlignment.top ||
       ui.PlaceholderAlignment.bottom ||
       ui.PlaceholderAlignment.middle ||
+      ui.PlaceholderAlignment.stretchUp ||
       ui.PlaceholderAlignment.aboveBaseline ||
       ui.PlaceholderAlignment.belowBaseline => 'PlaceholderDimensions($size, $alignment)',
       ui.PlaceholderAlignment.baseline      => 'PlaceholderDimensions($size, $alignment($baselineOffset from top))',
