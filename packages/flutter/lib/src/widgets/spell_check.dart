@@ -126,7 +126,7 @@ class SpellCheckConfiguration {
 ///
 /// Used in the case where the request for the spell check results of the
 /// [newText] is lagging in order to avoid display of incorrect results.
-List<SuggestionSpan> _correctSpellCheckResults(
+List<SuggestionSpan> correctSpellCheckResults(
   String newText,
   String resultsText,
   List<SuggestionSpan> results,
@@ -214,7 +214,7 @@ TextSpan buildTextSpanWithSpellCheckSuggestions(
   final String spellCheckResultsText = spellCheckResults.spellCheckedText;
 
   if (spellCheckResultsText != value.text) {
-    spellCheckResultsSpans = _correctSpellCheckResults(
+    spellCheckResultsSpans = correctSpellCheckResults(
       value.text,
       spellCheckResultsText,
       spellCheckResultsSpans,
