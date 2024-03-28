@@ -754,6 +754,9 @@ class DrawerControllerState extends State<DrawerController> with SingleTickerPro
         onHorizontalDragCancel: _handleDragCancel,
         excludeFromSemantics: true,
         dragStartBehavior: widget.dragStartBehavior,
+        shouldStartDrag: (double offset) {
+          return offset < 0;
+        },
         child: child,
       );
     }
