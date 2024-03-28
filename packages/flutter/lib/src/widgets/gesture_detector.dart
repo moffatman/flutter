@@ -274,6 +274,7 @@ class GestureDetector extends StatelessWidget {
     this.onTertiaryLongPressMoveUpdate,
     this.onTertiaryLongPressUp,
     this.onTertiaryLongPressEnd,
+    this.longPressDuration,
     this.onVerticalDragDown,
     this.onVerticalDragStart,
     this.onVerticalDragUpdate,
@@ -1047,6 +1048,8 @@ class GestureDetector extends StatelessWidget {
   /// {@macro flutter.gestures.scale.trackpadScrollToScaleFactor}
   final Offset trackpadScrollToScaleFactor;
 
+  final Duration? longPressDuration;
+
   final bool Function(double)? shouldStartDrag;
 
   @override
@@ -1125,7 +1128,7 @@ class GestureDetector extends StatelessWidget {
         onTertiaryLongPressEnd != null) {
       gestures[LongPressGestureRecognizer] =
           GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
-            () => LongPressGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices),
+            () => LongPressGestureRecognizer(debugOwner: this, supportedDevices: supportedDevices, duration: longPressDuration),
             (LongPressGestureRecognizer instance) {
               instance
                 ..onLongPressDown = onLongPressDown
