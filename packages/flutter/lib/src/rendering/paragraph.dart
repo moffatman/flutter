@@ -1026,6 +1026,27 @@ class RenderParagraph extends RenderBox
     defaultApplyPaintTransform(child, transform);
   }
 
+  void _innerPaint(PaintingContext context, Offset offset) {
+    assert(() {
+      _textPainter.debugPaintTextLayoutBoxes = debugPaintTextLayoutBoxes;
+      return true;
+    }());
+
+    _textPainter.paint(context.canvas, offset);
+
+    paintInlineChildren(context, offset);
+
+    if (_overflowShader != null) {
+      context.canvas.translate(offset.dx, offset.dy);
+      final paint = Paint()
+        ..blendMode = BlendMode.modulate
+        ..shader = _overflowShader;
+      context.canvas.drawRect(Offset.zero & size, paint);
+      // TODO(moffatman): Understand why this is needed
+      context.canvas.translate(-offset.dx, -offset.dy);
+    }
+  }
+
   @override
   void paint(PaintingContext context, Offset offset) {
     // Text alignment only triggers repaint so it's possible the text layout has
@@ -1053,7 +1074,16 @@ class RenderParagraph extends RenderBox
       }
     }
 
-    if (_needsClipping) {
+    if (_needsClipping && _textPainter.inlinePlaceholderBoxes!.isNotEmpty) {
+      layer = context.pushClipRect(
+        needsCompositing,
+        offset,
+        Offset.zero & size,
+        _innerPaint,
+        oldLayer: layer as ClipRectLayer?,
+      );
+    }
+    else if (_needsClipping) {
       final Rect bounds = offset & size;
       if (_overflowShader != null) {
         // This layer limits what the shader below blends with to be just the
@@ -1063,28 +1093,12 @@ class RenderParagraph extends RenderBox
         context.canvas.save();
       }
       context.canvas.clipRect(bounds);
-    }
-
-    assert(() {
-      _textPainter.debugPaintTextLayoutBoxes = debugPaintTextLayoutBoxes;
-      return true;
-    }());
-
-    _textPainter.paint(context.canvas, offset);
-
-    paintInlineChildren(context, offset);
-
-    if (_needsClipping) {
-      if (_overflowShader != null) {
-        context.canvas.translate(offset.dx, offset.dy);
-        final paint = Paint()
-          ..blendMode = BlendMode.modulate
-          ..shader = _overflowShader;
-        context.canvas.drawRect(Offset.zero & size, paint);
-        // TODO(moffatman): Understand why this is needed
-        context.canvas.translate(-offset.dx, -offset.dy);
-      }
       context.canvas.restore();
+      layer = null;
+    }
+    else {
+      _innerPaint(context, offset);
+      layer = null;
     }
 
     if (_lastSelectableFragments != null) {
