@@ -978,32 +978,7 @@ class RenderParagraph extends RenderBox
     defaultApplyPaintTransform(child, transform);
   }
 
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    // Text alignment only triggers repaint so it's possible the text layout has
-    // been invalidated but performLayout wasn't called at this point. Make sure
-    // the TextPainter has a valid layout.
-    _layoutTextWithConstraints(constraints);
-    assert(() {
-      if (debugRepaintTextRainbowEnabled) {
-        final Paint paint = Paint()..color = debugCurrentRepaintColor.toColor();
-        context.canvas.drawRect(offset & size, paint);
-      }
-      return true;
-    }());
-
-    if (_needsClipping) {
-      final Rect bounds = offset & size;
-      if (_overflowShader != null) {
-        // This layer limits what the shader below blends with to be just the
-        // text (as opposed to the text and its background).
-        context.canvas.saveLayer(bounds, Paint());
-      } else {
-        context.canvas.save();
-      }
-      context.canvas.clipRect(bounds);
-    }
-
+  void _innerPaint(PaintingContext context, Offset offset) {
     if (_lastSelectableFragments != null) {
       for (final _SelectableFragment fragment in _lastSelectableFragments!) {
         fragment.paint(context, offset);
@@ -1019,17 +994,57 @@ class RenderParagraph extends RenderBox
 
     paintInlineChildren(context, offset);
 
-    if (_needsClipping) {
-      if (_overflowShader != null) {
-        context.canvas.translate(offset.dx, offset.dy);
-        final Paint paint = Paint()
-          ..blendMode = BlendMode.modulate
-          ..shader = _overflowShader;
-        context.canvas.drawRect(Offset.zero & size, paint);
-        // TODO(moffatman): Understand why this is needed
-        context.canvas.translate(-offset.dx, -offset.dy);
+    if (_overflowShader != null) {
+      context.canvas.translate(offset.dx, offset.dy);
+      final Paint paint = Paint()
+        ..blendMode = BlendMode.modulate
+        ..shader = _overflowShader;
+      context.canvas.drawRect(Offset.zero & size, paint);
+      // TODO(moffatman): Understand why this is needed
+      context.canvas.translate(-offset.dx, -offset.dy);
+    }
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // Text alignment only triggers repaint so it's possible the text layout has
+    // been invalidated but performLayout wasn't called at this point. Make sure
+    // the TextPainter has a valid layout.
+    _layoutTextWithConstraints(constraints);
+    assert(() {
+      if (debugRepaintTextRainbowEnabled) {
+        final Paint paint = Paint()..color = debugCurrentRepaintColor.toColor();
+        context.canvas.drawRect(offset & size, paint);
       }
+      return true;
+    }());
+
+    if (_needsClipping && _textPainter.inlinePlaceholderBoxes!.isNotEmpty) {
+      layer = context.pushClipRect(
+        needsCompositing,
+        offset,
+        Offset.zero & size,
+        _innerPaint,
+        oldLayer: layer as ClipRectLayer?,
+      );
+    }
+    else if (_needsClipping) {
+      final Rect bounds = offset & size;
+      if (_overflowShader != null) {
+        // This layer limits what the shader below blends with to be just the
+        // text (as opposed to the text and its background).
+        context.canvas.saveLayer(bounds, Paint());
+      } else {
+        context.canvas.save();
+      }
+      context.canvas.clipRect(bounds);
+      _innerPaint(context, offset);
       context.canvas.restore();
+      layer = null;
+    }
+    else {
+      _innerPaint(context, offset);
+      layer = null;
     }
   }
 
