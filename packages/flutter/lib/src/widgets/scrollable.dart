@@ -109,6 +109,7 @@ class Scrollable extends StatefulWidget {
     this.restorationId,
     this.scrollBehavior,
     this.clipBehavior = Clip.hardEdge,
+    this.hitTestBehavior = HitTestBehavior.opaque,
   }) : assert(semanticChildCount == null || semanticChildCount >= 0);
 
   /// {@template flutter.widgets.Scrollable.axisDirection}
@@ -295,6 +296,8 @@ class Scrollable extends StatefulWidget {
   ///
   /// Determined by the [axisDirection].
   Axis get axis => axisDirectionToAxis(axisDirection);
+
+  final HitTestBehavior hitTestBehavior;
 
   @override
   ScrollableState createState() => ScrollableState();
@@ -968,7 +971,7 @@ class ScrollableState extends State<Scrollable> with TickerProviderStateMixin, R
         child: RawGestureDetector(
           key: _gestureDetectorKey,
           gestures: _gestureRecognizers,
-          behavior: HitTestBehavior.opaque,
+          behavior: widget.hitTestBehavior,
           excludeFromSemantics: widget.excludeFromSemantics,
           child: Semantics(
             explicitChildNodes: !widget.excludeFromSemantics,
