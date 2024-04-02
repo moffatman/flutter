@@ -1533,7 +1533,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
     return constraints.biggest;
   }
 
-  static const int _maxLayoutCyclesPerChild = 10;
+  static const int _maxLayoutCyclesPerChild = 30;
 
   // Out-of-band data computed during layout.
   late double _minScrollExtent;
