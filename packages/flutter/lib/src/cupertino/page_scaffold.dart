@@ -113,6 +113,10 @@ class _CupertinoPageScaffoldState extends State<CupertinoPageScaffold> with Widg
   @override
   void handleStatusBarTap() {
     super.handleStatusBarTap();
+    if (ModalRoute.find(context)?.handleStatusBarTap?.call() ?? false) {
+      // Handled through hack
+      return;
+    }
     final ScrollController? primaryScrollController = PrimaryScrollController.maybeOf(context);
     if (primaryScrollController != null &&
         primaryScrollController.hasClients &&

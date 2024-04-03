@@ -2748,6 +2748,10 @@ class ScaffoldState extends State<Scaffold>
   void handleStatusBarTap() {
     super.handleStatusBarTap();
     assert(widget.primary);
+    if (ModalRoute.find(context)?.handleStatusBarTap?.call() ?? false) {
+      // Handled through hack
+      return;
+    }
     final ScrollController? primaryScrollController = PrimaryScrollController.maybeOf(context);
     if (primaryScrollController != null &&
         primaryScrollController.hasClients &&
