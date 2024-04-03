@@ -1212,6 +1212,13 @@ abstract class ModalRoute<T> extends TransitionRoute<T> with LocalHistoryRoute<T
   /// the [ModalRoute.settings] property of the ancestor [_ModalScopeStatus] changes.
   static RouteSettings? settingsOf(BuildContext context) => _of(context, _ModalRouteAspect.settings)?.settings;
 
+  /// Like [of] but does not
+  @optionalTypeArgs
+  static ModalRoute<T>? find<T>(BuildContext context) {
+    final _ModalScopeStatus? widget = context.getInheritedWidgetOfExactType<_ModalScopeStatus>();
+    return widget?.route as ModalRoute<T>?;
+  }
+
   /// Schedule a call to [buildTransitions].
   ///
   /// Whenever you need to change internal state for a [ModalRoute] object, make
@@ -2081,6 +2088,9 @@ abstract class ModalRoute<T> extends TransitionRoute<T> with LocalHistoryRoute<T
       _modalScope = OverlayEntry(builder: _buildModalScope, maintainState: maintainState, canSizeOverlay: opaque),
     ];
   }
+
+  /// Hacky solution for intercepting status bar tap
+  bool Function()? handleStatusBarTap;
 
   @override
   String toString() => '${objectRuntimeType(this, 'ModalRoute')}($settings, animation: $_animation)';
