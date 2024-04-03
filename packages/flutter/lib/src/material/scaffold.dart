@@ -2751,6 +2751,10 @@ class ScaffoldState extends State<Scaffold> with TickerProviderStateMixin, Resto
   // to the top. We implement this by looking up the primary scroll controller and
   // scrolling it to the top when tapped.
   void _handleStatusBarTap() {
+    if (ModalRoute.find(context)?.handleStatusBarTap?.call() ?? false) {
+      // Handled through hack
+      return;
+    }
     final ScrollController? primaryScrollController = PrimaryScrollController.maybeOf(context);
     if (primaryScrollController != null && primaryScrollController.hasClients) {
       primaryScrollController.animateTo(

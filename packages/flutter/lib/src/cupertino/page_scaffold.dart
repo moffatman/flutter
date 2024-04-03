@@ -91,6 +91,10 @@ class CupertinoPageScaffold extends StatefulWidget {
 
 class _CupertinoPageScaffoldState extends State<CupertinoPageScaffold> {
   void _handleStatusBarTap() {
+    if (ModalRoute.find(context)?.handleStatusBarTap?.call() ?? false) {
+      // Handled through hack
+      return;
+    }
     final ScrollController? primaryScrollController = PrimaryScrollController.maybeOf(context);
     // Only act on the scroll controller if it has any attached scroll positions.
     if (primaryScrollController != null && primaryScrollController.hasClients) {
