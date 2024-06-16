@@ -16,7 +16,7 @@ import 'theme.dart';
 
 // Values extracted from https://developer.apple.com/design/resources/.
 // The height of the toolbar, including the arrow.
-const double _kToolbarHeight = 45.0;
+const double _kToolbarHeight = 50.0;
 // Vertical distance between the tip of the arrow and the line of text the arrow
 // is pointing to. The value used here is eyeballed.
 const double _kToolbarContentDistance = 8.0;
@@ -131,6 +131,7 @@ class CupertinoTextSelectionToolbar extends StatelessWidget {
     final Widget outputChild = _CupertinoTextSelectionToolbarShape(
       anchor: anchor,
       isAbove: isAbove,
+      scaler: MediaQuery.textScalerOf(context),
       child: ColoredBox(
         color: _kToolbarBackgroundColor.resolveFrom(context),
         child: child,
@@ -168,7 +169,8 @@ class CupertinoTextSelectionToolbar extends StatelessWidget {
     final double paddingAbove = mediaQueryPadding.top + kToolbarScreenPadding;
     final double toolbarHeightNeeded = paddingAbove
         + _kToolbarContentDistance
-        + _kToolbarHeight;
+        + _kToolbarHeight
+        + (MediaQuery.textScalerOf(context).scale(17) - 17);
     final bool fitsAbove = anchorAbove.dy >= toolbarHeightNeeded;
 
     // The arrow, which points to the anchor, has some margin so it can't get
@@ -217,9 +219,11 @@ class _CupertinoTextSelectionToolbarShape extends SingleChildRenderObjectWidget 
   const _CupertinoTextSelectionToolbarShape({
     required Offset anchor,
     required bool isAbove,
+    required TextScaler scaler,
     super.child,
   }) : _anchor = anchor,
-       _isAbove = isAbove;
+       _isAbove = isAbove,
+       _scaler = scaler;
 
   final Offset _anchor;
 
@@ -227,10 +231,13 @@ class _CupertinoTextSelectionToolbarShape extends SingleChildRenderObjectWidget 
   // of the toolbar, or point up and be attached to the top of the toolbar.
   final bool _isAbove;
 
+  final TextScaler _scaler;
+
   @override
   _RenderCupertinoTextSelectionToolbarShape createRenderObject(BuildContext context) => _RenderCupertinoTextSelectionToolbarShape(
     _anchor,
     _isAbove,
+    _scaler,
     null,
   );
 
@@ -238,7 +245,8 @@ class _CupertinoTextSelectionToolbarShape extends SingleChildRenderObjectWidget 
   void updateRenderObject(BuildContext context, _RenderCupertinoTextSelectionToolbarShape renderObject) {
     renderObject
       ..anchor = _anchor
-      ..isAbove = _isAbove;
+      ..isAbove = _isAbove
+      ..scaler = _scaler;
   }
 }
 
@@ -254,6 +262,7 @@ class _RenderCupertinoTextSelectionToolbarShape extends RenderShiftedBox {
   _RenderCupertinoTextSelectionToolbarShape(
     this._anchor,
     this._isAbove,
+    this._scaler,
     super.child,
   );
 
@@ -280,6 +289,16 @@ class _RenderCupertinoTextSelectionToolbarShape extends RenderShiftedBox {
     markNeedsLayout();
   }
 
+  TextScaler get scaler => _scaler;
+  TextScaler _scaler;
+  set scaler(TextScaler value) {
+    if (_scaler == value) {
+      return;
+    }
+    _scaler = value;
+    markNeedsLayout();
+  }
+
   @override
   void performLayout() {
     final RenderBox? child = this.child;
@@ -294,8 +313,8 @@ class _RenderCupertinoTextSelectionToolbarShape extends RenderShiftedBox {
     // using this approach, the buttons don't need any special padding that
     // depends on isAbove.
     final BoxConstraints heightConstraint = BoxConstraints(
-      minHeight: _kToolbarHeight + _kToolbarArrowSize.height,
-      maxHeight: _kToolbarHeight + _kToolbarArrowSize.height,
+      minHeight: _kToolbarHeight + (scaler.scale(17) - 17) + _kToolbarArrowSize.height,
+      maxHeight: _kToolbarHeight + (scaler.scale(17) - 17) + _kToolbarArrowSize.height,
       minWidth: _kToolbarArrowSize.width + _kToolbarBorderRadius.x * 2,
     ).enforce(constraints.loosen());
 
