@@ -758,7 +758,8 @@ sealed class BaseTapAndDragGestureRecognizer extends OneSequenceGestureRecognize
     super.allowedButtonsFilter,
     this.eagerVictoryOnDrag = true,
   }) : _deadline = kPressTimeout,
-      dragStartBehavior = DragStartBehavior.start;
+      dragStartBehavior = DragStartBehavior.start,
+      eagerAccept = false;
 
   /// Configure the behavior of offsets passed to [onDragStart].
   ///
@@ -799,6 +800,9 @@ sealed class BaseTapAndDragGestureRecognizer extends OneSequenceGestureRecognize
   ///
   /// Defaults to `true`.
   bool eagerVictoryOnDrag;
+
+  /// TODO: Document
+  bool eagerAccept;
 
   /// {@macro flutter.gestures.tap.TapGestureRecognizer.onTapDown}
   ///
@@ -971,6 +975,9 @@ sealed class BaseTapAndDragGestureRecognizer extends OneSequenceGestureRecognize
       _dragState = _DragState.possible;
       _initialPosition = OffsetPair(global: event.position, local: event.localPosition);
       _deadlineTimer = Timer(_deadline, () => _didExceedDeadlineWithEvent(event));
+      if (eagerAccept) {
+        resolvePointer(event.pointer, GestureDisposition.accepted);
+      }
     }
   }
 
