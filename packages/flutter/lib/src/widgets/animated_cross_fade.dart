@@ -15,6 +15,7 @@ import 'basic.dart';
 import 'focus_scope.dart';
 import 'framework.dart';
 import 'heroes.dart';
+import 'selection_container.dart';
 import 'ticker_provider.dart';
 import 'transitions.dart';
 
@@ -356,16 +357,18 @@ class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with TickerProvid
     bottomChild = TickerMode(
       key: bottomKey,
       enabled: _controller.isAnimating,
-      child: HeroMode(
-        enabled: false,
-        child: IgnorePointer(
-          child: ExcludeSemantics(
-            // Always exclude the semantics of the widget that's fading out.
-            child: ExcludeFocus(
-              excluding: widget.excludeBottomFocus,
-              child: FadeTransition(
-                opacity: bottomAnimation,
-                child: bottomChild,
+      child: SelectionContainer.disabled(
+        child: HeroMode(
+          enabled: false,
+          child: IgnorePointer(
+            child: ExcludeSemantics(
+              // Always exclude the semantics of the widget that's fading out.
+              child: ExcludeFocus(
+                excluding: widget.excludeBottomFocus,
+                child: FadeTransition(
+                  opacity: bottomAnimation,
+                  child: bottomChild,
+                ),
               ),
             ),
           ),
