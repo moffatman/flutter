@@ -3615,8 +3615,8 @@ class _SelectableFragment
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<String>('textInsideRange', range.textInside(fullText)));
+    properties.add(StringProperty('textInsideRange', range.textInside(fullText)));
     properties.add(DiagnosticsProperty<TextRange>('range', range));
-    properties.add(DiagnosticsProperty<String>('fullText', fullText));
+    properties.add(StringProperty('fullText', fullText, level: DiagnosticLevel.debug));
   }
 }

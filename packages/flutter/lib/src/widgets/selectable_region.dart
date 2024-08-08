@@ -2339,7 +2339,7 @@ class StaticSelectionContainerDelegate extends MultiSelectableSelectionContainer
 /// a selection. Subclasses should implement [ensureChildUpdated] to describe
 /// how a [Selectable] should behave when added to a selection.
 abstract class MultiSelectableSelectionContainerDelegate extends SelectionContainerDelegate
-    with ChangeNotifier {
+    with ChangeNotifier, Diagnosticable {
   /// Creates an instance of [MultiSelectableSelectionContainerDelegate].
   MultiSelectableSelectionContainerDelegate() {
     if (kFlutterMemoryAllocationsEnabled) {
@@ -3343,6 +3343,14 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     }
     _flushInactiveSelections();
     return finalResult!;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Selectable>('selectables', selectables, style: DiagnosticsTreeStyle.transition));
+    properties.add(IntProperty('currentSelectionStartIndex', currentSelectionStartIndex));
+    properties.add(IntProperty('currentSelectionEndIndex', currentSelectionEndIndex));
   }
 }
 
