@@ -1179,8 +1179,11 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
     _position.addListener(_scheduleLayoutChange);
   }
 
-  // Pointer drag is a single point, it should not have a size.
-  static const double _kDefaultDragTargetSize = 0;
+  // Pointer drag should be a big point. so that autoscroll begins before reaching the edge.
+  // A 0x0 point breaks autoscrolling on fullscreen SelectionAreas on touch devices,
+  // as there is no way to move the touch point outside of screen bounds.
+  // TODO: Should we put DeviceKind on the edgeUpdate event to have 0 for mouse and 100 for touch?
+  static const double _kDefaultDragTargetSize = 100;
 
   // An eye-balled value for a smooth scrolling speed.
   static const double _kDefaultSelectToScrollVelocityScalar = 30;
