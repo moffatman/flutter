@@ -1501,19 +1501,20 @@ class _SelectableFragment
       return const SelectionGeometry(status: SelectionStatus.none, hasContent: true);
     }
 
-    final int selectionStart = _textSelectionStart!.offset;
-    final int selectionEnd = _textSelectionEnd!.offset;
-    final bool isReversed = selectionStart > selectionEnd;
+    final TextPosition selectionStart = _textSelectionStart!;
+    final TextPosition selectionEnd = _textSelectionEnd!;
+    final bool isReversed = selectionStart.offset > selectionEnd.offset;
     final Offset startOffsetInParagraphCoordinates = paragraph._getOffsetForPosition(
-      TextPosition(offset: selectionStart),
+      selectionStart,
     );
     final Offset endOffsetInParagraphCoordinates = selectionStart == selectionEnd
         ? startOffsetInParagraphCoordinates
-        : paragraph._getOffsetForPosition(TextPosition(offset: selectionEnd));
+        : paragraph._getOffsetForPosition(selectionEnd);
     final bool flipHandles = isReversed != (TextDirection.rtl == paragraph.textDirection);
     final TextSelection selection = TextSelection(
-      baseOffset: selectionStart,
-      extentOffset: selectionEnd,
+      baseOffset: selectionStart.offset,
+      extentOffset: selectionEnd.offset,
+      affinity: selectionStart.affinity,
     );
     final List<Rect> selectionRects = <Rect>[];
     for (final TextBox textBox in paragraph.getBoxesForSelection(selection)) {
