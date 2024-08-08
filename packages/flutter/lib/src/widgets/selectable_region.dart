@@ -439,6 +439,9 @@ class SelectableRegionState extends State<SelectableRegion>
   /// The list of native text processing actions provided by the engine.
   final List<ProcessTextAction> _processTextActions = <ProcessTextAction>[];
 
+  TapAndHorizontalDragGestureRecognizer? _tapAndHorizontalDragGestureRecognizer;
+  TapAndPanGestureRecognizer? _tapAndPanGestureRecognizer;
+
   // The focus node to use if the widget didn't supply one.
   FocusNode? _localFocusNode;
   FocusNode get _focusNode =>
@@ -659,7 +662,7 @@ class SelectableRegionState extends State<SelectableRegion>
   void _initMouseGestureRecognizer() {
     _gestureRecognizers[TapAndPanGestureRecognizer] =
         GestureRecognizerFactoryWithHandlers<TapAndPanGestureRecognizer>(
-          () => TapAndPanGestureRecognizer(
+          () => _tapAndPanGestureRecognizer = TapAndPanGestureRecognizer(
             debugOwner: this,
             supportedDevices: <PointerDeviceKind>{PointerDeviceKind.mouse},
           ),
@@ -694,7 +697,7 @@ class SelectableRegionState extends State<SelectableRegion>
     // ancestor Scrollable gestures in common scenarios like a vertically scrolling list view.
     _gestureRecognizers[TapAndHorizontalDragGestureRecognizer] =
         GestureRecognizerFactoryWithHandlers<TapAndHorizontalDragGestureRecognizer>(
-          () => TapAndHorizontalDragGestureRecognizer(
+          () => _tapAndHorizontalDragGestureRecognizer = TapAndHorizontalDragGestureRecognizer(
             debugOwner: this,
             supportedDevices: PointerDeviceKind.values.where((PointerDeviceKind device) {
               return device != PointerDeviceKind.mouse;
@@ -1007,6 +1010,9 @@ class SelectableRegionState extends State<SelectableRegion>
       _lastSelectedContent = content;
       widget.onSelectionChanged!.call(_lastSelectedContent);
     }
+    final bool eagerAccept = _lastSelectedContent?.plainText.isNotEmpty ?? false;
+    _tapAndHorizontalDragGestureRecognizer?.eagerAccept = eagerAccept;
+    _tapAndPanGestureRecognizer?.eagerAccept = eagerAccept;
   }
 
   void _handleTouchLongPressStart(LongPressStartDetails details) {
