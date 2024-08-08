@@ -513,7 +513,7 @@ class SelectParagraphSelectionEvent extends SelectionEvent {
 /// This event is dispatched when the framework detects [TapDragStartDetails] in
 /// [SelectionArea]'s gesture recognizers for mouse devices, or the selection
 /// handles have been dragged to new locations.
-class SelectionEdgeUpdateEvent extends SelectionEvent {
+class SelectionEdgeUpdateEvent extends SelectionEvent with Diagnosticable {
   /// Creates a selection start edge update event.
   ///
   /// The [globalPosition] contains the location of the selection start edge.
@@ -547,6 +547,13 @@ class SelectionEdgeUpdateEvent extends SelectionEvent {
   ///
   /// Defaults to [TextGranularity.character].
   final TextGranularity granularity;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Offset>('globalPosition', globalPosition));
+    properties.add(EnumProperty<TextGranularity>('granularity', granularity));
+  }
 }
 
 /// Extends the start or end of the selection by a given [TextGranularity].
