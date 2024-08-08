@@ -3172,6 +3172,12 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     }
     _isHandlingSelectionEvent = false;
     _updateSelectionGeometry();
+    // This fixes selection after collapse/expand tree post
+    // Because initially the inserted post is in the wrong location in the list
+    // We need to resort after it scrolls to the bottom
+    // But _selectionInProgress is never being cleared. It's never _clearSelection() called, just _collapseSelectionAt on tap.
+    // TODO: This is a nasty hack. But how else to resort on _collapseSelectionAt between proper selections?
+    _selectionInProgress = _selectionGeometry.status == SelectionStatus.uncollapsed;
     return result;
   }
 
