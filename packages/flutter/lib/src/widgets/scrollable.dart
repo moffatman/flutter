@@ -22,6 +22,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:vector_math/vector_math_64.dart';
 
 import 'basic.dart';
 import 'framework.dart';
@@ -1265,13 +1266,21 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
     return super.handleClearSelection(event);
   }
 
+  Offset _scaleOnlyLocalToGlobal(Offset local) {
+    final RenderBox box = state.context.findRenderObject()! as RenderBox;
+    final Matrix4 transform = box.getTransformTo(null);
+    transform.setTranslation(Vector3(0, 0, 0));
+    // Need to convert local offset to global offset
+    return MatrixUtils.transformPoint(transform, local);
+  }
+
   @override
   SelectionResult handleSelectionEdgeUpdate(SelectionEdgeUpdateEvent event) {
     if (_currentDragEndRelatedToOrigin == null && _currentDragStartRelatedToOrigin == null) {
       assert(!_selectionStartsInScrollable);
       _selectionStartsInScrollable = _globalPositionInScrollable(event.globalPosition);
     }
-    final Offset deltaToOrigin = _getDeltaToScrollOrigin(state);
+    final Offset deltaToOrigin = _scaleOnlyLocalToGlobal(_getDeltaToScrollOrigin(state));
     if (event.type == SelectionEventType.endEdgeUpdate) {
       _currentDragEndRelatedToOrigin = _inferPositionRelatedToOrigin(event.globalPosition);
       final Offset endOffset = _currentDragEndRelatedToOrigin!.translate(
@@ -1556,7 +1565,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
         (previousStartRecord == null ||
             (newRecord - previousStartRecord).abs() > precisionErrorTolerance)) {
       // Make sure the selectable has up to date events.
-      final Offset deltaToOrigin = _getDeltaToScrollOrigin(state);
+      final Offset deltaToOrigin = _scaleOnlyLocalToGlobal(_getDeltaToScrollOrigin(state));
       final Offset startOffset = _currentDragStartRelatedToOrigin!.translate(
         -deltaToOrigin.dx,
         -deltaToOrigin.dy,
@@ -1573,7 +1582,7 @@ class _ScrollableSelectionContainerDelegate extends MultiSelectableSelectionCont
         (previousEndRecord == null ||
             (newRecord - previousEndRecord).abs() > precisionErrorTolerance)) {
       // Make sure the selectable has up to date events.
-      final Offset deltaToOrigin = _getDeltaToScrollOrigin(state);
+      final Offset deltaToOrigin = _scaleOnlyLocalToGlobal(_getDeltaToScrollOrigin(state));
       final Offset endOffset = _currentDragEndRelatedToOrigin!.translate(
         -deltaToOrigin.dx,
         -deltaToOrigin.dy,

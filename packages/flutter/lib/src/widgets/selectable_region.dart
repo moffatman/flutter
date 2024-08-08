@@ -1250,7 +1250,9 @@ class SelectableRegionState extends State<SelectableRegion>
   }
 
   void _handleSelectionEndHandleDragUpdate(DragUpdateDetails details) {
-    _selectionEndHandleDragPosition = _selectionEndHandleDragPosition + details.delta;
+    final Matrix4 globalTransform = _selectable!.getTransformTo(null);
+    globalTransform.setTranslation(Vector3(0, 0, 0));
+    _selectionEndHandleDragPosition = _selectionEndHandleDragPosition + MatrixUtils.transformPoint(globalTransform, details.delta);
     // The value corresponds to the paint origin of the selection handle.
     // Offset it to the center of the line to make it feel more natural.
     _selectionEndPosition =
@@ -1280,11 +1282,22 @@ class SelectableRegionState extends State<SelectableRegion>
       selectionPoint.lineHeight,
     );
 
+    final RenderObject? overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject();
+    final Matrix4 toOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
+    toOverlay.invert();
+
+    final Rect bounds = MatrixUtils.transformRect(toOverlay, globalTransformAsOffset & _selectable!.size);
+
+    // The Magnifier positions here need to take into account that it will go in
+    // an Overlay which has some arbitrary transform in relation to the global coordinate space.
+    // Maybe MagnifierInfo could cleanly hold global coordinates. And each Magnifier
+    // (CupertinoTextMagnifier / TextMagnifier) correct this themselves.
+    // But I'm being lazy and just aligning with https://github.com/flutter/flutter/pull/146019
     return MagnifierInfo(
-      globalGesturePosition: globalGesturePosition,
-      caretRect: caretRect,
-      fieldBounds: globalTransformAsOffset & _selectable!.size,
-      currentLineBoundaries: globalTransformAsOffset & _selectable!.size,
+      globalGesturePosition: MatrixUtils.transformPoint(toOverlay, globalGesturePosition),
+      caretRect: MatrixUtils.transformRect(toOverlay, caretRect),
+      fieldBounds: bounds,
+      currentLineBoundaries: bounds,
     );
   }
 
