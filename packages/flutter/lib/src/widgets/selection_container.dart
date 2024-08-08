@@ -227,6 +227,12 @@ class _SelectionContainerState extends State<SelectionContainer> with Selectable
       child: widget.child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<SelectionContainerDelegate>('delegate', widget.delegate));
+  }
 }
 
 /// An inherited widget to host a [SelectionRegistrar] for the subtree.

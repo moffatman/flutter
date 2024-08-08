@@ -413,7 +413,7 @@ class SelectParagraphSelectionEvent extends SelectionEvent {
 /// This event is dispatched when the framework detects [TapDragStartDetails] in
 /// [SelectionArea]'s gesture recognizers for mouse devices, or the selection
 /// handles have been dragged to new locations.
-class SelectionEdgeUpdateEvent extends SelectionEvent {
+class SelectionEdgeUpdateEvent extends SelectionEvent with Diagnosticable {
   /// Creates a selection start edge update event.
   ///
   /// The [globalPosition] contains the location of the selection start edge.
@@ -445,6 +445,13 @@ class SelectionEdgeUpdateEvent extends SelectionEvent {
   ///
   /// Defaults to [TextGranularity.character].
   final TextGranularity granularity;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Offset>('globalPosition', globalPosition));
+    properties.add(EnumProperty<TextGranularity>('granularity', granularity));
+  }
 }
 
 /// Extends the start or end of the selection by a given [TextGranularity].
@@ -628,7 +635,7 @@ enum SelectionStatus {
 /// The positions in geometry are in local coordinates of the [SelectionHandler]
 /// or [Selectable].
 @immutable
-class SelectionGeometry {
+class SelectionGeometry with Diagnosticable {
   /// Creates a selection geometry object.
   ///
   /// If any of the [startSelectionPoint] and [endSelectionPoint] is not null,
@@ -727,6 +734,16 @@ class SelectionGeometry {
       status,
       hasContent,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<SelectionPoint?>('startSelectionPoint', startSelectionPoint));
+    properties.add(DiagnosticsProperty<SelectionPoint?>('endSelectionPoint', endSelectionPoint));
+    properties.add(IterableProperty<Rect>('selectionRects', selectionRects));
+    properties.add(EnumProperty<SelectionStatus>('status', status));
+    properties.add(DiagnosticsProperty<bool>('hasContent', hasContent));
   }
 }
 
