@@ -493,13 +493,23 @@ class RenderParagraph extends RenderBox
         if (end == -1) {
           end = plainText.length;
         }
-        result.add(
-          _SelectableFragment(
-            paragraph: this,
-            range: TextRange(start: start, end: end),
-            fullText: plainText,
-          ),
-        );
+        // Including the newlines can screw with multiline placeholders
+        // The "real paragraph" newline will be in between the two placeholder lines
+        // This also counts for the spaces, because it can break across a line weirdly
+        // TODO: This doesn't actually solveproperly split line placeholders. Somehow have to split later on (this is before layout)
+        // TODO: Imagine short tall placeholder.... with text on both sides
+        if (start > 0 && (plainText[start] == '\n' || plainText[start] == ' ') && start < (plainText.length - 1)) {
+          start++;
+        }
+        if (start < end) {
+          result.add(
+            _SelectableFragment(
+              paragraph: this,
+              range: TextRange(start: start, end: end),
+              fullText: plainText,
+            ),
+          );
+        }
         start = end;
       }
       start += 1;

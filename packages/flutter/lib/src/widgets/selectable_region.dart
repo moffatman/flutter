@@ -2824,16 +2824,24 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
   /// Copies the selected contents of all [Selectable]s.
   @override
   SelectedContent? getSelectedContent() {
-    final List<SelectedContent> selections = <SelectedContent>[
+    final List<(SelectedContent, Rect)> selections = <(SelectedContent, Rect)>[
       for (final Selectable selectable in selectables)
-        if (selectable.getSelectedContent() case final SelectedContent data) data,
+        if (selectable.getSelectedContent() case final SelectedContent data)
+          (data, MatrixUtils.transformRect(selectable.getTransformTo(null), _getBoundingBox(selectable))),
     ];
     if (selections.isEmpty) {
       return null;
     }
     final StringBuffer buffer = StringBuffer();
-    for (final SelectedContent selection in selections) {
-      buffer.write(selection.plainText);
+    (SelectedContent, Rect)? last;
+    for (final (SelectedContent, Rect) selection in selections) {
+      if (last != null) {
+        if (selection.$2.top >= (last.$2.bottom - 3)) {
+          buffer.writeln();
+        }
+      }
+      buffer.write(selection.$1.plainText);
+      last = selection;
     }
     return SelectedContent(plainText: buffer.toString());
   }
