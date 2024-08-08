@@ -389,6 +389,14 @@ class SelectableRegionState extends State<SelectableRegion> with TextSelectionDe
       },
     );
     _initProcessTextActions();
+    _selectionDelegate.addListener(_myListener);
+  }
+
+  void _myListener() {
+    // TODO: This is a dumb hack
+    if (_selectionOverlay?.toolbarIsVisible ?? false) {
+      _showToolbar();
+    }
   }
 
   /// Query the engine to initialize the list of text processing actions to show
