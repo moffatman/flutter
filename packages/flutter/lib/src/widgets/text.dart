@@ -1151,7 +1151,6 @@ class _SelectableTextContainerDelegate extends StaticSelectionContainerDelegate 
       (false, false, false) => 0,
     };
     bool? forward;
-    late SelectionResult currentSelectableResult;
     // This loop sends the selection event to one of the following to determine
     // the direction of the search.
     //  - currentSelectionEndIndex/currentSelectionStartIndex if the current edge
@@ -1166,8 +1165,9 @@ class _SelectableTextContainerDelegate extends StaticSelectionContainerDelegate 
     // 1. the selectable returns end, pending, none.
     // 2. the selectable returns previous when looking forward.
     // 2. the selectable returns next when looking backward.
+    final List<SelectionResult> results = selectables.toList(growable: false).map((Selectable s) => dispatchSelectionEventToChild(s, event)).toList(growable: false);
     while (newIndex < selectables.length && newIndex >= 0 && finalResult == null) {
-      currentSelectableResult = dispatchSelectionEventToChild(selectables[newIndex], event);
+      final SelectionResult currentSelectableResult = results[newIndex];
       switch (currentSelectableResult) {
         case SelectionResult.end:
         case SelectionResult.pending:

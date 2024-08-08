@@ -3285,6 +3285,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     var newIndex = -1;
     var hasFoundEdgeIndex = false;
     SelectionResult? result;
+    final results = selectables.toList(growable: false).map((Selectable child) => dispatchSelectionEventToChild(child, event)).toList(growable: false);
     bool? forward;
     // If we already have an opposite edge initialized, start our sweep from there
     // to ensure all items between the two edges are properly visited.
@@ -3292,9 +3293,7 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     int index = max(oppositeEdgeIndex, 0);
 
     while (index >= 0 && index < selectables.length) {
-      final Selectable child = selectables[index];
-      final SelectionResult childResult = dispatchSelectionEventToChild(child, event);
-      switch (childResult) {
+      switch (results[index]) {
         case SelectionResult.next:
           if (forward == false) {
             hasFoundEdgeIndex = true;
@@ -3383,17 +3382,16 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
         ? _selectionGeometry.startSelectionPoint != null
         : _selectionGeometry.endSelectionPoint != null;
     int newIndex = switch ((isEnd, isCurrentEdgeWithinViewport, isOppositeEdgeWithinViewport)) {
-      (true, true, true) => currentSelectionEndIndex,
-      (true, true, false) => currentSelectionEndIndex,
-      (true, false, true) => currentSelectionStartIndex,
+      (true, true, true) => max(currentSelectionStartIndex, currentSelectionEndIndex),
+      (true, true, false) => max(currentSelectionStartIndex, currentSelectionEndIndex),
+      (true, false, true) => min(currentSelectionStartIndex, currentSelectionEndIndex),
       (true, false, false) => 0,
-      (false, true, true) => currentSelectionStartIndex,
-      (false, true, false) => currentSelectionStartIndex,
-      (false, false, true) => currentSelectionEndIndex,
+      (false, true, true) => min(currentSelectionStartIndex, currentSelectionEndIndex),
+      (false, true, false) => min(currentSelectionStartIndex, currentSelectionEndIndex),
+      (false, false, true) => max(currentSelectionStartIndex, currentSelectionEndIndex),
       (false, false, false) => 0,
     };
     bool? forward;
-    late SelectionResult currentSelectableResult;
     // This loop sends the selection event to one of the following to determine
     // the direction of the search.
     //  - currentSelectionEndIndex/currentSelectionStartIndex if the current edge
@@ -3408,8 +3406,9 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     // 1. the selectable returns end, pending, none.
     // 2. the selectable returns previous when looking forward.
     // 2. the selectable returns next when looking backward.
+    final List<SelectionResult> results = selectables.toList(growable: false).map((Selectable s) => dispatchSelectionEventToChild(s, event)).toList(growable: false);
     while (newIndex < selectables.length && newIndex >= 0 && finalResult == null) {
-      currentSelectableResult = dispatchSelectionEventToChild(selectables[newIndex], event);
+      final SelectionResult currentSelectableResult = results[newIndex];
       switch (currentSelectableResult) {
         case SelectionResult.end:
         case SelectionResult.pending:
