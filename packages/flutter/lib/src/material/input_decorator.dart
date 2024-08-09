@@ -2208,10 +2208,12 @@ class _InputDecoratorState extends State<InputDecorator> with TickerProviderStat
           style: widget._labelShouldWithdraw
             ? _getFloatingLabelStyle(themeData, defaults)
             : labelStyle,
-          child: decoration.label ?? Text(
-            decoration.labelText!,
-            overflow: TextOverflow.ellipsis,
-            textAlign: textAlign,
+          child: decoration.label ?? SelectionContainer.disabled(
+            child: Text(
+              decoration.labelText!,
+              overflow: TextOverflow.ellipsis,
+              textAlign: textAlign,
+            ),
           ),
         ),
       ),
