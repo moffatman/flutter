@@ -2336,7 +2336,9 @@ abstract class MultiSelectableSelectionContainerDelegate extends SelectionContai
     final List<Rect> selectionRects = <Rect>[];
     final Rect? drawableArea = hasSize ? Rect
       .fromLTWH(0, 0, containerSize.width, containerSize.height) : null;
-    for (int index = currentSelectionStartIndex; index <= currentSelectionEndIndex; index++) {
+    for (int index = currentSelectionStartIndex;
+         forwardSelection ? index <= currentSelectionEndIndex : index >= currentSelectionEndIndex;
+         index += (forwardSelection ? 1 : -1)) {
       final List<Rect> currSelectableSelectionRects = selectables[index].value.selectionRects;
       final List<Rect> selectionRectsWithinDrawableArea = currSelectableSelectionRects.map((Rect selectionRect) {
         final Matrix4 transform = getTransformFrom(selectables[index]);
