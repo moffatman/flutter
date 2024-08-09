@@ -1342,17 +1342,19 @@ class _CupertinoTextFieldState extends State<CupertinoTextField>
                   width: double.infinity,
                   child: Padding(
                     padding: widget.padding,
-                    child: Text(
-                      placeholderText,
-                      // This is to make sure the text field is always tall enough
-                      // to accommodate the first line of the placeholder, so the
-                      // text does not shrink vertically as you type (however in
-                      // rare circumstances, the height may still change when
-                      // there's no placeholder text).
-                      maxLines: hasText ? 1 : widget.maxLines,
-                      overflow: placeholderStyle.overflow,
-                      style: placeholderStyle,
-                      textAlign: widget.textAlign,
+                    child: SelectionContainer.disabled(
+                      child: Text(
+                        placeholderText,
+                        // This is to make sure the text field is always tall enough
+                        // to accommodate the first line of the placeholder, so the
+                        // text does not shrink vertically as you type (however in
+                        // rare circumstances, the height may still change when
+                        // there's no placeholder text).
+                        maxLines: hasText ? 1 : widget.maxLines,
+                        overflow: placeholderStyle.overflow,
+                        style: placeholderStyle,
+                        textAlign: widget.textAlign,
+                      ),
                     ),
                   ),
                 ),
