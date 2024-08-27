@@ -616,6 +616,44 @@ void main() {
     expect(box.size.width, equals(smallWidth));
   });
 
+  testWidgets('Drawer does not pop to fully open during gesture', (WidgetTester tester) async {
+    bool drawerIsOpen = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          drawerEdgeDragWidth: double.infinity,
+          onDrawerChanged: (bool open) {
+            drawerIsOpen = open;
+          },
+          drawer: const Drawer(),
+        ),
+      ),
+    );
+
+    final Rect scaffoldRect = tester.getRect(find.byType(Scaffold));
+    const Size kDrawerSize = Size(304, 600); // 304 default Drawer width, 600 height screen
+
+    final TestGesture gesture = await tester.startGesture(scaffoldRect.centerLeft);
+
+    await gesture.moveBy(const Offset(1, 0));
+    await tester.pumpAndSettle();
+    // Drawer is only 1 px into drag
+    expect(tester.getRect(find.byType(Drawer)), Offset(-kDrawerSize.width + 1, 0) & kDrawerSize);
+    expect(drawerIsOpen, isFalse);
+
+    await gesture.moveBy(const Offset(200, 0));
+    await tester.pumpAndSettle();
+    // Drawer is not fully open despite being more than 50% dragged, and callback called
+    expect(tester.getRect(find.byType(Drawer)), Offset(-kDrawerSize.width + 201, 0) & kDrawerSize);
+    expect(drawerIsOpen, isTrue);
+
+    await gesture.up();
+    await tester.pumpAndSettle();
+    // Drawer is fully open
+    expect(tester.getRect(find.byType(Drawer)), Offset.zero & kDrawerSize);
+    expect(drawerIsOpen, isTrue);
+  });
+
   testWidgets('Material3 - Drawer default shape (ltr)', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
