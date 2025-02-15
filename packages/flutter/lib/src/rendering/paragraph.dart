@@ -1187,7 +1187,7 @@ class RenderParagraph extends RenderBox
     bool needsAssembleSemanticsNode = false;
     bool needsChildConfigurationsDelegate = false;
     for (final InlineSpanSemanticsInformation info in _semanticsInfo!) {
-      if (info.recognizer != null || info.semanticsIdentifier != null) {
+      if (info.recognizer != null || info.recognizer2 != null || info.semanticsIdentifier != null) {
         needsAssembleSemanticsNode = true;
         break;
       }
@@ -1378,21 +1378,23 @@ class RenderParagraph extends RenderBox
             info.semanticsLabel ?? info.text,
             attributes: info.stringAttributes,
           );
-        switch (info.recognizer) {
-          case TapGestureRecognizer(onTap: final VoidCallback? handler):
-          case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? handler):
-            if (handler != null) {
-              configuration.onTap = handler;
-              configuration.isLink = true;
-            }
-          case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
-            if (onLongPress != null) {
-              configuration.onLongPress = onLongPress;
-            }
-          case null:
-            break;
-          default:
-            assert(false, '${info.recognizer.runtimeType} is not supported.');
+        for (final GestureRecognizer? recognizer in <GestureRecognizer?>[info.recognizer, info.recognizer2]) {
+          switch (recognizer) {
+            case TapGestureRecognizer(onTap: final VoidCallback? handler):
+            case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? handler):
+              if (handler != null) {
+                configuration.onTap = handler;
+                configuration.isLink = true;
+              }
+            case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
+              if (onLongPress != null) {
+                configuration.onLongPress = onLongPress;
+              }
+            case null:
+              break;
+            default:
+              assert(false, '${recognizer.runtimeType} is not supported.');
+          }
         }
         if (node.parentPaintClipRect != null) {
           final Rect paintRect = node.parentPaintClipRect!.intersect(currentRect);
