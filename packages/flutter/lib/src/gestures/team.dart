@@ -91,6 +91,9 @@ class _CombiningGestureArenaMember extends GestureArenaMember {
         }
     }
   }
+
+  @override
+  String toString() => '_CombiningGestureArenaMember(_owner: $_owner, _pointer: $_pointer _members: $_members)';
 }
 
 /// A group of [GestureArenaMember] objects that are competing as a unit in the
@@ -160,4 +163,7 @@ class GestureArenaTeam {
     );
     return combiner._add(pointer, member);
   }
+
+  @override
+  String toString() => 'GestureArenaTeam(captain: $captain, _combiners: $_combiners)';
 }
