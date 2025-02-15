@@ -288,10 +288,11 @@ class AnimatedCrossFade extends StatefulWidget {
   }
 }
 
-class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with TickerProviderStateMixin {
+class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _firstAnimation;
   late Animation<double> _secondAnimation;
+  bool _buildBottomChild = false;
 
   @override
   void initState() {
@@ -347,6 +348,7 @@ class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with TickerProvid
       _secondAnimation = _initAnimation(widget.secondCurve, false);
     }
     if (widget.crossFadeState != oldWidget.crossFadeState) {
+      _buildBottomChild = true;
       switch (widget.crossFadeState) {
         case CrossFadeState.showFirst:
           _controller.reverse();
@@ -382,7 +384,7 @@ class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with TickerProvid
       bottomAnimation = _secondAnimation;
     }
 
-    bottomChild = TickerMode(
+    bottomChild = _buildBottomChild ? TickerMode(
       key: bottomKey,
       enabled: _controller.isAnimating,
       child: SelectionContainer.disabled(
@@ -402,7 +404,7 @@ class _AnimatedCrossFadeState extends State<AnimatedCrossFade> with TickerProvid
           ),
         ),
       ),
-    );
+    ) : const SizedBox.shrink();
     topChild = TickerMode(
       key: topKey,
       enabled: true, // Top widget always has its animations enabled.
