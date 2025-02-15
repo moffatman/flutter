@@ -1082,7 +1082,7 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
     bool needsAssembleSemanticsNode = false;
     bool needsChildConfigurationsDelegate = false;
     for (final InlineSpanSemanticsInformation info in _semanticsInfo!) {
-      if (info.recognizer != null) {
+      if (info.recognizer != null || info.recognizer2 != null) {
         needsAssembleSemanticsNode = true;
         break;
       }
@@ -1249,21 +1249,23 @@ class RenderParagraph extends RenderBox with ContainerRenderObjectMixin<RenderBo
           ..sortKey = OrdinalSortKey(ordinal++)
           ..textDirection = initialDirection
           ..attributedLabel = AttributedString(info.semanticsLabel ?? info.text, attributes: info.stringAttributes);
-        switch (info.recognizer) {
-          case TapGestureRecognizer(onTap: final VoidCallback? onTap):
-          case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? onTap):
-            if (onTap != null) {
-              configuration.onTap = onTap;
-              configuration.isLink = true;
-            }
-          case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
-            if (onLongPress != null) {
-              configuration.onLongPress = onLongPress;
-            }
-          case null:
-            break;
-          default:
-            assert(false, '${info.recognizer.runtimeType} is not supported.');
+        for (final GestureRecognizer? recognizer in <GestureRecognizer?>[info.recognizer, info.recognizer2]) {
+          switch (recognizer) {
+            case TapGestureRecognizer(onTap: final VoidCallback? onTap):
+            case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? onTap):
+              if (onTap != null) {
+                configuration.onTap = onTap;
+                configuration.isLink = true;
+              }
+            case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
+              if (onLongPress != null) {
+                configuration.onLongPress = onLongPress;
+              }
+            case null:
+              break;
+            default:
+              assert(false, '${recognizer.runtimeType} is not supported.');
+          }
         }
         if (node.parentPaintClipRect != null) {
           final Rect paintRect = node.parentPaintClipRect!.intersect(currentRect);

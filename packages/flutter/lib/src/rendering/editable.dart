@@ -1315,7 +1315,7 @@ class RenderEditable extends RenderBox with RelayoutWhenSystemFontsChangeMixin, 
     // selections across multiple semantics nodes. Remove this platform check
     // once we can support it.
     // https://github.com/flutter/flutter/issues/77957
-    if (_semanticsInfo!.any((InlineSpanSemanticsInformation info) => info.recognizer != null) &&
+    if (_semanticsInfo!.any((InlineSpanSemanticsInformation info) => info.recognizer != null || info.recognizer2 != null) &&
         defaultTargetPlatform != TargetPlatform.macOS) {
       assert(readOnly && !obscureText);
       // For Selectable rich text with recognizer, we need to create a semantics
@@ -1455,21 +1455,23 @@ class RenderEditable extends RenderBox with RelayoutWhenSystemFontsChangeMixin, 
           ..sortKey = OrdinalSortKey(ordinal++)
           ..textDirection = initialDirection
           ..attributedLabel = AttributedString(info.semanticsLabel ?? info.text, attributes: info.stringAttributes);
-        switch (info.recognizer) {
-          case TapGestureRecognizer(onTap: final VoidCallback? onTap):
-          case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? onTap):
-            if (onTap != null) {
-              configuration.onTap = onTap;
-              configuration.isLink = true;
-            }
-          case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
-            if (onLongPress != null) {
-              configuration.onLongPress = onLongPress;
-            }
-          case null:
-            break;
-          default:
-            assert(false, '${info.recognizer.runtimeType} is not supported.');
+        for (final GestureRecognizer? recognizer in <GestureRecognizer?>[info.recognizer, info.recognizer2]) {
+          switch (recognizer) {
+            case TapGestureRecognizer(onTap: final VoidCallback? onTap):
+            case DoubleTapGestureRecognizer(onDoubleTap: final VoidCallback? onTap):
+              if (onTap != null) {
+                configuration.onTap = onTap;
+                configuration.isLink = true;
+              }
+            case LongPressGestureRecognizer(onLongPress: final GestureLongPressCallback? onLongPress):
+              if (onLongPress != null) {
+                configuration.onLongPress = onLongPress;
+              }
+            case null:
+              break;
+            default:
+              assert(false, '${recognizer.runtimeType} is not supported.');
+          }
         }
         if (node.parentPaintClipRect != null) {
           final Rect paintRect = node.parentPaintClipRect!.intersect(currentRect);

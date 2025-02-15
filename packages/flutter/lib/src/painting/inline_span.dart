@@ -66,8 +66,9 @@ class InlineSpanSemanticsInformation {
     this.semanticsLabel,
     this.stringAttributes = const <ui.StringAttribute>[],
     this.recognizer,
-  }) : assert(!isPlaceholder || (text == '\uFFFC' && semanticsLabel == null && recognizer == null)),
-       requiresOwnNode = isPlaceholder || recognizer != null;
+    this.recognizer2,
+  }) : assert(!isPlaceholder || (text == '\uFFFC' && semanticsLabel == null && recognizer == null && recognizer2 == null)),
+       requiresOwnNode = isPlaceholder || recognizer != null || recognizer2 != null;
 
   /// The text info for a [PlaceholderSpan].
   static const InlineSpanSemanticsInformation placeholder = InlineSpanSemanticsInformation('\uFFFC', isPlaceholder: true);
@@ -81,6 +82,8 @@ class InlineSpanSemanticsInformation {
 
   /// The gesture recognizer, if any, for this span.
   final GestureRecognizer? recognizer;
+  /// Another recognizer, if needed
+  final GestureRecognizer? recognizer2;
 
   /// Whether this is for a placeholder span.
   final bool isPlaceholder;
@@ -100,15 +103,16 @@ class InlineSpanSemanticsInformation {
         && other.text == text
         && other.semanticsLabel == semanticsLabel
         && other.recognizer == recognizer
+        && other.recognizer2 == recognizer2
         && other.isPlaceholder == isPlaceholder
         && listEquals<ui.StringAttribute>(other.stringAttributes, stringAttributes);
   }
 
   @override
-  int get hashCode => Object.hash(text, semanticsLabel, recognizer, isPlaceholder);
+  int get hashCode => Object.hash(text, semanticsLabel, recognizer, recognizer2, isPlaceholder);
 
   @override
-  String toString() => '${objectRuntimeType(this, 'InlineSpanSemanticsInformation')}{text: $text, semanticsLabel: $semanticsLabel, recognizer: $recognizer}';
+  String toString() => '${objectRuntimeType(this, 'InlineSpanSemanticsInformation')}{text: $text, semanticsLabel: $semanticsLabel, recognizer: $recognizer, recognizer2: $recognizer2}';
 }
 
 /// Combines _semanticsInfo entries where permissible.
