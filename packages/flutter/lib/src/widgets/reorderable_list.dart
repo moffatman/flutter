@@ -937,7 +937,9 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
 
   Rect get _dragTargetRect {
     final Offset origin = _dragInfo!.dragPosition - _dragInfo!.dragOffset;
-    return Rect.fromLTWH(origin.dx, origin.dy, _dragInfo!.itemSize.width, _dragInfo!.itemSize.height);
+    final RenderObject? overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject();
+    final Matrix4 fromOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
+    return MatrixUtils.transformRect(fromOverlay, Rect.fromLTWH(origin.dx, origin.dy, _dragInfo!.itemSize.width, _dragInfo!.itemSize.height));
   }
 
   Offset _itemOffsetAt(int index) {
@@ -1338,7 +1340,10 @@ class _DragInfo extends Drag {
     index = item.index;
     child = item.widget.child;
     capturedThemes = item.widget.capturedThemes;
-    dragPosition = initialPosition;
+    final RenderObject? overlay = Overlay.of(item.context, rootOverlay: true).context.findRenderObject();
+    final Matrix4 toOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
+    toOverlay.invert();
+    dragPosition = MatrixUtils.transformPoint(toOverlay, initialPosition);
     dragOffset = itemRenderBox.globalToLocal(initialPosition);
     itemSize = item.context.size!;
     itemExtent = _sizeExtent(itemSize, scrollDirection);
@@ -1388,7 +1393,10 @@ class _DragInfo extends Drag {
 
   @override
   void update(DragUpdateDetails details) {
-    final Offset delta = _restrictAxis(details.delta, scrollDirection);
+    final RenderObject? overlay = Overlay.of(listState.context, rootOverlay: true).context.findRenderObject();
+    final Matrix4 toOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
+    toOverlay.invert();
+    final Offset delta = MatrixUtils.transformPoint(toOverlay, _restrictAxis(details.delta, scrollDirection));
     dragPosition += delta;
     onUpdate?.call(this, dragPosition, details.delta);
   }
@@ -1458,8 +1466,9 @@ class _DragItemProxy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget proxyChild = proxyDecorator?.call(child, index, animation.view) ?? child;
-    final Offset overlayOrigin = _overlayOrigin(context);
-    final double overlayScale = 1 / ((Overlay.of(context, debugRequiredFor: context.widget).context.findRenderObject() as RenderBox?)?.getTransformTo(null).getMaxScaleOnAxis() ?? 1);
+    final RenderObject? overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject();
+    final Matrix4 toOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
+    toOverlay.invert();
 
     return MediaQuery(
       // Remove the top padding so that any nested list views in the item
@@ -1471,9 +1480,8 @@ class _DragItemProxy extends StatelessWidget {
           Offset effectivePosition = position;
           final Offset? dropPosition = listState._finalDropPosition;
           if (dropPosition != null) {
-            effectivePosition = Offset.lerp(dropPosition - overlayOrigin, effectivePosition, Curves.easeOut.transform(animation.value))!;
+            effectivePosition = Offset.lerp(MatrixUtils.transformPoint(toOverlay, dropPosition), effectivePosition, Curves.easeOut.transform(animation.value))!;
           }
-          effectivePosition *= overlayScale;
           return Positioned(
             left: effectivePosition.dx,
             top: effectivePosition.dy,
