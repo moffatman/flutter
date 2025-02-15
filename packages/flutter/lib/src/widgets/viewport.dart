@@ -72,6 +72,7 @@ class Viewport extends MultiChildRenderObjectWidget {
     this.cacheExtent,
     this.cacheExtentStyle = CacheExtentStyle.pixel,
     this.clipBehavior = Clip.hardEdge,
+    this.alreadyAppliedPadding = EdgeInsets.zero,
     List<Widget> slivers = const <Widget>[],
   }) : assert(center == null || slivers.where((Widget child) => child.key == center).length == 1),
        assert(cacheExtentStyle != CacheExtentStyle.viewport || cacheExtent != null),
@@ -142,6 +143,8 @@ class Viewport extends MultiChildRenderObjectWidget {
   /// Defaults to [Clip.hardEdge].
   final Clip clipBehavior;
 
+  final EdgeInsets alreadyAppliedPadding;
+
   /// Given a [BuildContext] and an [AxisDirection], determine the correct cross
   /// axis direction.
   ///
@@ -179,6 +182,7 @@ class Viewport extends MultiChildRenderObjectWidget {
       offset: offset,
       cacheExtent: cacheExtent,
       cacheExtentStyle: cacheExtentStyle,
+      alreadyAppliedPadding: alreadyAppliedPadding,
       clipBehavior: clipBehavior,
     );
   }
@@ -192,6 +196,7 @@ class Viewport extends MultiChildRenderObjectWidget {
       ..offset = offset
       ..cacheExtent = cacheExtent
       ..cacheExtentStyle = cacheExtentStyle
+      ..alreadyAppliedPadding = alreadyAppliedPadding
       ..clipBehavior = clipBehavior;
   }
 

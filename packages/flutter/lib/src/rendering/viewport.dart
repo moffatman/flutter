@@ -281,6 +281,7 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
     AxisDirection axisDirection = AxisDirection.down,
     required AxisDirection crossAxisDirection,
     required ViewportOffset offset,
+    EdgeInsets alreadyAppliedPadding = EdgeInsets.zero,
     double? cacheExtent,
     CacheExtentStyle cacheExtentStyle = CacheExtentStyle.pixel,
     Clip clipBehavior = Clip.hardEdge,
@@ -469,6 +470,15 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
       _clipBehavior = value;
       markNeedsPaint();
       markNeedsSemanticsUpdate();
+    }
+  }
+
+  EdgeInsets get alreadyAppliedPadding => _alreadyAppliedPadding;
+  EdgeInsets _alreadyAppliedPadding = EdgeInsets.zero;
+  set alreadyAppliedPadding(EdgeInsets value) {
+    // I don't think anything needs to be rebuilt or repainted
+    if (value != _alreadyAppliedPadding) {
+      _alreadyAppliedPadding = value;
     }
   }
 
@@ -969,11 +979,14 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
     }
 
     final double mainAxisExtentDifference = switch (axis) {
-      Axis.horizontal => size.width - extentOfPinnedSlivers - rectLocal.width,
-      Axis.vertical => size.height - extentOfPinnedSlivers - rectLocal.height,
+      Axis.horizontal => size.width - extentOfPinnedSlivers - rectLocal.width - alreadyAppliedPadding.horizontal,
+      Axis.vertical => size.height - extentOfPinnedSlivers - rectLocal.height - alreadyAppliedPadding.vertical,
     };
 
-    final double targetOffset = leadingScrollOffset - mainAxisExtentDifference * alignment;
+    final double targetOffset = leadingScrollOffset - switch (axis) {
+      Axis.vertical => alreadyAppliedPadding.top,
+      Axis.horizontal => alreadyAppliedPadding.left,
+    } - mainAxisExtentDifference * alignment;
     final double offsetDifference = offset.pixels - targetOffset;
 
     targetRect = switch (axisDirection) {
@@ -1280,6 +1293,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
     super.axisDirection,
     required super.crossAxisDirection,
     required super.offset,
+    super.alreadyAppliedPadding,
     double anchor = 0.0,
     List<RenderSliver>? children,
     RenderSliver? center,
