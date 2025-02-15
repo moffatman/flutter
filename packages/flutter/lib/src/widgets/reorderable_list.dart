@@ -1029,7 +1029,9 @@ class SliverReorderableListState extends State<SliverReorderableList> with Ticke
     final SliverChildBuilderDelegate childrenDelegate = SliverChildBuilderDelegate(
       _itemBuilder,
       childCount: widget.itemCount,
-      findChildIndexCallback: widget.findChildIndexCallback,
+      findChildIndexCallback: (Key key) {
+        return (key as _ReorderableItemGlobalKey).index;
+      },
     );
     if (widget.itemExtent != null) {
       return SliverFixedExtentList(
