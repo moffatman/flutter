@@ -462,7 +462,8 @@ class _TabSwitchingViewState extends State<_TabSwitchingView> {
         );
       }
     }
-    FocusScope.of(context).setFirstFocus(tabFocusNodes[widget.currentTabIndex]);
+    // TODO: This isn't the right solution. but neither is always calling the tab builder.
+    FocusScope.of(context, createDependency: false).setFirstFocus(tabFocusNodes[widget.currentTabIndex]);
   }
 
   @override
