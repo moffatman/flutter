@@ -228,6 +228,7 @@ class EdgeDraggingAutoScroller {
   Future<void> _scroll() async {
     final RenderBox scrollRenderBox = scrollable.context.findRenderObject()! as RenderBox;
     final Matrix4 transform = scrollRenderBox.getTransformTo(null);
+    // TODO: consider alreadyAppliedPadding?
     final Rect globalRect = MatrixUtils.transformRect(
       transform,
       Rect.fromLTWH(0, 0, scrollRenderBox.size.width, scrollRenderBox.size.height),

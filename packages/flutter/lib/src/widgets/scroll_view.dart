@@ -480,6 +480,11 @@ abstract class ScrollView extends StatelessWidget {
       center: center,
       anchor: anchor,
       paintOrder: paintOrder,
+      alreadyAppliedPadding: switch (slivers) {
+        // A bit of a hack....
+        [final SliverPadding x] => x.padding.resolve(null),
+        _ => EdgeInsets.zero
+      },
       clipBehavior: clipBehavior,
     );
   }
