@@ -609,7 +609,11 @@ class ScaleGestureRecognizer extends OneSequenceGestureRecognizer {
     _currentFocalPoint =
         focalPoint / math.max(1, _pointerLocations.length + _pointerPanZooms.length).toDouble();
 
-    if (previousFocalPoint == null) {
+    if (_pointerLocations.isEmpty && _pointerPanZooms.isEmpty) {
+      // Don't touch _localFocalPoint
+      _delta = Offset.zero;
+    }
+    else if (previousFocalPoint == null) {
       _localFocalPoint = PointerEvent.transformPosition(_lastTransform, _currentFocalPoint!);
       _delta = Offset.zero;
     } else {
