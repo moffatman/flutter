@@ -81,6 +81,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
     this.children,
     super.style,
     this.recognizer,
+    this.recognizer2,
     MouseCursor? mouseCursor,
     this.onEnter,
     this.onExit,
@@ -191,6 +192,8 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
   /// ```
   /// {@end-tool}
   final GestureRecognizer? recognizer;
+  /// A second recognizer slot
+  final GestureRecognizer? recognizer2;
 
   /// Mouse cursor when the mouse hovers over this span.
   ///
@@ -272,6 +275,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
   void handleEvent(PointerEvent event, HitTestEntry entry) {
     if (event is PointerDownEvent) {
       recognizer?.addPointer(event);
+      recognizer2?.addPointer(event);
     }
   }
 
@@ -425,6 +429,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
           semanticsLabel: semanticsLabel,
           semanticsIdentifier: semanticsIdentifier,
           recognizer: recognizer,
+          recognizer2: recognizer2,
         ),
       );
     }
@@ -491,7 +496,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
         (style == null) != (textSpan.style == null)) {
       return RenderComparison.layout;
     }
-    RenderComparison result = recognizer == textSpan.recognizer
+    RenderComparison result = (recognizer == textSpan.recognizer && recognizer2 == textSpan.recognizer2)
         ? RenderComparison.identical
         : RenderComparison.metadata;
     if (style != null) {
@@ -531,6 +536,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
     return other is TextSpan &&
         other.text == text &&
         other.recognizer == recognizer &&
+        other.recognizer2 == recognizer2 &&
         other.semanticsLabel == semanticsLabel &&
         other.semanticsIdentifier == semanticsIdentifier &&
         onEnter == other.onEnter &&
@@ -544,6 +550,7 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
     super.hashCode,
     text,
     recognizer,
+    recognizer2,
     semanticsLabel,
     semanticsIdentifier,
     onEnter,
@@ -569,6 +576,15 @@ class TextSpan extends InlineSpan implements HitTestTarget, MouseTrackerAnnotati
         'recognizer',
         recognizer,
         description: recognizer?.runtimeType.toString(),
+        defaultValue: null,
+      ),
+    );
+
+    properties.add(
+      DiagnosticsProperty<GestureRecognizer>(
+        'recognizer2',
+        recognizer2,
+        description: recognizer2?.runtimeType.toString(),
         defaultValue: null,
       ),
     );
