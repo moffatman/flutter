@@ -423,6 +423,7 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
       'Use scrollCacheExtent instead. '
       'This feature was deprecated after v3.41.0-0.0.pre.',
     )
+    EdgeInsets alreadyAppliedPadding = EdgeInsets.zero,
     double? cacheExtent,
     @Deprecated(
       'Use scrollCacheExtent instead. '
@@ -676,6 +677,15 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
       _clipBehavior = value;
       markNeedsPaint();
       markNeedsSemanticsUpdate();
+    }
+  }
+
+  EdgeInsets get alreadyAppliedPadding => _alreadyAppliedPadding;
+  EdgeInsets _alreadyAppliedPadding = EdgeInsets.zero;
+  set alreadyAppliedPadding(EdgeInsets value) {
+    // I don't think anything needs to be rebuilt or repainted
+    if (value != _alreadyAppliedPadding) {
+      _alreadyAppliedPadding = value;
     }
   }
 
@@ -1190,8 +1200,12 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
     final double extentOfPinnedSlivers = maxScrollObstructionExtentBefore(sliver);
 
     final double mainAxisExtentDifference = switch (axis) {
-      Axis.horizontal => size.width - extentOfPinnedSlivers - rectLocal.width,
-      Axis.vertical => size.height - extentOfPinnedSlivers - rectLocal.height,
+      Axis.horizontal => size.width - extentOfPinnedSlivers - rectLocal.width - alreadyAppliedPadding.horizontal,
+      Axis.vertical => size.height - extentOfPinnedSlivers - rectLocal.height - alreadyAppliedPadding.vertical,
+    };
+    final double alreadyAppliedPaddingOffset = switch (axis) {
+      Axis.vertical => alreadyAppliedPadding.top,
+      Axis.horizontal => alreadyAppliedPadding.left,
     };
     final double targetOffset;
     switch (sliver.constraints.growthDirection) {
@@ -1199,7 +1213,7 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
         leadingScrollOffset -= extentOfPinnedSlivers;
         targetOffset = isPinned && alignment <= 0
             ? math.max(offset.pixels, leadingScrollOffset)
-            : leadingScrollOffset - mainAxisExtentDifference * alignment;
+            : leadingScrollOffset - alreadyAppliedPaddingOffset - mainAxisExtentDifference * alignment;
       case GrowthDirection.reverse:
         if (isPinned && alignment >= 1) {
           targetOffset = math.min(offset.pixels, leadingScrollOffset);
@@ -1211,7 +1225,7 @@ abstract class RenderViewportBase<ParentDataClass extends ContainerParentDataMix
             Axis.vertical => targetRect.height,
             Axis.horizontal => targetRect.width,
           };
-          targetOffset = leadingScrollOffset - mainAxisExtentDifference * alignment;
+          targetOffset = leadingScrollOffset - alreadyAppliedPaddingOffset - mainAxisExtentDifference * alignment;
         }
     }
 
@@ -1563,6 +1577,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
     super.axisDirection,
     required super.crossAxisDirection,
     required super.offset,
+    super.alreadyAppliedPadding,
     double anchor = 0.0,
     List<RenderSliver>? children,
     RenderSliver? center,
