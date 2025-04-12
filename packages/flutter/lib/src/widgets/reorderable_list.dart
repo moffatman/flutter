@@ -1390,8 +1390,9 @@ class _ReorderableItemState extends State<_ReorderableItem> {
 
   Rect targetGeometry() {
     final itemRenderBox = context.findRenderObject()! as RenderBox;
-    final Offset itemPosition = itemRenderBox.localToGlobal(Offset.zero) + _targetOffset;
-    return itemPosition & itemRenderBox.size;
+    final overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject();
+    final toOverlay = itemRenderBox.getTransformTo(overlay);
+    return MatrixUtils.transformRect(toOverlay, Rect.fromPoints(itemRenderBox.paintBounds.topLeft, itemRenderBox.paintBounds.bottomRight).translate(_targetOffset.dx, _targetOffset.dy));
   }
 
   void rebuild() {
@@ -1666,9 +1667,6 @@ class _DragItemProxy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget proxyChild = proxyDecorator?.call(child, index, animation.view) ?? child;
-    final RenderObject? overlay = Overlay.of(context, rootOverlay: true).context.findRenderObject();
-    final Matrix4 toOverlay = overlay?.getTransformTo(null) ?? Matrix4.identity();
-    toOverlay.invert();
 
     return MediaQuery(
       // Remove the top padding so that any nested list views in the item
@@ -1681,7 +1679,7 @@ class _DragItemProxy extends StatelessWidget {
           final Offset? dropPosition = listState._finalDropPosition;
           if (dropPosition != null) {
             effectivePosition = Offset.lerp(
-              MatrixUtils.transformPoint(toOverlay, dropPosition),
+              dropPosition,
               effectivePosition,
               Curves.easeOut.transform(animation.value)
             )!;
