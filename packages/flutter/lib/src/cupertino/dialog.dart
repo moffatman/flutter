@@ -408,7 +408,7 @@ class _CupertinoAlertDialogState extends State<CupertinoAlertDialog> {
           // depending on whether the device is in accessibility mode.
           final double actionsMinHeight = _isInAccessibilityMode(context)
               ? constraints.maxHeight / 2 + _kDividerThickness
-              : _kDialogActionsSectionMinHeight + _kDividerThickness;
+              : (_kDialogActionsSectionMinHeight * 2) + _kDividerThickness;
           return _PriorityColumn(
             top: contentSection,
             bottom: Column(
@@ -1663,7 +1663,7 @@ class _ActionSheetMainSheetState extends State<_ActionSheetMainSheet> {
         return _PriorityColumn(
           top: widget.contentSection ?? _empty,
           bottom: _dividerAndActionsSection(context),
-          bottomMinHeight: _kActionSheetActionsSectionMinHeight + _kDividerThickness,
+          bottomMinHeight: (_kActionSheetActionsSectionMinHeight * 2) + _kDividerThickness,
         );
       },
     );
@@ -2376,7 +2376,7 @@ class _RenderPriorityColumn extends RenderFlex {
     final double width = constraints.maxWidth;
     final double maxHeight = constraints.maxHeight;
     final (:double topChildHeight, :double bottomChildHeight) = _childrenHeights(width, maxHeight);
-    size = Size(width, topChildHeight + bottomChildHeight);
+    size = Size(width, math.min(maxHeight, topChildHeight + bottomChildHeight));
 
     firstChild!.layout(BoxConstraints.tight(Size(width, topChildHeight)), parentUsesSize: true);
     (firstChild!.parentData! as FlexParentData).offset = Offset.zero;
