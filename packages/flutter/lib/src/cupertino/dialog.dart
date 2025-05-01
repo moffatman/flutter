@@ -900,6 +900,7 @@ class CupertinoActionSheet extends StatefulWidget {
     this.message,
     this.actions,
     this.messageScrollController,
+    this.messageScrollThumbVisibility,
     this.actionScrollController,
     this.cancelButton,
   }) : assert(
@@ -931,6 +932,8 @@ class CupertinoActionSheet extends StatefulWidget {
   /// This attribute is typically not needed, as alert messages should be
   /// short.
   final ScrollController? messageScrollController;
+
+  final bool? messageScrollThumbVisibility;
 
   /// A scroll controller that can be used to control the scrolling of the
   /// [actions] in the action sheet.
@@ -981,6 +984,7 @@ class _CupertinoActionSheetState extends State<CupertinoActionSheet> {
         title: widget.title,
         message: widget.message,
         scrollController: _effectiveMessageScrollController,
+        thumbVisibility: widget.messageScrollThumbVisibility,
         titlePadding: EdgeInsets.only(
           left: _kActionSheetContentHorizontalPadding,
           right: _kActionSheetContentHorizontalPadding,
@@ -1685,6 +1689,7 @@ class _CupertinoAlertContentSection extends StatelessWidget {
     this.title,
     this.message,
     this.scrollController,
+    this.thumbVisibility,
     this.titlePadding,
     this.messagePadding,
     this.titleTextStyle,
@@ -1711,6 +1716,8 @@ class _CupertinoAlertContentSection extends StatelessWidget {
   // Defaults to null, and is typically not needed, since most alert contents
   // are short.
   final ScrollController? scrollController;
+
+  final bool? thumbVisibility;
 
   // Paddings used around title and message.
   // CupertinoAlertDialog and CupertinoActionSheet have different paddings.
@@ -1763,6 +1770,7 @@ class _CupertinoAlertContentSection extends StatelessWidget {
 
     return CupertinoScrollbar(
       controller: scrollController,
+      thumbVisibility: thumbVisibility,
       child: SingleChildScrollView(
         controller: scrollController,
         child: Column(
