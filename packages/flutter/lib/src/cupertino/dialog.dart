@@ -1073,6 +1073,7 @@ class CupertinoActionSheet extends StatefulWidget {
     this.message,
     this.actions,
     this.messageScrollController,
+    this.messageScrollThumbVisibility,
     this.actionScrollController,
     this.cancelButton,
   }) : assert(
@@ -1104,6 +1105,8 @@ class CupertinoActionSheet extends StatefulWidget {
   /// Defaults to null, which means the [CupertinoActionSheet] will create a
   /// scroll controller internally.
   final ScrollController? messageScrollController;
+
+  final bool? messageScrollThumbVisibility;
 
   /// A scroll controller that can be used to control the scrolling of the
   /// [actions] in the action sheet.
@@ -1158,6 +1161,7 @@ class _CupertinoActionSheetState extends State<CupertinoActionSheet> {
         title: widget.title,
         message: widget.message,
         scrollController: _effectiveMessageScrollController,
+        thumbVisibility: widget.messageScrollThumbVisibility,
         titlePadding: EdgeInsets.only(
           left: _kActionSheetContentHorizontalPadding,
           right: _kActionSheetContentHorizontalPadding,
@@ -1873,6 +1877,7 @@ class _CupertinoAlertContentSection extends StatelessWidget {
     this.title,
     this.message,
     required this.scrollController,
+    this.thumbVisibility,
     this.titlePadding,
     this.messagePadding,
     this.titleTextStyle,
@@ -1896,6 +1901,8 @@ class _CupertinoAlertContentSection extends StatelessWidget {
   // A scroll controller that can be used to control the scrolling of the
   // content in the dialog.
   final ScrollController scrollController;
+
+  final bool? thumbVisibility;
 
   // Paddings used around title and message.
   // CupertinoAlertDialog and CupertinoActionSheet have different paddings.
@@ -1945,6 +1952,7 @@ class _CupertinoAlertContentSection extends StatelessWidget {
 
     return CupertinoScrollbar(
       controller: scrollController,
+      thumbVisibility: thumbVisibility,
       child: SingleChildScrollView(
         controller: scrollController,
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: titleContentGroup),
