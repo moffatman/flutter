@@ -594,6 +594,7 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
   ValueSetter<Offset>? onResponsiveEnd;
 
   int? _primaryPointer;
+  int? _lastRejectedPointer;
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
@@ -603,6 +604,7 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
+    _lastRejectedPointer = pointer;
     if (pointer == _primaryPointer) {
       _primaryPointer = null;
     }
@@ -633,7 +635,12 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
       // scroll gestures when the latter give up.
       if (event is PointerUpEvent) {
         stopTrackingPointer(_primaryPointer!);
-        onResponsiveEnd?.call(event.position);
+        if (_lastRejectedPointer == event.pointer) {
+          onCancel?.call();
+        }
+        else {
+          onResponsiveEnd?.call(event.position);
+        }
         _primaryPointer = null;
         // Do not call `super.handleEvent`, which gives up the pointer and thus
         // rejects the gesture.
