@@ -594,7 +594,6 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
   ValueSetter<Offset>? onResponsiveEnd;
 
   int? _primaryPointer;
-  int? _lastRejectedPointer;
 
   @override
   void addAllowedPointer(PointerDownEvent event) {
@@ -604,7 +603,6 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
 
   @override
   void rejectGesture(int pointer) {
-    _lastRejectedPointer = pointer;
     if (pointer == _primaryPointer) {
       _primaryPointer = null;
     }
@@ -634,8 +632,9 @@ class _SlidingTapGestureRecognizer extends VerticalDragGestureRecognizer {
       // precedence for being inner, while sliding taps can take precedence over
       // scroll gestures when the latter give up.
       if (event is PointerUpEvent) {
+        final GestureArenaEntry? entry = peekArenaEntry(_primaryPointer!);
         stopTrackingPointer(_primaryPointer!);
-        if (_lastRejectedPointer == event.pointer) {
+        if (entry?.arenaMembers.isNotEmpty ?? false) {
           onCancel?.call();
         }
         else {
