@@ -44,6 +44,7 @@ class GestureArenaEntry {
   GestureArenaEntry._(this._arena, this._pointer, this._member);
 
   final GestureArenaManager _arena;
+  List<GestureArenaMember> get arenaMembers => _arena._arenas[_pointer]?.members ?? <GestureArenaMember>[];
   final int _pointer;
   final GestureArenaMember _member;
 

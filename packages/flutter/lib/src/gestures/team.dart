@@ -24,6 +24,9 @@ class _CombiningGestureArenaEntry implements GestureArenaEntry {
   void resolve(GestureDisposition disposition, {double? bid}) {
     _combiner._resolve(_member, disposition, bid: bid);
   }
+
+  @override
+  List<GestureArenaMember> get arenaMembers => _combiner._members;
 }
 
 class _CombiningGestureArenaMember extends GestureArenaMember {

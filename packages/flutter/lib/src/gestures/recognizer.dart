@@ -457,6 +457,9 @@ abstract class OneSequenceGestureRecognizer extends GestureRecognizer {
   @protected
   void didStopTrackingLastPointer(int pointer);
 
+  @protected
+  GestureArenaEntry? peekArenaEntry(int pointer) => _entries[pointer];
+
   /// Resolves this recognizer's participation in each gesture arena with the
   /// given disposition and bid.
   @protected
