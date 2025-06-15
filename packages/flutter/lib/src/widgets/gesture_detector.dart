@@ -1049,7 +1049,7 @@ class GestureDetector extends StatelessWidget {
 
   final Duration? longPressDuration;
 
-  final bool Function(double)? shouldStartDrag;
+  final double Function(double)? shouldStartDrag;
 
   @override
   Widget build(BuildContext context) {
