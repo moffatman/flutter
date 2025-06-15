@@ -674,7 +674,7 @@ class DrawerControllerState extends State<DrawerController> with SingleTickerPro
             excludeFromSemantics: true,
             dragStartBehavior: widget.dragStartBehavior,
             shouldStartDrag: (double offset) {
-              return offset > 0;
+              return offset > 0 ? 0.5 : 0;
             },
             child: LimitedBox(maxHeight: 0.0, child: SizedBox(width: dragAreaWidth, height: double.infinity)),
           ),
@@ -750,7 +750,7 @@ class DrawerControllerState extends State<DrawerController> with SingleTickerPro
         excludeFromSemantics: true,
         dragStartBehavior: widget.dragStartBehavior,
         shouldStartDrag: (double offset) {
-          return offset < 0;
+          return offset < 0 ? 0.5 : 0;
         },
         child: child,
       );
