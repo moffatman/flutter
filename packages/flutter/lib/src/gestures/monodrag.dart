@@ -289,7 +289,7 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   ///    match the native behavior on that platform.
   GestureVelocityTrackerBuilder velocityTrackerBuilder;
 
-  bool Function(double)? shouldStartDrag;
+  double Function(double)? shouldStartDrag;
 
   _DragState _state = _DragState.ready;
   late OffsetPair _initialPosition;
@@ -699,16 +699,15 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
             untransformedDelta: movedLocally,
             untransformedEndPosition: localPosition
           ).distance * (_getPrimaryValueFromOffset(movedLocally) ?? 1).sign;
-          if (shouldStartDrag?.call(_globalDistanceMoved) ?? true) {
-            resolve(GestureDisposition.accepted, bid: calculateAcceptFactor(event.kind, gestureSettings?.touchSlop));
+          final double bid = (shouldStartDrag?.call(globalDistanceMoved) ?? 1) * calculateAcceptFactor(event.kind, gestureSettings?.touchSlop);
+          resolve(GestureDisposition.accepted, bid: bid);
           // TODO(moffatman): Not sure this is right
-            if (calculateAcceptFactor(event.kind, gestureSettings?.touchSlop) >= 1) {
-              _hasDragThresholdBeenMet = true;
-              if (_acceptedActivePointers.contains(event.pointer)) {
-                _checkDrag(event.pointer);
-              } else {
-                resolve(GestureDisposition.accepted);
-              }
+          if (bid >= 1) {
+            _hasDragThresholdBeenMet = true;
+            if (_acceptedActivePointers.contains(event.pointer)) {
+              _checkDrag(event.pointer);
+            } else {
+              resolve(GestureDisposition.accepted);
             }
           }
         case _DragState.accepted:
