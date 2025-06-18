@@ -12,6 +12,10 @@ import 'box.dart';
 import 'sliver.dart';
 import 'sliver_multi_box_adaptor.dart';
 
+class _Underflow implements Exception {
+  const _Underflow();
+}
+
 /// A sliver that places multiple box children in a linear array along the main
 /// axis.
 ///
@@ -44,10 +48,14 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
     required super.childManager,
   });
 
+  static const kLockIndexLockToEnd = 1 << 50;
+  int lockIndex = -1;
+
   @override
   void performLayout() {
     final SliverConstraints constraints = this.constraints;
     childManager.didStartLayout();
+    final double oldEndScrollOffset = (childManager.getDidUnderflow() ? geometry?.scrollExtent : null) ?? 0;
     childManager.setDidUnderflow(false);
 
     final double scrollOffset = constraints.scrollOffset + constraints.cacheOrigin;
@@ -166,7 +174,19 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
 
       final SliverMultiBoxAdaptorParentData childParentData = earliestUsefulChild.parentData! as SliverMultiBoxAdaptorParentData;
-      childParentData.layoutOffset = firstChildScrollOffset;
+      if (childParentData.index == lockIndex) {
+        final double oldLayoutOffset = childParentData.layoutOffset ?? firstChildScrollOffset;
+        childParentData.layoutOffset = firstChildScrollOffset;
+        if (oldLayoutOffset != firstChildScrollOffset) {
+          geometry = SliverGeometry(
+            scrollOffsetCorrection: firstChildScrollOffset - oldLayoutOffset,
+          );
+          return;
+        }
+      }
+      else {
+        childParentData.layoutOffset = firstChildScrollOffset;
+      }
       assert(earliestUsefulChild == firstChild);
       leadingChildWithLayout = earliestUsefulChild;
       trailingChildWithLayout ??= earliestUsefulChild;
@@ -256,36 +276,60 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
       assert(child != null);
       final SliverMultiBoxAdaptorParentData childParentData = child!.parentData! as SliverMultiBoxAdaptorParentData;
-      childParentData.layoutOffset = endScrollOffset;
+      if (childParentData.index == lockIndex) {
+        final double oldLayoutOffset = childParentData.layoutOffset ?? endScrollOffset;
+        childParentData.layoutOffset = endScrollOffset;
+        if (oldLayoutOffset != endScrollOffset) {
+          geometry = SliverGeometry(
+            scrollOffsetCorrection: endScrollOffset - oldLayoutOffset,
+          );
+          throw const _Underflow();
+        }
+      }
+      else {
+        childParentData.layoutOffset = endScrollOffset;
+      }
       assert(childParentData.index == index);
       endScrollOffset = childScrollOffset(child!)! + paintExtentOf(child!);
       return true;
     }
 
-    // Find the first child that ends after the scroll offset.
-    while (endScrollOffset < scrollOffset) {
-      leadingGarbage += 1;
-      if (!advance()) {
-        assert(leadingGarbage == childCount);
-        assert(child == null);
-        // we want to make sure we keep the last child around so we know the end scroll offset
-        collectGarbage(leadingGarbage - 1, 0);
-        assert(firstChild == lastChild);
-        final double extent = childScrollOffset(lastChild!)! + paintExtentOf(lastChild!);
-        geometry = SliverGeometry(
-          scrollExtent: extent,
-          maxPaintExtent: extent,
-        );
-        return;
+    try {
+      // Find the first child that ends after the scroll offset.
+      while (endScrollOffset < scrollOffset) {
+        leadingGarbage += 1;
+        if (!advance()) {
+          assert(leadingGarbage == childCount);
+          assert(child == null);
+          // we want to make sure we keep the last child around so we know the end scroll offset
+          collectGarbage(leadingGarbage - 1, 0);
+          assert(firstChild == lastChild);
+          final double extent = childScrollOffset(lastChild!)! + paintExtentOf(lastChild!);
+          geometry = SliverGeometry(
+            scrollExtent: extent,
+            maxPaintExtent: extent,
+          );
+          return;
+        }
+      }
+
+      // Now find the first child that ends after our end.
+      while (endScrollOffset < targetEndScrollOffset) {
+        if (!advance()) {
+          reachedEnd = true;
+          break;
+        }
       }
     }
+    on _Underflow {
+      return;
+    }
 
-    // Now find the first child that ends after our end.
-    while (endScrollOffset < targetEndScrollOffset) {
-      if (!advance()) {
-        reachedEnd = true;
-        break;
-      }
+    if (lockIndex == kLockIndexLockToEnd && reachedEnd && oldEndScrollOffset > 0 && oldEndScrollOffset != endScrollOffset) {
+      geometry = SliverGeometry(
+        scrollOffsetCorrection: endScrollOffset - oldEndScrollOffset,
+      );
+      return;
     }
 
     // Finally count up all the remaining children and label them as garbage.
