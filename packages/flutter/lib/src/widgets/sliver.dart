@@ -1247,6 +1247,8 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
   }
 
   bool _didUnderflow = false;
+  @override
+  bool getDidUnderflow() => _didUnderflow;
 
   @override
   void setDidUnderflow(bool value) {
