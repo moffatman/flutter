@@ -117,6 +117,8 @@ abstract class RenderSliverBoxChildManager {
   /// Useful for subclasses to determine whether newly added children could
   /// affect the visible contents of the [RenderSliverMultiBoxAdaptor].
   void setDidUnderflow(bool value);
+  /// Peek at last didUnderflow
+  bool getDidUnderflow();
 
   /// Called at the beginning of layout to indicate that layout is about to
   /// occur.
