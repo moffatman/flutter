@@ -246,6 +246,7 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
     RenderBox? child = earliestUsefulChild;
     int index = indexOf(child!);
     double endScrollOffset = childScrollOffset(child)! + paintExtentOf(child);
+    double lastLayoutOffsetDiff = 0;
     bool advance() { // returns true if we advanced, false if we have no more children
       // This function is used in two different places below, to avoid code duplication.
       assert(child != null);
@@ -276,6 +277,9 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
       assert(child != null);
       final SliverMultiBoxAdaptorParentData childParentData = child!.parentData! as SliverMultiBoxAdaptorParentData;
+      if (childParentData.layoutOffset case final double oldLayoutOffset) {
+        lastLayoutOffsetDiff = endScrollOffset - oldLayoutOffset;
+      }
       if (childParentData.index == lockIndex) {
         final double oldLayoutOffset = childParentData.layoutOffset ?? endScrollOffset;
         childParentData.layoutOffset = endScrollOffset;
@@ -314,7 +318,7 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
 
       // Now find the first child that ends after our end.
-      while (endScrollOffset < targetEndScrollOffset) {
+      while (endScrollOffset < targetEndScrollOffset || (lockIndex >= 0 && lockIndex != kLockIndexLockToEnd && child != null && indexOf(child!) < lockIndex)) {
         if (!advance()) {
           reachedEnd = true;
           break;
@@ -322,6 +326,13 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
     }
     on _Underflow {
+      return;
+    }
+
+    if (lockIndex >= 0 && lastChild != null && indexOf(lastChild!) < lockIndex && lockIndex != kLockIndexLockToEnd && lastLayoutOffsetDiff != 0) {
+      geometry = SliverGeometry(
+        scrollOffsetCorrection: lastLayoutOffsetDiff
+      );
       return;
     }
 
