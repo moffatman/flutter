@@ -734,14 +734,17 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   // Refer to the implementation of Android `RecyclerView`(line 3846):
   // https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/recyclerview/recyclerview/src/main/java/androidx/recyclerview/widget/RecyclerView.java
   int? _activePointer;
+  int? _lastGivenUpPointer;
 
   @override
   void acceptGesture(int pointer) {
     assert(!_acceptedActivePointers.contains(pointer));
-    _acceptedActivePointers.add(pointer);
-    _activePointer = pointer;
-    if (!onlyAcceptDragOnThreshold || _hasDragThresholdBeenMet) {
-      _checkDrag(pointer);
+    if (pointer != _lastGivenUpPointer) {
+      _acceptedActivePointers.add(pointer);
+      _activePointer = pointer;
+      if (!onlyAcceptDragOnThreshold || _hasDragThresholdBeenMet) {
+        _checkDrag(pointer);
+      }
     }
   }
 
@@ -771,6 +774,7 @@ sealed class DragGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   void _giveUpPointer(int pointer) {
+    _lastGivenUpPointer = pointer;
     stopTrackingPointer(pointer);
     // If we never accepted the pointer, we reject it since we are no longer
     // interested in winning the gesture arena for it.
