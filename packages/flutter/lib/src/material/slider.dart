@@ -1102,14 +1102,14 @@ class _RenderSlider extends RenderBox with RelayoutWhenSystemFontsChangeMixin {
         _allowedInteraction = allowedInteraction {
     _updateLabelPainter();
     final GestureArenaTeam team = GestureArenaTeam();
-    _drag = HorizontalDragGestureRecognizer()
+    _drag = HorizontalDragGestureRecognizer(debugOwner: this)
       ..team = team
       ..onStart = _handleDragStart
       ..onUpdate = _handleDragUpdate
       ..onEnd = _handleDragEnd
       ..onCancel = _endInteraction
       ..gestureSettings = gestureSettings;
-    _tap = TapGestureRecognizer()
+    _tap = TapGestureRecognizer(debugOwner: this)
       ..team = team
       ..onTapDown = _handleTapDown
       ..onTapUp = _handleTapUp
