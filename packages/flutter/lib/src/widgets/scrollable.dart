@@ -789,7 +789,7 @@ class ScrollableState extends State<Scrollable>
           _gestureRecognizers = <Type, GestureRecognizerFactory>{
             VerticalDragGestureRecognizer:
                 GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
-                  () => VerticalDragGestureRecognizer(supportedDevices: _configuration.dragDevices),
+                  () => VerticalDragGestureRecognizer(supportedDevices: _configuration.dragDevices, debugOwner: this),
                   (VerticalDragGestureRecognizer instance) {
                     instance
                       ..onDown = _handleDragDown
