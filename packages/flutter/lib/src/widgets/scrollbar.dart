@@ -1329,6 +1329,8 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
   Offset? _lastDragUpdateOffset;
   double? _startDragThumbOffset;
   ScrollController? _cachedController;
+  ScrollPosition? _cachedPosition;
+  bool? _cachedCanHandleScrollGestures;
   Timer? _fadeoutTimer;
   late AnimationController _fadeoutAnimationController;
   late CurvedAnimation _fadeoutOpacityAnimation;
@@ -1404,9 +1406,45 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
     );
   }
 
+  void _onScrollPositionUpdate() {
+    final bool newCanHandleScrollGestures = _canHandleScrollGestures();
+    if (newCanHandleScrollGestures != _cachedCanHandleScrollGestures) {
+      _cachedCanHandleScrollGestures = newCanHandleScrollGestures;
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  void _onScrollControllerUpdate() {
+    final ScrollPosition? newPosition = _cachedController?.positions.firstOrNull;
+    if (newPosition != _cachedPosition) {
+      _cachedPosition?.removeListener(_onScrollPositionUpdate);
+      newPosition?.addListener(_onScrollPositionUpdate);
+      _cachedPosition = newPosition;
+      _cachedCanHandleScrollGestures = null;
+      Future<void>.microtask(_onScrollPositionUpdate);
+    }
+  }
+
+  void _maybeControllerChanged() {
+    final ScrollController? newController = _effectiveScrollController;
+    if (newController != _cachedController) {
+      _cachedController?.removeListener(_onScrollControllerUpdate);
+      newController?.addListener(_onScrollControllerUpdate);
+      _cachedController = newController;
+      // To avoid problems when re-attaching to same position
+      _cachedPosition?.removeListener(_onScrollPositionUpdate);
+      _cachedPosition = null;
+      _cachedCanHandleScrollGestures = null;
+      Future<void>.microtask(_onScrollControllerUpdate);
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _maybeControllerChanged();
     assert(_debugScheduleCheckHasValidScrollPosition());
   }
 
@@ -1574,6 +1612,9 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
         _fadeoutAnimationController.reverse();
       }
     }
+    if (widget.controller != oldWidget.controller) {
+      _maybeControllerChanged();
+    }
   }
 
   void _maybeStartFadeoutTimer() {
@@ -1669,7 +1710,7 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
   @mustCallSuper
   void handleThumbPress() {
     assert(_debugCheckHasValidScrollPosition());
-    _cachedController = _effectiveScrollController;
+    _maybeControllerChanged();
     if (getScrollbarDirection() == null) {
       return;
     }
@@ -1803,7 +1844,7 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
     return;
     // The Scrollbar should page towards the position of the tap on the track.
     assert(_debugCheckHasValidScrollPosition());
-    _cachedController = _effectiveScrollController;
+    _maybeControllerChanged();
 
     final ScrollPosition position = _cachedController!.position;
     if (!position.physics.shouldAcceptUserOffset(position)) {
@@ -2126,7 +2167,7 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
 
   void _handlePointerScroll(PointerEvent event) {
     assert(event is PointerScrollEvent);
-    _cachedController = _effectiveScrollController;
+    _maybeControllerChanged();
     final double delta = _pointerSignalEventDelta(event as PointerScrollEvent);
     final double targetScrollOffset = _targetScrollOffsetForPointerScroll(delta);
     if (delta != 0.0 && targetScrollOffset != _cachedController!.position.pixels) {
@@ -2135,7 +2176,7 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
   }
 
   void _receivedPointerSignal(PointerSignalEvent event) {
-    _cachedController = _effectiveScrollController;
+    _maybeControllerChanged();
     // Only try to scroll if the bar absorb the hit test.
     if ((scrollbarPainter.hitTest(event.localPosition) ?? false) &&
         _cachedController != null &&
@@ -2164,6 +2205,8 @@ class RawScrollbarState<T extends RawScrollbar> extends State<T> with TickerProv
     _fadeoutTimer?.cancel();
     scrollbarPainter.dispose();
     _fadeoutOpacityAnimation.dispose();
+    _cachedController?.removeListener(_onScrollControllerUpdate);
+    _cachedPosition?.removeListener(_onScrollPositionUpdate);
     super.dispose();
   }
 
