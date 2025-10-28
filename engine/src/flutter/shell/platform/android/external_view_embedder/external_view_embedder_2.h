@@ -13,6 +13,7 @@
 #include "flutter/shell/platform/android/external_view_embedder/surface_pool.h"
 #include "flutter/shell/platform/android/jni/platform_view_android_jni.h"
 #include "flutter/shell/platform/android/surface/android_surface.h"
+#include "flutter/shell/platform/android/surface/android_surface_transaction.h"
 
 namespace flutter {
 
@@ -35,7 +36,8 @@ class AndroidExternalViewEmbedder2 final : public ExternalViewEmbedder {
       const AndroidContext& android_context,
       std::shared_ptr<PlatformViewAndroidJNI> jni_facade,
       std::shared_ptr<AndroidSurfaceFactory> surface_factory,
-      const TaskRunners& task_runners);
+      const TaskRunners& task_runners,
+      AndroidSurfaceTransaction& android_surface_transaction);
 
   // |ExternalViewEmbedder|
   void PrerollCompositeEmbeddedView(
@@ -134,6 +136,9 @@ class AndroidExternalViewEmbedder2 final : public ExternalViewEmbedder {
   // The params for a platform view, which contains the size, position and
   // mutation stack.
   std::unordered_map<int64_t, EmbeddedViewParams> view_params_;
+
+  // Allows to set vsync id on submitted frames.
+  AndroidSurfaceTransaction& android_surface_transaction_;
 
   // Destroys the surfaces created from the surface factory.
   // This method schedules a task on the platform thread, and waits for

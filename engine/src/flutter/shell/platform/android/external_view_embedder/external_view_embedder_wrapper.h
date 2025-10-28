@@ -12,6 +12,7 @@
 #include "flutter/shell/platform/android/external_view_embedder/external_view_embedder_2.h"
 #include "flutter/shell/platform/android/jni/platform_view_android_jni.h"
 #include "flutter/shell/platform/android/surface/android_surface.h"
+#include "flutter/shell/platform/android/surface/android_surface_transaction.h"
 
 namespace flutter {
 
@@ -28,7 +29,8 @@ class AndroidExternalViewEmbedderWrapper final : public ExternalViewEmbedder {
       const AndroidContext& android_context,
       std::shared_ptr<PlatformViewAndroidJNI> jni_facade,
       std::shared_ptr<AndroidSurfaceFactory> surface_factory,
-      const TaskRunners& task_runners);
+      const TaskRunners& task_runners,
+      AndroidSurfaceTransaction& android_surface_transaction);
 
   // |ExternalViewEmbedder|
   void PrerollCompositeEmbeddedView(
@@ -83,6 +85,7 @@ class AndroidExternalViewEmbedderWrapper final : public ExternalViewEmbedder {
   const bool meets_hcpp_criteria_;
   const AndroidContext& android_context_;
   const TaskRunners& task_runners_;
+  AndroidSurfaceTransaction& android_surface_transaction_;
   std::shared_ptr<PlatformViewAndroidJNI> jni_facade_;
   std::shared_ptr<AndroidSurfaceFactory> surface_factory_;
   std::unique_ptr<AndroidExternalViewEmbedder> non_hcpp_view_embedder_;

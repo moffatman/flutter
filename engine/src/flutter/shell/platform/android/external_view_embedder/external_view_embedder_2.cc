@@ -16,14 +16,16 @@ AndroidExternalViewEmbedder2::AndroidExternalViewEmbedder2(
     const AndroidContext& android_context,
     std::shared_ptr<PlatformViewAndroidJNI> jni_facade,
     std::shared_ptr<AndroidSurfaceFactory> surface_factory,
-    const TaskRunners& task_runners)
+    const TaskRunners& task_runners,
+    AndroidSurfaceTransaction& android_surface_transaction)
     : ExternalViewEmbedder(),
       android_context_(android_context),
       jni_facade_(std::move(jni_facade)),
       surface_factory_(std::move(surface_factory)),
       surface_pool_(
           std::make_unique<SurfacePool>(/*use_new_surface_methods=*/true)),
-      task_runners_(task_runners) {}
+      task_runners_(task_runners),
+      android_surface_transaction_(android_surface_transaction) {}
 
 // |ExternalViewEmbedder|
 void AndroidExternalViewEmbedder2::PrerollCompositeEmbeddedView(
@@ -76,6 +78,19 @@ void AndroidExternalViewEmbedder2::SubmitFlutterView(
     HideOverlayLayerIfNeeded();
     jni_facade_->applyTransaction();
     return;
+  }
+
+  // TODO(moffatman): Not sure about this sequence. need to test it
+  auto submit_info = frame->submit_info();
+  int64_t vsync_id = submit_info.vsync_id;
+  if (vsync_id != kInvalidVSyncId) {
+    // This frame should be presented within an AndroidSurfaceTransaction.
+    // Start the transaction now, and steal the vsync_id from the SurfaceFrame,
+    // so that it doesn't start its own transaction.
+    submit_info.vsync_id = kInvalidVSyncId;
+    frame->set_submit_info(submit_info);
+    android_surface_transaction_.Begin();
+    android_surface_transaction_.SetVsyncId(vsync_id);
   }
 
   std::unordered_map<int64_t, DlRect> view_rects;
@@ -152,6 +167,10 @@ void AndroidExternalViewEmbedder2::SubmitFlutterView(
     overlay_layer_has_content_this_frame_ = false;
   }
   frame->Submit();
+
+  if (vsync_id != kInvalidVSyncId) {
+    android_surface_transaction_.End();
+  }
 
   task_runners_.GetPlatformTaskRunner()->PostTask(fml::MakeCopyable(
       [&, composition_order = composition_order_, view_params = view_params_,
