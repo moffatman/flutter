@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 
+#include "flutter/common/constants.h"
 #include "flutter/common/graphics/gl_context_switch.h"
 #include "flutter/display_list/dl_builder.h"
 #include "flutter/display_list/skia/dl_sk_canvas.h"
@@ -105,6 +106,10 @@ class SurfaceFrame {
     // presentViewController page transition, then this will cause CoreAnimation
     // assertion errors and exit the app.
     bool present_with_transaction = false;
+
+    // Identifier for the platform to indicate when this frame should be
+    // presented.
+    int64_t vsync_id = kInvalidVSyncId;
   };
 
   bool Encode();
