@@ -20,14 +20,17 @@ import android.view.HapticFeedbackConstants;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import androidx.activity.OnBackPressedDispatcherOwner;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.WindowInsetsControllerCompat;
+import io.flutter.Build.API_LEVELS;
 import io.flutter.Log;
 import io.flutter.embedding.engine.systemchannels.PlatformChannel;
+import io.flutter.plugin.platform.PlatformPlugin.PlatformPluginDelegate;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -455,11 +458,28 @@ public class PlatformPlugin {
             // Dark status bar icon brightness.
             // Light status bar appearance.
             windowInsetsControllerCompat.setAppearanceLightStatusBars(true);
+            if (Build.VERSION.SDK_INT >= API_LEVELS.API_35) {
+              window
+                  .getInsetsController()
+                  .setSystemBarsAppearance(
+                      WindowInsetsController.APPEARANCE_LIGHT_CAPTION_BARS
+                          | WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
+                      WindowInsetsController.APPEARANCE_LIGHT_CAPTION_BARS
+                          | WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND);
+            }
             break;
           case LIGHT:
             // Light status bar icon brightness.
             // Dark status bar appearance.
             windowInsetsControllerCompat.setAppearanceLightStatusBars(false);
+            if (Build.VERSION.SDK_INT >= API_LEVELS.API_35) {
+              window
+                  .getInsetsController()
+                  .setSystemBarsAppearance(
+                      WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
+                      WindowInsetsController.APPEARANCE_LIGHT_CAPTION_BARS
+                          | WindowInsetsController.APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND);
+            }
             break;
         }
       }
