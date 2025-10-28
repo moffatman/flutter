@@ -1943,7 +1943,10 @@ static flutter::PointerData::DeviceKind DeviceKindFromTouchType(UITouch* touch) 
     UIStatusBarStyle style = static_cast<UIStatusBarStyle>(update.integerValue);
     if (style != strongSelf.statusBarStyle) {
       strongSelf.statusBarStyle = style;
-      [strongSelf setNeedsStatusBarAppearanceUpdate];
+      [UIView animateWithDuration:0.2
+                       animations:^{
+                         [self setNeedsStatusBarAppearanceUpdate];
+                       }];
     }
   });
 }
@@ -1951,7 +1954,10 @@ static flutter::PointerData::DeviceKind DeviceKindFromTouchType(UITouch* touch) 
 - (void)setPrefersStatusBarHidden:(BOOL)hidden {
   if (hidden != self.flutterPrefersStatusBarHidden) {
     self.flutterPrefersStatusBarHidden = hidden;
-    [self setNeedsStatusBarAppearanceUpdate];
+    [UIView animateWithDuration:0.2
+                     animations:^{
+                       [self setNeedsStatusBarAppearanceUpdate];
+                     }];
   }
 }
 
