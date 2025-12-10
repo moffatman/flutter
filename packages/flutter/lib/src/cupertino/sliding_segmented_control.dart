@@ -1141,11 +1141,12 @@ class _RenderSegmentedControl<T extends Object> extends RenderBox
     return math.min(childWidth, (constraints.maxWidth - totalSeparatorWidth) / childCount);
   }
 
-  double _getMaxChildHeight(BoxConstraints constraints, double childWidth) {
+  double _getMaxChildHeight(BoxConstraints constraints, List<double> childWidths) {
     double maxHeight = _kMinSegmentedControlHeight;
+    int i = 0;
     RenderBox? child = firstChild;
     while (child != null) {
-      final double boxHeight = child.getMaxIntrinsicHeight(childWidth);
+      final double boxHeight = child.getMaxIntrinsicHeight(childWidths[i++]);
       maxHeight = math.max(maxHeight, boxHeight);
       child = nonSeparatorChildAfter(child);
     }
@@ -1188,16 +1189,17 @@ class _RenderSegmentedControl<T extends Object> extends RenderBox
   }
 
   Size _computeOverallSize(BoxConstraints constraints) {
-    final double maxChildHeight = _getMaxChildHeight(constraints, constraints.maxWidth);
+    final List<double> segmentWidths = _getChildWidths(constraints);
+    final double maxChildHeight = _getMaxChildHeight(constraints, segmentWidths);
     return constraints.constrain(
-      Size(_getChildWidths(constraints).sum + totalSeparatorWidth, maxChildHeight),
+      Size(segmentWidths.sum + totalSeparatorWidth, maxChildHeight),
     );
   }
 
   @override
   double? computeDryBaseline(covariant BoxConstraints constraints, TextBaseline baseline) {
     final List<double> segmentWidths = _getChildWidths(constraints);
-    final double childHeight = _getMaxChildHeight(constraints, constraints.maxWidth);
+    final double childHeight = _getMaxChildHeight(constraints, segmentWidths);
 
     int index = 0;
     BaselineOffset baselineOffset = BaselineOffset.noBaseline;
@@ -1227,7 +1229,7 @@ class _RenderSegmentedControl<T extends Object> extends RenderBox
     final BoxConstraints constraints = this.constraints;
     final List<double> segmentWidths = _getChildWidths(constraints);
 
-    final double childHeight = _getMaxChildHeight(constraints, double.infinity);
+    final double childHeight = _getMaxChildHeight(constraints, segmentWidths);
     final BoxConstraints separatorConstraints = BoxConstraints(
       minHeight: childHeight,
       maxHeight: childHeight,
