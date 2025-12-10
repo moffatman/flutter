@@ -504,10 +504,7 @@ class _CupertinoButtonState extends State<CupertinoButton> with SingleTickerProv
                 : themeData.textTheme.actionTextStyle)
             .copyWith(color: effectiveForegroundColor);
     final IconThemeData iconTheme = IconTheme.of(context).copyWith(
-      color: effectiveForegroundColor,
-      size: textStyle.fontSize != null
-          ? textStyle.fontSize! * 1.2
-          : kCupertinoButtonDefaultIconSize,
+      color: effectiveForegroundColor
     );
 
     final DeviceGestureSettings? gestureSettings = MediaQuery.maybeGestureSettingsOf(context);
