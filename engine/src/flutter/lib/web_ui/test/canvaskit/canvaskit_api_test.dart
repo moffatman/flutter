@@ -1607,7 +1607,7 @@ void _paragraphTests() {
         .getRectsForRange(1, 3, canvasKit.RectHeightStyle.Tight, canvasKit.RectWidthStyle.Max)
         .single;
     expect(rectWithDirection.rect, hasLength(4));
-    expect(paragraph.getRectsForPlaceholders(), hasLength(1));
+    expect(paragraph.getRectsForPlaceholders(paragraph.getMaxWidth()), hasLength(1));
     expect(paragraph.getLineMetrics(), hasLength(1));
 
     final SkLineMetrics lineMetrics = paragraph.getLineMetrics().single;

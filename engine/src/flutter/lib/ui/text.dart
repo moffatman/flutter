@@ -3054,7 +3054,9 @@ abstract class Paragraph {
   ///
   /// Coordinates of the [TextBox] are relative to the upper-left corner of the paragraph,
   /// where positive y values indicate down.
-  List<TextBox> getBoxesForPlaceholders();
+  ///
+  /// You need to pass the layout [width] due to PlaceholderFloating.
+  List<TextBox> getBoxesForPlaceholders(double width);
 
   /// Returns the text position closest to the given offset.
   ///
@@ -3242,12 +3244,12 @@ base class _NativeParagraph extends NativeFieldWrapperClass1 implements Paragrap
   external Float32List _getBoxesForRange(int start, int end, int boxHeightStyle, int boxWidthStyle);
 
   @override
-  List<TextBox> getBoxesForPlaceholders() {
-    return _decodeTextBoxes(_getBoxesForPlaceholders());
+  List<TextBox> getBoxesForPlaceholders(double width) {
+    return _decodeTextBoxes(_getBoxesForPlaceholders(width));
   }
 
-  @Native<Handle Function(Pointer<Void>)>(symbol: 'Paragraph::getRectsForPlaceholders')
-  external Float32List _getBoxesForPlaceholders();
+  @Native<Handle Function(Pointer<Void>, Double)>(symbol: 'Paragraph::getRectsForPlaceholders')
+  external Float32List _getBoxesForPlaceholders(double width);
 
   @override
   TextPosition getPositionForOffset(Offset offset) {

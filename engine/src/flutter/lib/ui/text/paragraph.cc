@@ -104,9 +104,9 @@ tonic::Float32List Paragraph::getRectsForRange(unsigned start,
   return EncodeTextBoxes(boxes);
 }
 
-tonic::Float32List Paragraph::getRectsForPlaceholders() {
+tonic::Float32List Paragraph::getRectsForPlaceholders(double width) {
   std::vector<txt::Paragraph::TextBox> boxes =
-      m_paragraph_->GetRectsForPlaceholders();
+      m_paragraph_->GetRectsForPlaceholders(width);
   return EncodeTextBoxes(boxes);
 }
 

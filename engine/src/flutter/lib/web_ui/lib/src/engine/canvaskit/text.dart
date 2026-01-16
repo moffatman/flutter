@@ -827,8 +827,7 @@ class CkParagraph implements ui.Paragraph {
   double _width = 0;
 
   @override
-  List<ui.TextBox> getBoxesForPlaceholders() => _boxesForPlaceholders;
-  late List<ui.TextBox> _boxesForPlaceholders;
+  List<ui.TextBox> getBoxesForPlaceholders(double width) => skRectsToTextBoxes(skiaObject.getRectsForPlaceholders(width));;
 
   @override
   List<ui.TextBox> getBoxesForRange(
@@ -929,7 +928,6 @@ class CkParagraph implements ui.Paragraph {
       _maxIntrinsicWidth = paragraph.getMaxIntrinsicWidth();
       _minIntrinsicWidth = paragraph.getMinIntrinsicWidth();
       _width = paragraph.getMaxWidth();
-      _boxesForPlaceholders = skRectsToTextBoxes(paragraph.getRectsForPlaceholders());
     } catch (e) {
       printWarning(
         'CanvasKit threw an exception while laying '

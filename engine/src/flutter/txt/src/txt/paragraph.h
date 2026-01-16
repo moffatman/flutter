@@ -157,7 +157,9 @@ class Paragraph {
   //
   // More granular boxes may be obtained through GetRectsForRange, which will
   // return bounds on both text as well as inline placeholders.
-  virtual std::vector<TextBox> GetRectsForPlaceholders() = 0;
+  //
+  // You need to pass the chosen width due to PlaceholderFloating
+  virtual std::vector<TextBox> GetRectsForPlaceholders(double width) = 0;
 
   // Returns the index of the glyph that corresponds to the provided coordinate,
   // with the top left corner as the origin, and +y direction as down.

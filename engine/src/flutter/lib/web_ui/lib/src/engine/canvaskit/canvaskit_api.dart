@@ -2208,9 +2208,9 @@ extension type SkParagraph(JSObject _) implements JSObject {
   ) => _getRectsForRange(start, end, heightStyle, widthStyle).toDart.cast<SkRectWithDirection>();
 
   @JS('getRectsForPlaceholders')
-  external JSArray<JSAny?> _getRectsForPlaceholders();
-  List<SkRectWithDirection> getRectsForPlaceholders() =>
-      _getRectsForPlaceholders().toDart.cast<SkRectWithDirection>();
+  external JSArray<JSAny?> _getRectsForPlaceholders(double width);
+  List<SkRectWithDirection> getRectsForPlaceholders(double width) =>
+      _getRectsForPlaceholders(width).toDart.cast<SkRectWithDirection>();
 
   external SkTextPosition getGlyphPositionAtCoordinate(double x, double y);
 
