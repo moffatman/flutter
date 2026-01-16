@@ -179,9 +179,9 @@ SKWASM_EXPORT TextBoxList* paragraph_getBoxesForRange(
 }
 
 SKWASM_EXPORT TextBoxList* paragraph_getBoxesForPlaceholders(
-    Skwasm::Paragraph* paragraph) {
+    Skwasm::Paragraph* paragraph, SkScalar width) {
   Skwasm::live_text_box_list_count++;
-  return new TextBoxList{paragraph->skia_paragraph->getRectsForPlaceholders()};
+  return new TextBoxList{paragraph->skia_paragraph->getRectsForPlaceholders(width)};
 }
 
 // Returns a list of the code points that were unable to be rendered with the

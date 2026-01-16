@@ -487,6 +487,7 @@ class _TextPainterLayoutCacheWithOffset {
 
     if (maxWidth == contentWidth && minWidth == contentWidth) {
       contentWidth = layout._contentWidthFor(minWidth, maxWidth, widthBasis);
+      _cachedInlinePlaceholderBoxes = null; // Invalidate
       return true;
     }
 
@@ -512,6 +513,7 @@ class _TextPainterLayoutCacheWithOffset {
     if (skipLineBreaking) {
       // Adjust the content width in case the TextWidthBasis changed.
       contentWidth = layout._contentWidthFor(minWidth, maxWidth, widthBasis);
+      _cachedInlinePlaceholderBoxes = null; // Invalidate
       return true;
     }
     return false;
@@ -520,7 +522,7 @@ class _TextPainterLayoutCacheWithOffset {
   // ---- Cached Values ----
 
   List<TextBox> get inlinePlaceholderBoxes =>
-      _cachedInlinePlaceholderBoxes ??= paragraph.getBoxesForPlaceholders();
+      _cachedInlinePlaceholderBoxes ??= paragraph.getBoxesForPlaceholders(contentWidth);
   List<TextBox>? _cachedInlinePlaceholderBoxes;
 
   List<ui.LineMetrics> get lineMetrics => _cachedLineMetrics ??= paragraph.computeLineMetrics();

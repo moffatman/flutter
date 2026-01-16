@@ -58,7 +58,7 @@ class ParagraphSkia : public Paragraph {
       RectHeightStyle rect_height_style,
       RectWidthStyle rect_width_style) override;
 
-  std::vector<TextBox> GetRectsForPlaceholders() override;
+  std::vector<TextBox> GetRectsForPlaceholders(double width) override;
 
   PositionWithAffinity GetGlyphPositionAtCoordinate(double dx,
                                                     double dy) override;

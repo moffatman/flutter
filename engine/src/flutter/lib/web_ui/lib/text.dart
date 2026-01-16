@@ -655,7 +655,7 @@ abstract class Paragraph {
   GlyphInfo? getClosestGlyphInfoForOffset(Offset offset);
   TextRange getWordBoundary(TextPosition position);
   TextRange getLineBoundary(TextPosition position);
-  List<TextBox> getBoxesForPlaceholders();
+  List<TextBox> getBoxesForPlaceholders(double width);
   List<LineMetrics> computeLineMetrics();
   LineMetrics? getLineMetricsAt(int lineNumber);
   int get numberOfLines;

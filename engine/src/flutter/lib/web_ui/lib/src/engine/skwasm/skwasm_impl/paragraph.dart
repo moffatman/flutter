@@ -257,8 +257,8 @@ class SkwasmParagraph extends SkwasmObjectWrapper<RawParagraph> implements ui.Pa
   }
 
   @override
-  List<ui.TextBox> getBoxesForPlaceholders() {
-    final TextBoxListHandle listHandle = paragraphGetBoxesForPlaceholders(handle);
+  List<ui.TextBox> getBoxesForPlaceholders(double width) {
+    final TextBoxListHandle listHandle = paragraphGetBoxesForPlaceholders(handle, width);
     final List<ui.TextBox> boxes = _convertTextBoxList(listHandle);
     textBoxListDispose(listHandle);
     return boxes;

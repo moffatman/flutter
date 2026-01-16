@@ -649,7 +649,8 @@ class TextLayout {
     return result;
   }
 
-  List<ui.TextBox> getBoxesForPlaceholders() {
+  List<ui.TextBox> getBoxesForPlaceholders(double width) {
+    // TODO: Use this
     final result = <ui.TextBox>[];
     for (final TextLine line in lines) {
       for (final LineBlock block in line.visualBlocks) {

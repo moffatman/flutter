@@ -67,7 +67,7 @@ Future<void> testMain() async {
     final WebParagraph paragraph = builder.build();
     paragraph.layout(const ParagraphConstraints(width: 500));
 
-    final List<TextBox> placeholders = paragraph.getBoxesForPlaceholders();
+    final List<TextBox> placeholders = paragraph.getBoxesForPlaceholders(500);
 
     expect(placeholders.length, 3);
     expect((placeholders[0].toRect().width - 20.0).abs() < EPSILON, true);
@@ -163,7 +163,7 @@ Future<void> testMain() async {
     final WebParagraph paragraph = builder.build();
     paragraph.layout(const ParagraphConstraints(width: 500));
 
-    final List<TextBox> placeholders = paragraph.getBoxesForPlaceholders();
+    final List<TextBox> placeholders = paragraph.getBoxesForPlaceholders(500);
 
     expect(placeholders.length, 6);
     expect((placeholders[0].toRect().width - 20.0).abs() < EPSILON, true);

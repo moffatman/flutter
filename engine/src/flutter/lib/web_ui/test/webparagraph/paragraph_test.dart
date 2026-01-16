@@ -766,7 +766,7 @@ Future<void> testMain() async {
     paragraph.layout(const ParagraphConstraints(width: 500));
     paragraph.paint(canvas, Offset.zero);
 
-    final List<TextBox> rects = paragraph.getBoxesForPlaceholders();
+    final List<TextBox> rects = paragraph.getBoxesForPlaceholders(500);
     paragraph.getBoxesForRange(0, paragraph.text.length);
     final bluePaint = Paint()
       ..color = const Color(0xFF0000FF)

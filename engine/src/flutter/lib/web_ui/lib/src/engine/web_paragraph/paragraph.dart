@@ -893,7 +893,7 @@ class WebParagraph implements ui.Paragraph {
   late ui.Rect paintBounds;
 
   @override
-  List<ui.TextBox> getBoxesForPlaceholders() => _layout.getBoxesForPlaceholders();
+  List<ui.TextBox> getBoxesForPlaceholders(double width) => _layout.getBoxesForPlaceholders(width);
 
   @override
   List<ui.TextBox> getBoxesForRange(

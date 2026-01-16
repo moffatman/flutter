@@ -143,11 +143,11 @@ external TextBoxListHandle paragraphGetBoxesForRange(
   int widthStyle,
 );
 
-@Native<TextBoxListHandle Function(ParagraphHandle)>(
+@Native<TextBoxListHandle Function(ParagraphHandle, Float)>(
   symbol: 'paragraph_getBoxesForPlaceholders',
   isLeaf: true,
 )
-external TextBoxListHandle paragraphGetBoxesForPlaceholders(ParagraphHandle handle);
+external TextBoxListHandle paragraphGetBoxesForPlaceholders(ParagraphHandle handle, double width);
 
 // Returns a list of the code points that were unable to be rendered with the
 // selected fonts. The list is deduplicated, so each code point in the output
