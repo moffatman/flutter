@@ -782,9 +782,9 @@ public class FlutterView extends FrameLayout
     // The caption bar inset is a new addition, and the APIs called to query it utilize a list of
     // bounding Rects instead of an Insets object, which is a newer API method, as compared to the
     // existing Insets-based method calls above.
-    if (Build.VERSION.SDK_INT >= API_LEVELS.API_35) {
-      delegate.growViewportMetricsToCaptionBar(getContext(), viewportMetrics);
-    }
+    //if (Build.VERSION.SDK_INT >= API_LEVELS.API_35) {
+      //delegate.growViewportMetricsToCaptionBar(getContext(), viewportMetrics);
+    //}
 
     Log.v(
         TAG,
