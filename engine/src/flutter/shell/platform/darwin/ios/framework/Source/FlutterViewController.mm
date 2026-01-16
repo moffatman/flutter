@@ -2565,6 +2565,10 @@ static flutter::PointerData::DeviceKind DeviceKindFromTouchType(UITouch* touch) 
   translation.y *= scale;
 
   flutter::PointerData pointer_data = [self updateMousePointerDataFrom:recognizer];
+  _mouseState.location.x -= translation.x;
+  pointer_data.physical_x -= translation.x;
+  _mouseState.location.y -= translation.y;
+  pointer_data.physical_y -= translation.y;
   pointer_data.device = reinterpret_cast<int64_t>(recognizer);
   pointer_data.kind = flutter::PointerData::DeviceKind::kMouse;
   pointer_data.signal_kind = flutter::PointerData::SignalKind::kScroll;
@@ -2591,7 +2595,14 @@ static flutter::PointerData::DeviceKind DeviceKindFromTouchType(UITouch* touch) 
   CGPoint translation = [recognizer translationInView:self.view];
   const CGFloat scale = self.flutterScreenIfViewLoaded.scale;
 
+  translation.x *= scale;
+  translation.y *= scale;
+
   flutter::PointerData pointer_data = [self updateMousePointerDataFrom:recognizer];
+  _mouseState.location.x -= translation.x;
+  pointer_data.physical_x -= translation.x;
+  _mouseState.location.y -= translation.y;
+  pointer_data.physical_y -= translation.y;
   pointer_data.device = reinterpret_cast<int64_t>(recognizer);
   pointer_data.kind = flutter::PointerData::DeviceKind::kTrackpad;
   pointer_data.view_id = self.viewIdentifier;
@@ -2601,8 +2612,8 @@ static flutter::PointerData::DeviceKind DeviceKindFromTouchType(UITouch* touch) 
       break;
     case UIGestureRecognizerStateChanged:
       pointer_data.change = flutter::PointerData::Change::kPanZoomUpdate;
-      pointer_data.pan_x = translation.x * scale;
-      pointer_data.pan_y = translation.y * scale;
+      pointer_data.pan_x = translation.x;
+      pointer_data.pan_y = translation.y;
       pointer_data.pan_delta_x = 0;  // Delta will be generated in pointer_data_packet_converter.cc.
       pointer_data.pan_delta_y = 0;  // Delta will be generated in pointer_data_packet_converter.cc.
       pointer_data.scale = 1;
