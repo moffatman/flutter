@@ -345,7 +345,10 @@ class _AnimatedSwitcherState extends State<AnimatedSwitcher> with TickerProvider
   }) {
     final entry = _ChildEntry(
       widgetChild: child,
-      transition: KeyedSubtree.wrap(builder(child, animation), _childNumber),
+      transition: KeyedSubtree(
+        key: ValueKey<int>(_childNumber),
+        child: builder(child, animation)
+      ),
       animation: animation,
       controller: controller,
     );
