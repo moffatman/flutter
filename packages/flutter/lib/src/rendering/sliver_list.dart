@@ -316,7 +316,7 @@ class RenderSliverList extends RenderSliverMultiBoxAdaptor {
       }
 
       // Now find the first child that ends after our end.
-      while (endScrollOffset < targetEndScrollOffset || (lockIndex >= 0 && lockIndex != kLockIndexLockToEnd && child != null && indexOf(child!) < lockIndex)) {
+      while (endScrollOffset < targetEndScrollOffset || (lockIndex >= 0 && child != null && indexOf(child!) < lockIndex)) {
         if (!advance()) {
           reachedEnd = true;
           break;
