@@ -21,6 +21,7 @@ import 'framework.dart';
 import 'media_query.dart';
 import 'notification_listener.dart';
 import 'primary_scroll_controller.dart';
+import 'safe_area.dart';
 import 'scroll_configuration.dart';
 import 'scroll_controller.dart';
 import 'scroll_delegate.dart';
@@ -472,6 +473,59 @@ abstract class ScrollView extends StatelessWidget {
         clipBehavior: clipBehavior,
       );
     }
+    EdgeInsets extractPadding(Widget sliver) {
+      switch (sliver) {
+        case final SliverPadding padding:
+          return padding.padding.resolve(null);
+        case final SliverSafeArea safeArea:
+          final EdgeInsets padding = MediaQuery.paddingOf(context);
+          return EdgeInsets.only(
+            left: math.max(safeArea.left ? padding.left : 0.0, safeArea.minimum.left),
+            top: math.max(safeArea.top ? padding.top : 0.0, safeArea.minimum.top),
+            right: math.max(safeArea.right ? padding.right : 0.0, safeArea.minimum.right),
+            bottom: math.max(safeArea.bottom ? padding.bottom : 0.0, safeArea.minimum.bottom),
+          );
+        default:
+          return EdgeInsets.zero;
+      }
+    }
+    final EdgeInsets alreadyAppliedPadding;
+    switch (slivers) {
+      // A bit of a hack....
+      case [final Widget single]:
+        alreadyAppliedPadding = extractPadding(single);
+      case [final Widget firstSliver, ..., final Widget lastSliver]:
+        final EdgeInsets first = extractPadding(firstSliver);
+        final EdgeInsets last = extractPadding(lastSliver);
+        alreadyAppliedPadding = switch (axisDirection) {
+          AxisDirection.up => EdgeInsets.only(
+            left: first.left,
+            top: last.top,
+            right: first.right,
+            bottom: first.bottom
+          ),
+          AxisDirection.right => EdgeInsets.only(
+            left: first.left,
+            top: first.top,
+            right: last.right,
+            bottom: first.bottom
+          ),
+          AxisDirection.down => EdgeInsets.only(
+            left: first.left,
+            top: first.top,
+            right: first.right,
+            bottom: last.bottom
+          ),
+          AxisDirection.left => EdgeInsets.only(
+            left: last.left,
+            top: first.top,
+            right: first.right,
+            bottom: first.bottom
+          )
+        };
+      default:
+        alreadyAppliedPadding = EdgeInsets.zero;
+    }
     return Viewport(
       axisDirection: axisDirection,
       offset: offset,
@@ -480,11 +534,7 @@ abstract class ScrollView extends StatelessWidget {
       center: center,
       anchor: anchor,
       paintOrder: paintOrder,
-      alreadyAppliedPadding: switch (slivers) {
-        // A bit of a hack....
-        [final SliverPadding x] => x.padding.resolve(null),
-        _ => EdgeInsets.zero
-      },
+      alreadyAppliedPadding: alreadyAppliedPadding,
       clipBehavior: clipBehavior,
     );
   }
