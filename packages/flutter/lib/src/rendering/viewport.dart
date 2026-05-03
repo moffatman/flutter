@@ -1702,6 +1702,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
   late double _maxScrollExtent;
   bool _hasVisualOverflow = false;
   double? _lastMainAxisExtent;
+  double? _lastAlreadyAppliedBottomPadding;
 
   @override
   void performLayout() {
@@ -1729,9 +1730,9 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
       Axis.horizontal => (size.width, size.height),
     };
     if (
-      _lastMainAxisExtent case final double oldExtent
+      (_lastMainAxisExtent, _lastAlreadyAppliedBottomPadding) case (final double oldExtent, final double oldAlreadyAppliedBottomPadding)
                                // Container size changed
-                          when oldExtent != mainAxisExtent
+                          when (oldExtent != mainAxisExtent || alreadyAppliedPadding.bottom != _lastAlreadyAppliedBottomPadding)
                                // We have a previous scroll position
                             && offset.hasPixels
                                // Near the bottom
@@ -1739,8 +1740,10 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
     ) {
       //Pull scroll to match bottom edge to edge
       offset.correctBy(oldExtent - mainAxisExtent);
+      offset.correctBy(alreadyAppliedPadding.bottom - oldAlreadyAppliedBottomPadding);
     }
     _lastMainAxisExtent = mainAxisExtent;
+    _lastAlreadyAppliedBottomPadding = alreadyAppliedPadding.bottom;
 
     final double centerOffsetAdjustment = center!.centerOffsetAdjustment;
     final int maxLayoutCycles = _maxLayoutCyclesPerChild * childCount;
