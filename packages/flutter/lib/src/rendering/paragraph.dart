@@ -370,6 +370,7 @@ class RenderParagraph extends RenderBox
   );
 
   final TextPainter _textPainter;
+  TextPainter get textPainter => _textPainter;
 
   // Currently, computing min/max intrinsic width/height will destroy state
   // inside the painter. Instead of calling _layout again to get back the correct
@@ -391,6 +392,7 @@ class RenderParagraph extends RenderBox
       ..textWidthBasis = _textPainter.textWidthBasis
       ..textHeightBehavior = _textPainter.textHeightBehavior;
   }
+  TextPainter get textIntrinsics => _textIntrinsics;
 
   List<AttributedString>? _cachedAttributedLabels;
 
