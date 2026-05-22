@@ -589,7 +589,7 @@ class BallisticScrollActivity extends ScrollActivity {
   /// for the scroll physics of the scroll view.
   BallisticScrollActivity(
     super.delegate,
-    Simulation simulation,
+    this.simulation,
     TickerProvider vsync,
     this.shouldIgnorePointer,
   ) {
@@ -605,6 +605,8 @@ class BallisticScrollActivity extends ScrollActivity {
   }
 
   late AnimationController _controller;
+
+  final Simulation simulation;
 
   @override
   void resetActivity() {
