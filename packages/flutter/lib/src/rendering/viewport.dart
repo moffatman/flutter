@@ -1738,6 +1738,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
                                // Near the bottom
                             && (_maxScrollExtent - (offset.pixels + oldExtent)) < 80
                             && (_maxScrollExtent >= mainAxisExtent)
+                            && (offset.pixels > 0)
     ) {
       //Pull scroll to match bottom edge to edge
       offset.correctBy(oldExtent - mainAxisExtent);
