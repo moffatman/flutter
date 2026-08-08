@@ -55,7 +55,7 @@ vars = {
   # updated revision list of existing dependencies. You will need to
   # gclient sync before and after update deps to ensure all deps are updated.
   # updated revision list of existing dependencies.
-  'dart_revision': '007f43c767fb1996289cb85b5f5495c4b4b62943',
+  'dart_revision': 'bd01a84cc5a0f6ea7d810ac74421564af50ce4d2',
   'dart_official_revision': '7253dff72c96650cac690e0a7de6d239188c00f8',
 
   # WARNING: DO NOT EDIT MANUALLY

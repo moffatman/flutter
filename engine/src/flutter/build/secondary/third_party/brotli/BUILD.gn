@@ -37,3 +37,40 @@ static_library("brotli") {
   public_configs = [ ":brotli_public" ]
   cflags = [ "-w" ]
 }
+
+static_library("brotli_encoder") {
+  sources = [
+    "$source_root/c/enc/backward_references.c",
+    "$source_root/c/enc/backward_references_hq.c",
+    "$source_root/c/enc/bit_cost.c",
+    "$source_root/c/enc/block_splitter.c",
+    "$source_root/c/enc/brotli_bit_stream.c",
+    "$source_root/c/enc/cluster.c",
+    "$source_root/c/enc/command.c",
+    "$source_root/c/enc/compound_dictionary.c",
+    "$source_root/c/enc/compress_fragment.c",
+    "$source_root/c/enc/compress_fragment_two_pass.c",
+    "$source_root/c/enc/dictionary_hash.c",
+    "$source_root/c/enc/encode.c",
+    "$source_root/c/enc/encoder_dict.c",
+    "$source_root/c/enc/entropy_encode.c",
+    "$source_root/c/enc/fast_log.c",
+    "$source_root/c/enc/histogram.c",
+    "$source_root/c/enc/literal_cost.c",
+    "$source_root/c/enc/memory.c",
+    "$source_root/c/enc/metablock.c",
+    "$source_root/c/enc/static_dict.c",
+    "$source_root/c/enc/utf8_util.c",
+  ]
+
+  deps = [ ":brotli" ]
+  public_configs = [ ":brotli_public" ]
+  cflags = [ "-w" ]
+}
+
+group("brotli_full") {
+  public_deps = [
+    ":brotli",
+    ":brotli_encoder",
+  ]
+}
