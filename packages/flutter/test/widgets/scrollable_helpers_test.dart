@@ -650,7 +650,7 @@ void main() {
     variant: KeySimulatorTransitModeVariant.all(),
   );
 
-  testWidgets('EdgeDraggingAutoScroller handles drag target size correctly with Transform.scale', (
+  testWidgets('EdgeDraggingAutoScroller accepts a global drag target with Transform.scale', (
     WidgetTester tester,
   ) async {
     final controller = ScrollController();
@@ -661,7 +661,7 @@ void main() {
         textDirection: TextDirection.ltr,
         child: Center(
           child: Transform.scale(
-            scale: 0.5,
+            scale: 1.1,
             child: SizedBox.square(
               dimension: 400.0,
               child: ListView.builder(
@@ -681,7 +681,7 @@ void main() {
     final ScrollableState scrollableState = tester.state(find.byType(Scrollable));
     final scroller = EdgeDraggingAutoScroller(scrollableState, velocityScalar: 1.0);
     final scrollRenderBox = scrollableState.context.findRenderObject()! as RenderBox;
-    final dragTarget = Rect.fromLTWH(0, 0, scrollRenderBox.size.width, scrollRenderBox.size.height);
+    final Rect dragTarget = tester.getRect(find.byType(Scrollable));
 
     scroller.startAutoScrollIfNecessary(dragTarget);
     await tester.pump();
@@ -689,6 +689,59 @@ void main() {
     expect(tester.takeException(), isNull);
 
     scroller.stopAutoScroll();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('ReorderableList auto-scrolls when its root overlay is scaled', (
+    WidgetTester tester,
+  ) async {
+    final ScrollController controller = ScrollController();
+    addTearDown(controller.dispose);
+    const Key listKey = ValueKey<String>('reorderable-list');
+
+    await tester.pumpWidget(
+      Transform.scale(
+        scale: 1.1,
+        alignment: Alignment.topLeft,
+        child: MaterialApp(
+          home: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 85,
+              height: 400,
+              child: ReorderableList(
+                key: listKey,
+                controller: controller,
+                itemCount: 10,
+                itemBuilder: (BuildContext context, int index) {
+                  return ReorderableDragStartListener(
+                    key: ValueKey<int>(index),
+                    index: index,
+                    child: SizedBox(height: 80, child: Text('Item $index')),
+                  );
+                },
+                onReorder: (int oldIndex, int newIndex) {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final Offset start = tester.getCenter(find.byKey(const ValueKey<int>(0)));
+    final TestGesture gesture = await tester.startGesture(start);
+    await gesture.moveBy(const Offset(0, 20));
+    await tester.pump();
+
+    final double viewportBottom = tester.getBottomRight(find.byKey(listKey)).dy;
+    await gesture.moveTo(Offset(start.dx, viewportBottom + 20));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(tester.takeException(), isNull);
+    expect(controller.offset, greaterThan(0));
+
+    await gesture.up();
     await tester.pumpAndSettle();
   });
 }

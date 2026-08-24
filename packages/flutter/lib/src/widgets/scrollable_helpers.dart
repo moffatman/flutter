@@ -242,14 +242,12 @@ class EdgeDraggingAutoScroller {
       transform,
       Rect.fromLTWH(0, 0, scrollRenderBox.size.width, scrollRenderBox.size.height),
     );
-    final Rect transformedDragTarget = MatrixUtils.transformRect(
-      transform,
-      _dragTargetRelatedToScrollOrigin,
-    );
 
     assert(
-      (globalRect.size.width + precisionErrorTolerance) >= transformedDragTarget.size.width &&
-          (globalRect.size.height + precisionErrorTolerance) >= transformedDragTarget.size.height,
+      (globalRect.size.width + precisionErrorTolerance) >=
+              _dragTargetRelatedToScrollOrigin.size.width &&
+          (globalRect.size.height + precisionErrorTolerance) >=
+              _dragTargetRelatedToScrollOrigin.size.height,
       'Drag target size is larger than scrollable size, which may cause bouncing',
     );
     _scrolling = true;
