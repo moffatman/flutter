@@ -848,7 +848,8 @@ class CkParagraph implements ui.Paragraph {
   double _width = 0;
 
   @override
-  List<ui.TextBox> getBoxesForPlaceholders(double width) => skRectsToTextBoxes(skiaObject.getRectsForPlaceholders(width));;
+  List<ui.TextBox> getBoxesForPlaceholders(double width) =>
+      skRectsToTextBoxes(skiaObject.getRectsForPlaceholders(width));
 
   @override
   List<ui.TextBox> getBoxesForRange(

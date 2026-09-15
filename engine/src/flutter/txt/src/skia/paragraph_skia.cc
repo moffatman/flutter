@@ -319,8 +319,10 @@ std::vector<Paragraph::TextBox> ParagraphSkia::GetRectsForRange(
   return boxes;
 }
 
-std::vector<Paragraph::TextBox> ParagraphSkia::GetRectsForPlaceholders(double width) {
-  std::vector<skt::TextBox> skia_boxes = paragraph_->getRectsForPlaceholders(width);
+std::vector<Paragraph::TextBox> ParagraphSkia::GetRectsForPlaceholders(
+    double width) {
+  std::vector<skt::TextBox> skia_boxes =
+      paragraph_->getRectsForPlaceholders(width);
 
   std::vector<Paragraph::TextBox> boxes;
   boxes.reserve(skia_boxes.size());

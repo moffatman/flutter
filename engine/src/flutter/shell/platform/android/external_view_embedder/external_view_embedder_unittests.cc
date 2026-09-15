@@ -290,7 +290,8 @@ TEST(AndroidExternalViewEmbedder, PlatformViewSizeIsRoundedNotTruncated) {
   auto jni_mock = std::make_shared<JNIMock>();
   auto android_context = AndroidContext(AndroidRenderingAPI::kSoftware);
   auto embedder = std::make_unique<AndroidExternalViewEmbedder>(
-      android_context, jni_mock, nullptr, GetTaskRunnersForFixture());
+      android_context, jni_mock, nullptr, GetTaskRunnersForFixture(),
+      AndroidSurfaceTransaction::GetInstance());
 
   auto raster_thread_merger = GetThreadMergerFromPlatformThread();
 
@@ -1180,7 +1181,8 @@ TEST(AndroidExternalViewEmbedder, MaybeResizeSurfaceView) {
       thread_host.io_thread->GetTaskRunner()         // io
   );
   auto embedder = std::make_unique<AndroidExternalViewEmbedder>(
-      android_context, jni_mock, nullptr, task_runners);
+      android_context, jni_mock, nullptr, task_runners,
+      AndroidSurfaceTransaction::GetInstance());
 
   fml::Thread rasterizer_thread("rasterizer");
   auto raster_thread_merger =
@@ -1244,7 +1246,8 @@ TEST(AndroidExternalViewEmbedder2,
               0, window))));
 
   auto embedder = std::make_unique<AndroidExternalViewEmbedder2>(
-      *android_context, jni_mock, surface_factory, task_runners);
+      *android_context, jni_mock, surface_factory, task_runners,
+      AndroidSurfaceTransaction::GetInstance());
 
   const DlISize frame_size(100, 100);
   const int64_t view_id = 42;
@@ -1340,7 +1343,8 @@ TEST(AndroidExternalViewEmbedder2, FrameSizeChangeDoesNotDestroySurfaces) {
   EXPECT_CALL(*jni_mock, destroyOverlaySurface2()).Times(0);
 
   auto embedder = std::make_unique<AndroidExternalViewEmbedder2>(
-      *android_context, jni_mock, surface_factory, task_runners);
+      *android_context, jni_mock, surface_factory, task_runners,
+      AndroidSurfaceTransaction::GetInstance());
 
   const int64_t view_id = 42;
   MutatorsStack mutators;
@@ -1459,7 +1463,8 @@ TEST(AndroidExternalViewEmbedder2, ResizeDoesNotBlockRasterOnPlatformThread) {
               0, window))));
 
   auto embedder = std::make_unique<AndroidExternalViewEmbedder2>(
-      *android_context, jni_mock, surface_factory, task_runners);
+      *android_context, jni_mock, surface_factory, task_runners,
+      AndroidSurfaceTransaction::GetInstance());
 
   const int64_t view_id = 42;
   MutatorsStack mutators;

@@ -34,7 +34,7 @@ class AndroidSurfaceTransactionImpl : public AndroidSurfaceTransaction {
   void End() override;
 
  private:
-  AndroidSurfaceTransactionImpl(){};
+  AndroidSurfaceTransactionImpl() {};
 
 #if FML_OS_ANDROID
   ASurfaceTransaction* pending_transaction_ = nullptr;
