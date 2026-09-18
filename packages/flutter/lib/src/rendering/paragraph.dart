@@ -1105,6 +1105,7 @@ class RenderParagraph extends RenderBox
         context.canvas.save();
       }
       context.canvas.clipRect(bounds);
+      _innerPaint(context, offset);
       context.canvas.restore();
       layer = null;
     }
