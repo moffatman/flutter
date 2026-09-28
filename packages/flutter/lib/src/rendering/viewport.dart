@@ -1706,6 +1706,9 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
 
   @override
   void performLayout() {
+    // Page positions can already preserve their logical page while applying
+    // the new viewport dimension. Do not apply bottom anchoring a second time.
+    final double? pixelsBeforeViewportResize = offset.hasPixels ? offset.pixels : null;
     // Ignore the return value of applyViewportDimension because we are
     // doing a layout regardless.
     switch (axis) {
@@ -1735,6 +1738,7 @@ class RenderViewport extends RenderViewportBase<SliverPhysicalContainerParentDat
                           when (oldExtent != mainAxisExtent || alreadyAppliedPadding.bottom != _lastAlreadyAppliedBottomPadding)
                                // We have a previous scroll position
                             && offset.hasPixels
+                            && offset.pixels == pixelsBeforeViewportResize
                                // Near the bottom
                             && (_maxScrollExtent - (offset.pixels + oldExtent)) < 80
                             && (_maxScrollExtent >= mainAxisExtent)
