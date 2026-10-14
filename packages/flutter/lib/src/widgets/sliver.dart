@@ -947,6 +947,11 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
   final bool _replaceMovedChildren;
 
   @override
+  int? findIndexByKey(Key key) {
+    return (widget as SliverMultiBoxAdaptorWidget).delegate.findIndexByKey(key);
+  }
+
+  @override
   RenderSliverMultiBoxAdaptor get renderObject => super.renderObject as RenderSliverMultiBoxAdaptor;
 
   @override
@@ -975,6 +980,12 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
       final newChildren = SplayTreeMap<int, Element?>();
       final Map<int, double> indexToLayoutOffset = HashMap<int, double>();
       final adaptorWidget = widget as SliverMultiBoxAdaptorWidget;
+      final Key? lockKey = renderObject is RenderSliverList
+          ? (renderObject as RenderSliverList).lockKey
+          : null;
+      final int? lockedIndex = lockKey == null || lockKey == RenderSliverList.kLockKeyLockToEnd
+          ? null
+          : adaptorWidget.delegate.findIndexByKey(lockKey);
       void processElement(int index) {
         _currentlyUpdatingChildIndex = index;
         if (_childElements[index] != null && _childElements[index] != newChildren[index]) {
@@ -991,10 +1002,13 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
           childrenUpdated = childrenUpdated || _childElements[index] != newChild;
           _childElements[index] = newChild;
           final parentData = newChild.renderObject!.parentData! as SliverMultiBoxAdaptorParentData;
-          if (index == 0) {
-            parentData.layoutOffset = 0.0;
-          } else if (indexToLayoutOffset.containsKey(index)) {
-            parentData.layoutOffset = indexToLayoutOffset[index];
+          // Keep the anchor's own offset, rather than the destination slot's.
+          if (index != lockedIndex) {
+            if (index == 0) {
+              parentData.layoutOffset = 0.0;
+            } else if (indexToLayoutOffset.containsKey(index)) {
+              parentData.layoutOffset = indexToLayoutOffset[index];
+            }
           }
           if (!parentData.keptAlive) {
             _currentBeforeChild = newChild.renderObject as RenderBox?;
@@ -1017,7 +1031,7 @@ class SliverMultiBoxAdaptorElement extends RenderObjectElement
 
         if (newIndex != null && newIndex != index) {
           // The layout offset of the child being moved is no longer accurate.
-          if (childParentData != null) {
+          if (childParentData != null && newIndex != lockedIndex) {
             childParentData.layoutOffset = null;
           }
 

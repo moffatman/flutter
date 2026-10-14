@@ -23,6 +23,9 @@ import 'sliver_fixed_extent_list.dart';
 /// delegate lets these objects create and remove children as well as estimate
 /// the total scroll offset extent occupied by the full child list.
 abstract class RenderSliverBoxChildManager {
+  /// Resolves a child key against the current delegate, if supported.
+  int? findIndexByKey(Key key) => null;
+
   /// Called during layout when a new child is needed. The child should be
   /// inserted into the child list in the appropriate position, after the
   /// `after` child (at the start of the list if `after` is null). Its index and
